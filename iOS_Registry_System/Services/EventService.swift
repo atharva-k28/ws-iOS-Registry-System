@@ -58,7 +58,7 @@ final class EventService {
     func fetchRegistryItems(eventID: UUID) async throws -> [RegistryItem] {
         // TODO: Implement Supabase query
         print("📅 EventService: fetchRegistryItems — not yet implemented")
-        return [RegistryItem.mock]
+        return RegistryItem.mockList
     }
 
     /// Fetch events the user is contributing to

@@ -18,7 +18,7 @@ struct SmallCollectionCard: View {
         } label: {
             VStack(alignment: .leading, spacing: 0) {
                 // Image
-                AsyncImage(url: URL(string: "https://loremflickr.com/300/300/cookware,tableware,plates?lock=\(abs(imageSeed.hashValue % 100))")) { image in
+                AsyncImage(url: URL(string: SmallCollectionCard.imageUrl(for: imageSeed))) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -50,6 +50,10 @@ struct SmallCollectionCard: View {
             .softShadow()
         }
         .buttonStyle(.plain)
+    }
+    
+    static func imageUrl(for seed: String) -> String {
+        return "https://loremflickr.com/300/300/cookware,tableware,plates?lock=\(abs(seed.hashValue % 100))"
     }
 }
 

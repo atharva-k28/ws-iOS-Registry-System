@@ -20,7 +20,7 @@ struct CollectionCard: View {
         } label: {
             VStack(alignment: .leading, spacing: 0) {
                 // Image Header
-                AsyncImage(url: URL(string: imageUrl)) { image in
+                AsyncImage(url: URL(string: CollectionCard.imageUrl(for: imageSeed))) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -64,13 +64,13 @@ struct CollectionCard: View {
         .buttonStyle(.plain)
     }
 
-    private var imageUrl: String {
-        let normalized = imageSeed.lowercased()
+    static func imageUrl(for seed: String) -> String {
+        let normalized = seed.lowercased()
         if normalized.contains("margarita") { return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800" }
         if normalized.contains("outdoor") { return "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800" }
         if normalized.contains("grill") { return "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800" }
         if normalized.contains("kitchen") { return "https://images.unsplash.com/photo-1556911220-e15024029581?w=800" }
-        return "https://loremflickr.com/400/300/tableware,cookware?lock=\(abs(imageSeed.hashValue % 100))"
+        return "https://loremflickr.com/400/300/tableware,cookware?lock=\(abs(seed.hashValue % 100))"
     }
 }
 

@@ -12,6 +12,7 @@ import SwiftUI
 struct HomeView: View {
 
     @State private var viewModel = HomeViewModel()
+    @State private var selectedProduct: Product? = nil
 
     var body: some View {
         NavigationStack {
@@ -50,25 +51,77 @@ struct HomeView: View {
                             title: "Mix bright, bar-worthy cocktails",
                             category: "Margarita Season",
                             actionText: "Shop Bar",
-                            imageSeed: "margarita"
+                            imageSeed: "margarita",
+                            onTap: {
+                                selectedProduct = Product(
+                                    id: UUID(),
+                                    name: "Mix bright, bar-worthy cocktails",
+                                    brand: "Williams Sonoma",
+                                    productDescription: "Everything you need to craft the perfect margarita at home.",
+                                    price: 150.0,
+                                    imageURL: CollectionCard.imageUrl(for: "margarita"),
+                                    category: "Margarita Season",
+                                    affiliateURL: nil,
+                                    isAIRecommended: true
+                                )
+                            }
                         )
                         CollectionCard(
                             title: "Cook al fresco all summer",
                             category: "The Outdoor Kitchen",
                             actionText: "Shop Outdoor",
-                            imageSeed: "grill"
+                            imageSeed: "grill",
+                            onTap: {
+                                selectedProduct = Product(
+                                    id: UUID(),
+                                    name: "Cook al fresco all summer",
+                                    brand: "Williams Sonoma",
+                                    productDescription: "Premium outdoor grilling equipment for the perfect summer barbecue.",
+                                    price: 850.0,
+                                    imageURL: CollectionCard.imageUrl(for: "grill"),
+                                    category: "The Outdoor Kitchen",
+                                    affiliateURL: nil,
+                                    isAIRecommended: true
+                                )
+                            }
                         )
                         CollectionCard(
                             title: "Heritage cast iron & stainless",
                             category: "Made in Cookware®",
                             actionText: "Shop Made In",
-                            imageSeed: "pans"
+                            imageSeed: "pans",
+                            onTap: {
+                                selectedProduct = Product(
+                                    id: UUID(),
+                                    name: "Heritage cast iron & stainless",
+                                    brand: "Williams Sonoma",
+                                    productDescription: "Heirloom-quality skillets, pre-seasoned and ready for everyday luxury. Tri-ply construction, lifetime guarantee.",
+                                    price: 320.0,
+                                    imageURL: CollectionCard.imageUrl(for: "pans"),
+                                    category: "Made in Cookware®",
+                                    affiliateURL: nil,
+                                    isAIRecommended: true
+                                )
+                            }
                         )
                         CollectionCard(
                             title: "Chef-prepared gourmet meals",
                             category: "Ready To Serve",
                             actionText: "Shop Gourmet",
-                            imageSeed: "food"
+                            imageSeed: "food",
+                            onTap: {
+                                selectedProduct = Product(
+                                    id: UUID(),
+                                    name: "Chef-prepared gourmet meals",
+                                    brand: "Williams Sonoma",
+                                    productDescription: "Ready-to-serve gourmet meals crafted by world-renowned chefs.",
+                                    price: 120.0,
+                                    imageURL: CollectionCard.imageUrl(for: "food"),
+                                    category: "Ready To Serve",
+                                    affiliateURL: nil,
+                                    isAIRecommended: true
+                                )
+                            }
                         )
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
@@ -81,8 +134,32 @@ struct HomeView: View {
                             .padding(.horizontal, AppSpacing.screenHorizontal)
                             
                         HStack(spacing: AppSpacing.sm) {
-                            SmallCollectionCard(title: "Coffee HQ", imageSeed: "coffee")
-                            SmallCollectionCard(title: "Red White & Blue", imageSeed: "blue")
+                            SmallCollectionCard(title: "Coffee HQ", imageSeed: "coffee", onTap: {
+                                selectedProduct = Product(
+                                    id: UUID(),
+                                    name: "Coffee HQ",
+                                    brand: "Williams Sonoma",
+                                    productDescription: "The finest espresso machines and accessories.",
+                                    price: 450.0,
+                                    imageURL: SmallCollectionCard.imageUrl(for: "coffee"),
+                                    category: "Morning Routine",
+                                    affiliateURL: nil,
+                                    isAIRecommended: true
+                                )
+                            })
+                            SmallCollectionCard(title: "Red White & Blue", imageSeed: "blue", onTap: {
+                                selectedProduct = Product(
+                                    id: UUID(),
+                                    name: "Red White & Blue",
+                                    brand: "Williams Sonoma",
+                                    productDescription: "Patriotic tableware for your next holiday gathering.",
+                                    price: 85.0,
+                                    imageURL: SmallCollectionCard.imageUrl(for: "blue"),
+                                    category: "Holiday Collection",
+                                    affiliateURL: nil,
+                                    isAIRecommended: true
+                                )
+                            })
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
                     }
@@ -105,6 +182,12 @@ struct HomeView: View {
             }
             .appBackground()
             .transparentNavigationBar()
+            .sheet(item: $selectedProduct) { product in
+                ProductDetailView(product: product)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(28)
+            }
             .task {
                 await viewModel.loadHomeData()
             }

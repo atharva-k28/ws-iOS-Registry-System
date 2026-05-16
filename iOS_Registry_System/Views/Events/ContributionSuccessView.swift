@@ -33,6 +33,7 @@ struct ContributionSuccessView: View {
     @State private var showContent = false
     @State private var progressValue: Double = 0
     @State private var floatOffset: CGFloat = 0
+    @State private var screenWidth: CGFloat = 390
     @Environment(\.dismiss) private var dismiss
 
     private let confettiEmojis = ["🎉", "✨", "💝", "🌹", "🎊", "💫", "🥂"]
@@ -47,20 +48,30 @@ struct ContributionSuccessView: View {
             // Warm ivory background
             Color(hex: "FAF7F4")
                 .ignoresSafeArea()
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear { screenWidth = geo.size.width }
+                            .onChange(of: geo.size.width) { _, newSize in screenWidth = newSize }
+                    }
+                )
 
             // Floating particle layer
-            ForEach(particles) { p in
-                Text(p.emoji)
-                    .font(.system(size: 24 * p.scale))
-                    .position(x: p.x, y: showContent ? -40 : UIScreen.main.bounds.height + 40)
-                    .rotationEffect(.degrees(p.rotationDegrees))
-                    .animation(
-                        .easeOut(duration: 2.5)
-                        .delay(p.delay),
-                        value: showContent
-                    )
-                    .opacity(showContent ? 0 : 1)
+            GeometryReader { geo in
+                ForEach(particles) { p in
+                    Text(p.emoji)
+                        .font(.system(size: 24 * p.scale))
+                        .position(x: p.x, y: showContent ? -40 : geo.size.height + 40)
+                        .rotationEffect(.degrees(p.rotationDegrees))
+                        .animation(
+                            .easeOut(duration: 2.5)
+                            .delay(p.delay),
+                            value: showContent
+                        )
+                        .opacity(showContent ? 0 : 1)
+                }
             }
+            .ignoresSafeArea()
 
             VStack(spacing: AppSpacing.xxl) {
 
@@ -136,7 +147,7 @@ struct ContributionSuccessView: View {
             }
         }
         .onAppear {
-            generateParticles()
+            generateParticles(screenWidth: screenWidth)
             withAnimation { showContent = true }
             withAnimation(.easeInOut(duration: 1.5).delay(0.8)) {
                 progressValue = newProgress
@@ -217,11 +228,11 @@ struct ContributionSuccessView: View {
 
     // MARK: - Particle Generation
 
-    private func generateParticles() {
+    private func generateParticles(screenWidth: CGFloat = 390) {
         particles = (0..<20).map { _ in
             Particle(
                 emoji: confettiEmojis.randomElement()!,
-                x: CGFloat.random(in: 40...(UIScreen.main.bounds.width - 40)),
+                x: CGFloat.random(in: 40...(screenWidth - 40)),
                 delay: Double.random(in: 0...1.2),
                 scale: CGFloat.random(in: 0.6...1.4),
                 rotationDegrees: Double.random(in: -60...60)

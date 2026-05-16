@@ -17,8 +17,9 @@ struct GroupGiftDetailView: View {
 
     // Navigation state
     @State private var showContributionSheet = false
-    @State private var showInviteSheet       = false
-    @State private var showContributors      = false
+    @State private var openCustomMode: Bool   = false
+    @State private var showInviteSheet        = false
+    @State private var showContributors       = false
     @State private var selectedAmount: Double = 50
     @State private var galleryIndex: Int = 0
     @Environment(\.dismiss) private var dismiss
@@ -56,13 +57,14 @@ struct GroupGiftDetailView: View {
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
-        .sheet(isPresented: $showContributionSheet) {
+        .sheet(isPresented: $showContributionSheet, onDismiss: { openCustomMode = false }) {
             ContributionSheetView(
                 gift: gift,
                 selectedAmount: $selectedAmount,
+                startInCustomMode: openCustomMode,
                 onContribute: { handleContribution() }
             )
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(32)
         }
@@ -87,7 +89,7 @@ struct GroupGiftDetailView: View {
                 } placeholder: {
                     Color(hex: "E8E2DC")
                 }
-                .frame(width: UIScreen.main.bounds.width)
+                .frame(maxWidth: .infinity)
                 .clipped()
                 .tag(idx)
             }
@@ -276,7 +278,14 @@ struct GroupGiftDetailView: View {
         let isSelected = !isCustom && selectedAmount == amount
         return Button {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                if !isCustom { selectedAmount = amount }
+                if isCustom {
+                    // Open sheet in custom mode
+                    openCustomMode = true
+                    showContributionSheet = true
+                } else {
+                    openCustomMode = false
+                    selectedAmount = amount
+                }
             }
         } label: {
             Text(isCustom ? "Custom" : "$\(Int(amount))")
@@ -290,8 +299,8 @@ struct GroupGiftDetailView: View {
                             Capsule().fill(AppColors.primaryDark)
                         } else {
                             Capsule()
-                                .fill(.ultraThinMaterial)
-                                .overlay(Capsule().stroke(Color.white.opacity(0.6), lineWidth: 0.5))
+                                .fill(AppColors.white)
+                                .overlay(Capsule().stroke(Color.black.opacity(0.12), lineWidth: 1))
                         }
                     }
                 )
@@ -299,11 +308,10 @@ struct GroupGiftDetailView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Bottom CTA Bar
-
     private var bottomCTABar: some View {
         HStack(spacing: AppSpacing.sm) {
-            // Invite button — liquid glass
+
+            // Invite button — outlined liquid glass
             Button {
                 showInviteSheet = true
             } label: {
@@ -317,18 +325,20 @@ struct GroupGiftDetailView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
                 .background(
-                    RoundedRectangle(cornerRadius: AppCornerRadius.full, style: .continuous)
-                        .fill(.ultraThinMaterial)
+                    Capsule()
+                        .fill(AppColors.white)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppCornerRadius.full, style: .continuous)
-                                .stroke(Color.white.opacity(0.5), lineWidth: 0.5)
+                            Capsule()
+                                .stroke(Color.black.opacity(0.12), lineWidth: 1)
                         )
                 )
+                .softShadow()
             }
             .buttonStyle(.plain)
 
-            // Contribute button — accent red
+            // Contribute button — accent red solid
             Button {
+                openCustomMode = false
                 showContributionSheet = true
             } label: {
                 Text("Contribute $\(Int(selectedAmount))")
@@ -347,12 +357,12 @@ struct GroupGiftDetailView: View {
         .padding(.top, AppSpacing.sm)
         .background(
             Rectangle()
-                .fill(.ultraThinMaterial)
+                .fill(AppColors.white.opacity(0.95))
                 .ignoresSafeArea(edges: .bottom)
                 .overlay(
                     Rectangle()
                         .frame(height: 0.5)
-                        .foregroundStyle(Color.white.opacity(0.4)),
+                        .foregroundStyle(Color.black.opacity(0.08)),
                     alignment: .top
                 )
         )

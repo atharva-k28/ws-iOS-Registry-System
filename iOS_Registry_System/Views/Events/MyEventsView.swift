@@ -2,7 +2,9 @@
 //  MyEventsView.swift
 //  iOS_Registry_System
 //
-//  My Events screen — starter layout
+//  My Events screen — lightweight event dashboard.
+//  Preserves the original visual identity while adding
+//  proper navigation to Command Center, Create Event, and AI flows.
 //
 
 import SwiftUI
@@ -12,6 +14,12 @@ import SwiftUI
 struct MyEventsView: View {
 
     @State private var viewModel = EventsViewModel()
+
+    // Navigation state
+    @State private var showAIRecommendations = false
+    @State private var showCommandCenter     = false
+    @State private var showCreateEvent       = false
+    @State private var showInviteSheet       = false
 
     var body: some View {
         NavigationStack {
@@ -33,9 +41,9 @@ struct MyEventsView: View {
 
                         Spacer()
 
-                        Button(action: {
-                            // Create event action
-                        }) {
+                        Button {
+                            showCreateEvent = true
+                        } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 20, weight: .semibold))
                                 .foregroundColor(AppColors.accentRed)
@@ -56,8 +64,13 @@ struct MyEventsView: View {
                     // MARK: Primary Event Card
 
                     if let primaryEvent = viewModel.filteredEvents.first {
-                        EventCard(event: primaryEvent)
-                            .padding(.horizontal, AppSpacing.screenHorizontal)
+                        EventCard(
+                            event: primaryEvent,
+                            onTap: { showCommandCenter = true },
+                            onManageRegistry: { showCommandCenter = true },
+                            onInvite: { showInviteSheet = true }
+                        )
+                        .padding(.horizontal, AppSpacing.screenHorizontal)
 
                         // MARK: Event Stats
                         HStack(spacing: AppSpacing.sm) {
@@ -70,31 +83,22 @@ struct MyEventsView: View {
                         // MARK: Quiet Suggestions
                         SuggestionCard(
                             title: "A few quiet suggestions",
-                            subtitle: "5 thoughtful additions for your registry"
+                            subtitle: "5 thoughtful additions for your registry",
+                            onTap: { showAIRecommendations = true }
                         )
                         .padding(.horizontal, AppSpacing.screenHorizontal)
 
-                        // MARK: Priority Gifts
+                        // MARK: Recent Registry Activity
                         VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
-                            HStack {
-                                Text("PRIORITY GIFTS")
-                                    .font(AppTypography.caption1Medium)
-                                    .tracking(1.5)
-                                    .foregroundColor(AppColors.primaryText)
-
-                                Spacer()
-
-                                NavigationLink(destination: PriorityGiftsListView()) {
-                                    Text("See all")
-                                        .font(AppTypography.subheadline)
-                                        .foregroundColor(AppColors.secondaryGray)
-                                }
-                            }
-                            .padding(.horizontal, AppSpacing.screenHorizontal)
+                            Text("RECENT ACTIVITY")
+                                .font(AppTypography.caption1Medium)
+                                .tracking(1.5)
+                                .foregroundColor(AppColors.primaryText)
+                                .padding(.horizontal, AppSpacing.screenHorizontal)
 
                             VStack(spacing: AppSpacing.sm) {
-                                ForEach(PriorityGiftItem.allMock.prefix(3)) { gift in
-                                    PriorityGiftCard(gift: gift)
+                                ForEach(PriorityGiftItem.mockContributors.prefix(3)) { contributor in
+                                    recentActivityRow(contributor: contributor)
                                 }
                             }
                             .padding(.horizontal, AppSpacing.screenHorizontal)
@@ -108,11 +112,30 @@ struct MyEventsView: View {
             }
             .appBackground()
             .transparentNavigationBar()
+            .navigationDestination(isPresented: $showAIRecommendations) {
+                AIRecommendationsView()
+            }
+            .navigationDestination(isPresented: $showCommandCenter) {
+                if let primaryEvent = viewModel.filteredEvents.first {
+                    EventCommandCenterView(event: primaryEvent)
+                }
+            }
+            .navigationDestination(isPresented: $showCreateEvent) {
+                CreateEventView()
+            }
+            .sheet(isPresented: $showInviteSheet) {
+                InviteCollaboratorsSheet(giftTitle: viewModel.filteredEvents.first?.title ?? "Event")
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(32)
+            }
             .task {
                 await viewModel.loadEvents()
             }
         }
     }
+
+    // MARK: - Stat Card
 
     private func statCard(value: String, label: String, icon: String) -> some View {
         VStack(alignment: .leading, spacing: AppSpacing.xxs) {
@@ -133,6 +156,37 @@ struct MyEventsView: View {
         .padding(AppSpacing.md)
         .background(AppColors.white)
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
+        .softShadow()
+    }
+
+    // MARK: - Recent Activity Row
+
+    private func recentActivityRow(contributor: Contributor) -> some View {
+        HStack(spacing: AppSpacing.sm) {
+            AsyncImage(url: URL(string: contributor.avatarURL ?? "")) { img in
+                img.resizable().aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Circle().fill(AppColors.backgroundGray)
+            }
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(contributor.name) contributed")
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.primaryText)
+                Text(contributor.timeAgo)
+                    .font(AppTypography.caption1)
+                    .foregroundStyle(AppColors.secondaryGray)
+            }
+            Spacer()
+            Text("+$\(Int(contributor.amount))")
+                .font(AppTypography.bodyMedium)
+                .foregroundStyle(AppColors.accentRed)
+        }
+        .padding(AppSpacing.sm)
+        .background(AppColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
         .softShadow()
     }
 }

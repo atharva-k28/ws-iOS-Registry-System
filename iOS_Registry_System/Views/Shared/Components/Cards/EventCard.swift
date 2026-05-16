@@ -13,6 +13,8 @@ struct EventCard: View {
 
     let event: Event
     var onTap: (() -> Void)?
+    var onManageRegistry: (() -> Void)?
+    var onInvite: (() -> Void)?
 
     var body: some View {
         Button {
@@ -67,25 +69,31 @@ struct EventCard: View {
                     }
 
                     HStack(spacing: AppSpacing.sm) {
-                        Button("Manage Registry") {
-                            // Action
+                        Button {
+                            onManageRegistry?()
+                        } label: {
+                            Text("Manage Registry")
+                                .font(AppTypography.buttonMedium)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, AppSpacing.md)
+                                .padding(.vertical, AppSpacing.xs)
+                                .background(AppColors.accentRed)
+                                .clipShape(Capsule())
                         }
-                        .font(AppTypography.buttonMedium)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, AppSpacing.md)
-                        .padding(.vertical, AppSpacing.xs)
-                        .background(AppColors.accentRed)
-                        .clipShape(Capsule())
+                        .buttonStyle(.plain)
 
-                        Button("Invite") {
-                            // Action
+                        Button {
+                            onInvite?()
+                        } label: {
+                            Text("Invite")
+                                .font(AppTypography.buttonMedium)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, AppSpacing.md)
+                                .padding(.vertical, AppSpacing.xs)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Capsule())
                         }
-                        .font(AppTypography.buttonMedium)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, AppSpacing.md)
-                        .padding(.vertical, AppSpacing.xs)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Capsule())
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(AppSpacing.lg)

@@ -15,6 +15,7 @@ struct ContributionSheetView: View {
 
     let gift: PriorityGiftItem
     @Binding var selectedAmount: Double
+    var startInCustomMode: Bool = false
     let onContribute: () -> Void
 
     @State private var customAmountText: String = ""
@@ -85,21 +86,27 @@ struct ContributionSheetView: View {
             }
         }
         .appBackground()
+        .onAppear {
+            if startInCustomMode {
+                isCustomMode = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    amountFieldFocused = true
+                }
+            }
+        }
     }
 
     // MARK: - Header
 
     private var sheetHeader: some View {
         VStack(spacing: AppSpacing.xs) {
-            Capsule()
-                .fill(AppColors.secondaryGray.opacity(0.3))
-                .frame(width: 36, height: 4)
-                .padding(.top, AppSpacing.sm)
+            // Single system grabber is rendered by .presentationDetents
+            // Do NOT add a second custom capsule here
 
             Text("Contribute to a Gift")
                 .font(AppTypography.title3)
                 .foregroundStyle(AppColors.primaryText)
-                .padding(.top, AppSpacing.xs)
+                .padding(.top, AppSpacing.md)
                 .padding(.bottom, AppSpacing.md)
         }
     }

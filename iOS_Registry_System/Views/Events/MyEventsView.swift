@@ -38,10 +38,16 @@ struct MyEventsView: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(AppColors.accentRed)
                                 .frame(width: 50, height: 50)
-                                .background(AppColors.accentRed)
-                                .clipShape(Circle())
+                                .background(
+                                    Circle()
+                                        .fill(.ultraThinMaterial)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white.opacity(0.5), lineWidth: 0.5)
+                                        )
+                                )
                                 .softShadow()
                         }
                     }
@@ -78,31 +84,18 @@ struct MyEventsView: View {
 
                                 Spacer()
 
-                                Text("See all")
-                                    .font(AppTypography.subheadline)
-                                    .foregroundColor(AppColors.secondaryGray)
+                                NavigationLink(destination: PriorityGiftsListView()) {
+                                    Text("See all")
+                                        .font(AppTypography.subheadline)
+                                        .foregroundColor(AppColors.secondaryGray)
+                                }
                             }
                             .padding(.horizontal, AppSpacing.screenHorizontal)
 
                             VStack(spacing: AppSpacing.sm) {
-                                PriorityGiftCard(
-                                    title: "Made In Cookware Set",
-                                    currentAmount: 320,
-                                    goalAmount: 500,
-                                    imageSeed: "pans"
-                                )
-                                PriorityGiftCard(
-                                    title: "Outdoor BBQ Bundle",
-                                    currentAmount: 95,
-                                    goalAmount: 280,
-                                    imageSeed: "bbq"
-                                )
-                                PriorityGiftCard(
-                                    title: "Espresso Machine",
-                                    currentAmount: 640,
-                                    goalAmount: 1200,
-                                    imageSeed: "coffee"
-                                )
+                                ForEach(PriorityGiftItem.allMock.prefix(3)) { gift in
+                                    PriorityGiftCard(gift: gift)
+                                }
                             }
                             .padding(.horizontal, AppSpacing.screenHorizontal)
                         }

@@ -53,10 +53,10 @@ enum AppConstants {
 
         var icon: String {
             switch self {
-            case .home: return "house.fill"
-            case .events: return "gift.fill"
-            case .friends: return "person.2.fill"
-            case .profile: return "person.crop.circle.fill"
+            case .home: return "house"
+            case .events: return "calendar"
+            case .friends: return "heart"
+            case .profile: return "person"
             }
         }
     }

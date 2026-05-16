@@ -23,21 +23,43 @@ struct ProductCard: View {
                 // MARK: Image Area
 
                 ZStack(alignment: .topTrailing) {
-                    // Placeholder image area
-                    RoundedRectangle(cornerRadius: 0)
-                        .fill(AppColors.backgroundGray)
-                        .frame(height: 160)
-                        .overlay {
-                            Image(systemName: "gift.fill")
-                                .font(.system(size: 32))
-                                .foregroundStyle(AppColors.secondaryGray.opacity(0.4))
-                        }
-
-                    // AI Badge
-                    if product.isAIRecommended {
-                        AIBadge()
-                            .padding(AppSpacing.xs)
+                    // Product Image
+                    AsyncImage(url: URL(string: "https://loremflickr.com/300/300/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))")) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Color.gray.opacity(0.1)
+                            .overlay {
+                                Image(systemName: "gift.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundStyle(AppColors.secondaryGray.opacity(0.4))
+                            }
                     }
+                    .frame(height: 160)
+                    .clipped()
+
+                    // Badges and Actions
+                    HStack(alignment: .top) {
+                        if product.isAIRecommended {
+                            AIBadge()
+                        }
+                        
+                        Spacer()
+                        
+                        Button {
+                            // Toggle favorite
+                        } label: {
+                            Image(systemName: "heart")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(AppColors.primaryDark)
+                                .frame(width: 32, height: 32)
+                                .background(AppColors.white)
+                                .clipShape(Circle())
+                                .softShadow()
+                        }
+                    }
+                    .padding(AppSpacing.xs)
                 }
 
                 // MARK: Details

@@ -46,10 +46,10 @@ struct PrimaryButton: View {
             .frame(height: 54)
             .padding(.horizontal, AppSpacing.xl)
             .background(backgroundContent)
-            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md, style: .continuous))
+            .clipShape(Capsule())
             .overlay {
                 if style == .outline {
-                    RoundedRectangle(cornerRadius: AppCornerRadius.md, style: .continuous)
+                    Capsule()
                         .strokeBorder(AppColors.primaryDark.opacity(0.2), lineWidth: 1.5)
                 }
             }

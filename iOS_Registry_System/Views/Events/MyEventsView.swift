@@ -20,52 +20,93 @@ struct MyEventsView: View {
 
                     // MARK: Header
 
-                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                        Text("My Events")
-                            .font(AppTypography.largeTitle)
-                            .foregroundStyle(AppColors.primaryText)
+                    HStack(alignment: .bottom) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Hosting")
+                                .font(AppTypography.subheadline)
+                                .foregroundStyle(AppColors.secondaryGray)
 
-                        Text("Your registries & celebrations")
-                            .font(AppTypography.subheadline)
-                            .foregroundStyle(AppColors.secondaryGray)
+                            Text("My Events")
+                                .font(AppTypography.largeTitleSerif)
+                                .foregroundStyle(AppColors.primaryText)
+                        }
+
+                        Spacer()
+
+                        Button(action: {
+                            // Create event action
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 50, height: 50)
+                                .background(AppColors.accentRed)
+                                .clipShape(Circle())
+                                .softShadow()
+                        }
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
 
-                    // MARK: Filter Chips
+                    // MARK: Primary Event Card
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: AppSpacing.xs) {
-                            filterChip(title: "All", isSelected: viewModel.selectedEventType == nil) {
-                                viewModel.selectFilter(nil)
-                            }
-                            ForEach(EventType.allCases) { type in
-                                filterChip(
-                                    title: type.displayName,
-                                    icon: type.icon,
-                                    isSelected: viewModel.selectedEventType == type
-                                ) {
-                                    viewModel.selectFilter(type)
-                                }
-                            }
+                    if let primaryEvent = viewModel.filteredEvents.first {
+                        EventCard(event: primaryEvent)
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
+
+                        // MARK: Event Stats
+                        HStack(spacing: AppSpacing.sm) {
+                            statCard(value: "68%", label: "Complete", icon: "arrow.up.right")
+                            statCard(value: "$4.2k", label: "Raised", icon: "wallet.pass")
+                            statCard(value: "24", label: "Guests", icon: "person.2")
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
-                    }
 
-                    // MARK: Create New CTA
+                        // MARK: Quiet Suggestions
+                        SuggestionCard(
+                            title: "A few quiet suggestions",
+                            subtitle: "5 thoughtful additions for your registry"
+                        )
+                        .padding(.horizontal, AppSpacing.screenHorizontal)
 
-                    PrimaryButton(title: "Create New Registry", icon: "plus", style: .accent) {
-                        // TODO: Navigate to create event
-                    }
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                        // MARK: Priority Gifts
+                        VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
+                            HStack {
+                                Text("PRIORITY GIFTS")
+                                    .font(AppTypography.caption1Medium)
+                                    .tracking(1.5)
+                                    .foregroundColor(AppColors.primaryText)
 
-                    // MARK: Event List
+                                Spacer()
 
-                    LazyVStack(spacing: AppSpacing.cardGap) {
-                        ForEach(viewModel.filteredEvents) { event in
-                            EventCard(event: event)
+                                Text("See all")
+                                    .font(AppTypography.subheadline)
+                                    .foregroundColor(AppColors.secondaryGray)
+                            }
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
+
+                            VStack(spacing: AppSpacing.sm) {
+                                PriorityGiftCard(
+                                    title: "Made In Cookware Set",
+                                    currentAmount: 320,
+                                    goalAmount: 500,
+                                    imageSeed: "pans"
+                                )
+                                PriorityGiftCard(
+                                    title: "Outdoor BBQ Bundle",
+                                    currentAmount: 95,
+                                    goalAmount: 280,
+                                    imageSeed: "bbq"
+                                )
+                                PriorityGiftCard(
+                                    title: "Espresso Machine",
+                                    currentAmount: 640,
+                                    goalAmount: 1200,
+                                    imageSeed: "coffee"
+                                )
+                            }
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
                         }
                     }
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
 
                     // Bottom spacer for tab bar
                     Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.xxl)
@@ -80,28 +121,26 @@ struct MyEventsView: View {
         }
     }
 
-    // MARK: - Filter Chip
+    private func statCard(value: String, label: String, icon: String) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(AppColors.secondaryGray)
+                .padding(.bottom, AppSpacing.xs)
 
-    private func filterChip(title: String, icon: String? = nil, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 12))
-                }
-                Text(title)
-                    .font(AppTypography.caption1Medium)
-            }
-            .foregroundStyle(isSelected ? .white : AppColors.primaryText)
-            .padding(.horizontal, AppSpacing.md)
-            .padding(.vertical, AppSpacing.xs)
-            .background(
-                isSelected ? AppColors.primaryDark : AppColors.surface
-            )
-            .clipShape(Capsule())
-            .softShadow()
+            Text(value)
+                .font(AppTypography.title2)
+                .foregroundStyle(AppColors.primaryText)
+
+            Text(label)
+                .font(AppTypography.caption1)
+                .foregroundStyle(AppColors.secondaryGray)
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(AppSpacing.md)
+        .background(AppColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
+        .softShadow()
     }
 }
 

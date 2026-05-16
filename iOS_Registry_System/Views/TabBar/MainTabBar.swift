@@ -25,12 +25,8 @@ struct MainTabBar: View {
         .padding(.horizontal, AppSpacing.xs)
         .padding(.vertical, AppSpacing.xs)
         .background(
-            RoundedRectangle(cornerRadius: AppCornerRadius.full, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppCornerRadius.full, style: .continuous)
-                        .strokeBorder(.white.opacity(0.3), lineWidth: 0.5)
-                )
+            Capsule()
+                .fill(AppColors.white)
         )
         .floatingShadow()
         .padding(.horizontal, AppSpacing.xl)
@@ -48,25 +44,29 @@ struct MainTabBar: View {
                 selectedTab = tab
             }
         } label: {
-            VStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Image(systemName: tab.icon)
                     .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
                     .symbolEffect(.bounce, value: isSelected)
 
-                Text(tab.title)
-                    .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
+                if isSelected {
+                    Text(tab.title)
+                        .font(AppTypography.caption1Medium)
+                        .lineLimit(1)
+                }
             }
-            .foregroundStyle(isSelected ? .white : AppColors.secondaryGray)
-            .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .padding(.horizontal, isSelected ? AppSpacing.md : AppSpacing.sm)
+            .frame(height: 48)
+            .foregroundStyle(isSelected ? AppColors.white : AppColors.secondaryGray)
             .background {
                 if isSelected {
-                    RoundedRectangle(cornerRadius: AppCornerRadius.md, style: .continuous)
+                    Capsule()
                         .fill(AppColors.primaryDark)
                         .matchedGeometryEffect(id: "activeTab", in: tabAnimation)
                 }
             }
         }
+        .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
     }
 }

@@ -18,66 +18,88 @@ struct EventCard: View {
         Button {
             onTap?()
         } label: {
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-
-                // MARK: Header — Event Type Badge + Date
-
-                HStack {
-                    // Event type badge
-                    HStack(spacing: AppSpacing.xxs) {
-                        Image(systemName: eventTypeIcon)
-                            .font(.system(size: 11, weight: .semibold))
-                        Text(event.eventType.replacingOccurrences(of: "_", with: " ").capitalized)
-                            .font(AppTypography.caption1Medium)
+            ZStack(alignment: .bottom) {
+                // Background Image
+                Color.gray.opacity(0.3)
+                    .overlay {
+                        AsyncImage(url: URL(string: imageUrl(for: event.eventType))) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Color.gray.opacity(0.3)
+                        }
                     }
-                    .foregroundStyle(.white.opacity(0.8))
-                    .padding(.horizontal, AppSpacing.xs)
-                    .padding(.vertical, AppSpacing.xxs)
-                    .background(.white.opacity(0.15))
-                    .clipShape(Capsule())
+                    .frame(height: 280)
+                    .clipped()
 
+                // Top Left Badge
+                VStack {
+                    HStack {
+                        if let date = event.eventDate {
+                            Text(date.daysUntil.uppercased())
+                                .font(AppTypography.caption1Medium)
+                                .fontWeight(.bold)
+                                .foregroundStyle(AppColors.primaryDark)
+                                .padding(.horizontal, AppSpacing.sm)
+                                .padding(.vertical, 6)
+                                .background(.white)
+                                .clipShape(Capsule())
+                                .padding(AppSpacing.md)
+                        }
+                        Spacer()
+                    }
                     Spacer()
-
-                    // Date badge
-                    if let date = event.eventDate {
-                        Text(date.daysUntil)
-                            .font(AppTypography.caption1Medium)
-                            .foregroundStyle(AppColors.accentRed)
-                    }
                 }
 
-                Spacer()
+                // Bottom Glassmorphic Card
+                VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(event.eventType.replacingOccurrences(of: "_", with: " ").uppercased()) · \((event.eventDate ?? Date()).formattedLong.uppercased())")
+                            .font(AppTypography.caption2)
+                            .tracking(1)
+                            .foregroundStyle(.white.opacity(0.8))
 
-                // MARK: Title & Description
-
-                VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                    Text(event.title)
-                        .font(AppTypography.title3)
-                        .foregroundStyle(.white)
-                        .lineLimit(2)
-
-                    if let desc = event.eventDescription {
-                        Text(desc)
-                            .font(AppTypography.footnote)
-                            .foregroundStyle(.white.opacity(0.6))
+                        Text(event.title)
+                            .font(AppTypography.largeTitleSerif)
+                            .foregroundStyle(.white)
                             .lineLimit(1)
                     }
-                }
 
-                // MARK: Footer — Date
+                    HStack(spacing: AppSpacing.sm) {
+                        Button("Manage Registry") {
+                            // Action
+                        }
+                        .font(AppTypography.buttonMedium)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, AppSpacing.md)
+                        .padding(.vertical, AppSpacing.xs)
+                        .background(AppColors.accentRed)
+                        .clipShape(Capsule())
 
-                if let date = event.eventDate {
-                    Text(date.formattedLong)
-                        .font(AppTypography.caption1)
-                        .foregroundStyle(.white.opacity(0.5))
+                        Button("Invite") {
+                            // Action
+                        }
+                        .font(AppTypography.buttonMedium)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, AppSpacing.md)
+                        .padding(.vertical, AppSpacing.xs)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                    }
                 }
+                .padding(AppSpacing.lg)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    LinearGradient(
+                        colors: [.black.opacity(0.8), .black.opacity(0.0)],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                )
             }
-            .padding(AppSpacing.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 200)
-            .background(AppColors.premiumCardGradient)
             .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
-            .darkCardShadow()
+            .softShadow()
         }
         .buttonStyle(.plain)
     }
@@ -86,6 +108,15 @@ struct EventCard: View {
 
     private var eventTypeIcon: String {
         EventType(rawValue: event.eventType)?.icon ?? "sparkles"
+    }
+
+    private func imageUrl(for type: String) -> String {
+        let typeLower = type.lowercased()
+        if typeLower.contains("wedding") { return "https://images.unsplash.com/photo-1555244162-803834f70033?w=800" }
+        if typeLower.contains("baby") { return "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800" }
+        if typeLower.contains("house") { return "https://images.unsplash.com/photo-1556911220-e15024029581?w=800" }
+        if typeLower.contains("birth") { return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800" }
+        return "https://loremflickr.com/400/300/tableware,kitchen?lock=\(abs(event.id.hashValue % 100))"
     }
 }
 

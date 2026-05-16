@@ -20,69 +20,69 @@ struct FriendsView: View {
 
                     // MARK: Header
 
-                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                        Text("Friends")
-                            .font(AppTypography.largeTitle)
-                            .foregroundStyle(AppColors.primaryText)
-
-                        Text("Celebrate together")
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Discover")
                             .font(AppTypography.subheadline)
                             .foregroundStyle(AppColors.secondaryGray)
+
+                        Text("Friends' Registries")
+                            .font(AppTypography.largeTitleSerif)
+                            .foregroundStyle(AppColors.primaryText)
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
 
-                    // MARK: Search Bar
+                    // MARK: Search Bar & Filters
 
-                    HStack(spacing: AppSpacing.xs) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 16))
-                            .foregroundStyle(AppColors.secondaryGray)
+                    VStack(spacing: AppSpacing.md) {
+                        HStack(spacing: AppSpacing.md) {
+                            HStack(spacing: AppSpacing.xs) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(AppColors.secondaryGray)
 
-                        TextField("Search friends & events...", text: $viewModel.searchText)
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.primaryText)
-                    }
-                    .padding(AppSpacing.sm)
-                    .background(AppColors.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.sm, style: .continuous))
-                    .softShadow()
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
-
-                    // MARK: Active Events Section
-
-                    VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
-                        Text("Active Registries")
-                            .font(AppTypography.title2)
-                            .foregroundStyle(AppColors.primaryText)
-                            .padding(.horizontal, AppSpacing.screenHorizontal)
-
-                        LazyVStack(spacing: AppSpacing.cardGap) {
-                            ForEach(viewModel.filteredFriendEvents) { event in
-                                EventCard(event: event)
+                                TextField("Search friends", text: $viewModel.searchText)
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColors.primaryText)
+                            }
+                            .padding(AppSpacing.md)
+                            .background(AppColors.white)
+                            .clipShape(Capsule())
+                            .softShadow()
+                            
+                            Button(action: {
+                                // Filter action
+                            }) {
+                                Image(systemName: "line.3.horizontal.decrease")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 50, height: 50)
+                                    .background(AppColors.primaryDark)
+                                    .clipShape(Circle())
+                                    .softShadow()
                             }
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
-                    }
 
-                    // MARK: Invite CTA
-
-                    VStack(spacing: AppSpacing.md) {
-                        Image(systemName: "person.badge.plus")
-                            .font(.system(size: 36))
-                            .foregroundStyle(AppColors.secondaryGray.opacity(0.5))
-
-                        Text("Invite friends to join your registries")
-                            .font(AppTypography.subheadline)
-                            .foregroundStyle(AppColors.secondaryGray)
-                            .multilineTextAlignment(.center)
-
-                        PrimaryButton(title: "Invite Friends", icon: "square.and.arrow.up", style: .outline, isFullWidth: false) {
-                            // TODO: Share sheet
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: AppSpacing.xs) {
+                                StatusChip(title: "All", isSelected: true)
+                                StatusChip(title: "Wedding")
+                                StatusChip(title: "Baby")
+                                StatusChip(title: "Housewarming")
+                            }
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
                         }
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(AppSpacing.xxl)
-                    .cardStyle()
+
+                    // MARK: Active Events List
+
+                    LazyVStack(spacing: AppSpacing.cardGap) {
+                        ForEach(viewModel.filteredFriendEvents) { event in
+                            FriendEventCard(event: event) {
+                                // View action
+                            }
+                        }
+                    }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
 
                     // Bottom spacer for tab bar

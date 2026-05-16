@@ -40,16 +40,8 @@ struct CartView: View {
 
     private var header: some View {
         HStack {
-            Button {
+            GlassButton(icon: "chevron.left") {
                 dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(AppColors.primaryDark)
-                    .frame(width: 40, height: 40)
-                    .background(AppColors.white)
-                    .clipShape(Circle())
-                    .softShadow()
             }
             
             Spacer()
@@ -176,9 +168,36 @@ struct CartItemRow: View {
                     
                     Spacer()
                     
-                    Text("Qty: \(item.quantity)")
-                        .font(AppTypography.caption1Medium)
-                        .foregroundStyle(AppColors.secondaryGray)
+                    // Quantity Toggle
+                    HStack(spacing: 0) {
+                        Button {
+                            CartService.shared.updateQuantity(for: item.id, delta: -1)
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(AppColors.primaryDark)
+                                .frame(width: 28, height: 28)
+                        }
+
+                        Text("\(item.quantity)")
+                            .font(AppTypography.caption1Medium)
+                            .foregroundStyle(AppColors.primaryDark)
+                            .frame(minWidth: 20)
+
+                        Button {
+                            if item.quantity < item.registryItem.requestedQuantity {
+                                CartService.shared.updateQuantity(for: item.id, delta: 1)
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(item.quantity >= item.registryItem.requestedQuantity ? AppColors.secondaryGray : AppColors.primaryDark)
+                                .frame(width: 28, height: 28)
+                        }
+                        .disabled(item.quantity >= item.registryItem.requestedQuantity)
+                    }
+                    .background(AppColors.backgroundGray.opacity(0.5))
+                    .clipShape(Capsule())
                 }
             }
         }

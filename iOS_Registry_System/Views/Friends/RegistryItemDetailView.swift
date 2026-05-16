@@ -113,12 +113,13 @@ struct RegistryItemDetailView: View {
             .appBackground()
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundStyle(AppColors.secondaryGray)
+                    HStack(spacing: AppSpacing.sm) {
+                        GlassButton(icon: "cart") {
+                            showCart = true
+                        }
+                        GlassButton(icon: "xmark", iconSize: 14) {
+                            dismiss()
+                        }
                     }
                 }
             }
@@ -151,7 +152,6 @@ struct RegistryItemDetailView: View {
                                     registryItem: item,
                                     eventName: eventName
                                 )
-                                showCart = true
                             } label: {
                                 Text("Purchase Full")
                                     .font(AppTypography.buttonLarge)

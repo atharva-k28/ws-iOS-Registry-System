@@ -20,6 +20,8 @@ struct RegistryItemCard: View {
     var onEnableGroupGifting: (() -> Void)?
     var onTap: (() -> Void)?
 
+    @State private var cartQuantity = 0
+
     private var isFunded: Bool {
         registryItem.progress >= 1.0
     }
@@ -30,7 +32,7 @@ struct RegistryItemCard: View {
 
     /// Whether the item is completed (purchased or fully funded)
     private var isCompleted: Bool {
-        isPurchased || isFunded
+        isPurchased || (isGroupGifting && isFunded)
     }
 
     var body: some View {
@@ -89,18 +91,7 @@ struct RegistryItemCard: View {
                     Spacer()
                     
                     VStack(spacing: AppSpacing.xs) {
-                        // Favorite button (Top-Right)
-                        Button {
-                            // Toggle favorite
-                        } label: {
-                            Image(systemName: "heart")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(AppColors.primaryDark)
-                                .frame(width: 32, height: 32)
-                                .background(AppColors.white)
-                                .clipShape(Circle())
-                                .softShadow()
-                        }
+                        
                         
                         // Share button
                         if !isCompleted {
@@ -142,12 +133,21 @@ struct RegistryItemCard: View {
                     .foregroundStyle(AppColors.primaryText)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
-                    .frame(minHeight: 32, alignment: .topLeading)
 
-                // Price
-                Text(CurrencyFormatter.format(product.price))
-                    .font(AppTypography.priceSmall)
-                    .foregroundStyle(AppColors.primaryText)
+                // Price & Quantity Requested
+                HStack(alignment: .lastTextBaseline) {
+                    Text(CurrencyFormatter.format(product.price))
+                        .font(AppTypography.priceSmall)
+                        .foregroundStyle(AppColors.primaryText)
+                    
+                    Spacer()
+                    
+                    if registryItem.requestedQuantity > 0 {
+                        Text("Asked: \(registryItem.requestedQuantity - cartQuantity)")
+                            .font(AppTypography.caption1Medium)
+                            .foregroundStyle(AppColors.secondaryGray)
+                    }
+                }
 
                 // Progress Area (Compact)
                 if isGroupGifting && !isPurchased {
@@ -186,77 +186,108 @@ struct RegistryItemCard: View {
     @ViewBuilder
     private var actionButtons: some View {
         if isGroupGifting {
-            // Group gifting: Contribute button + cart icon
-            HStack(spacing: AppSpacing.xs) {
-                Button {
-                    onContribute?()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "gift.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                        Text("Contribute")
-                            .font(AppTypography.buttonSmall)
-                    }
-                    .foregroundStyle(AppColors.primaryDark)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .background(AppColors.white)
-                    .clipShape(Capsule())
-                    .overlay {
-                        Capsule()
-                            .strokeBorder(AppColors.primaryDark.opacity(0.2), lineWidth: 1.5)
-                    }
+            // Group gifting: Contribute button only
+            Button {
+                onContribute?()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "gift.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                    Text("Contribute")
+                        .font(AppTypography.buttonSmall)
                 }
-                .buttonStyle(.plain)
-
-                // Cart icon button
-                Button {
-                    onPurchase?()
-                } label: {
-                    Image(systemName: "cart.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 40, height: 40)
-                        .background(AppColors.primaryDark)
-                        .clipShape(Circle())
+                .foregroundStyle(AppColors.primaryDark)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
+                .background(AppColors.white)
+                .clipShape(Capsule())
+                .overlay {
+                    Capsule()
+                        .strokeBorder(AppColors.primaryDark.opacity(0.2), lineWidth: 1.5)
                 }
-                .buttonStyle(.plain)
             }
+            .buttonStyle(.plain)
         } else {
-            // Non-group gifting: Enable Group Gifting + Purchase
-            HStack(spacing: AppSpacing.xs) {
-                Button {
-                    onEnableGroupGifting?()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "person.2.fill")
-                            .font(.system(size: 10, weight: .semibold))
-                        Text("Group Gift")
-                            .font(AppTypography.buttonSmall)
+            if cartQuantity > 0 {
+                // Quantity Toggle
+                HStack(spacing: 0) {
+                    Button {
+                        if cartQuantity > 0 {
+                            cartQuantity -= 1
+                            // In a real app, update cart
+                        }
+                    } label: {
+                        Image(systemName: "minus")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(AppColors.primaryDark)
+                            .frame(width: 40, height: 40)
                     }
-                    .foregroundStyle(AppColors.primaryDark)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .background(AppColors.white)
-                    .clipShape(Capsule())
-                    .overlay {
-                        Capsule()
-                            .strokeBorder(AppColors.primaryDark.opacity(0.2), lineWidth: 1.5)
-                    }
-                }
-                .buttonStyle(.plain)
 
-                Button {
-                    onPurchase?()
-                } label: {
-                    Image(systemName: "cart.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 40, height: 40)
-                        .background(AppColors.primaryDark)
-                        .clipShape(Circle())
+                    Spacer()
+                    
+                    Text("\(cartQuantity)")
+                        .font(AppTypography.buttonSmall)
+                        .foregroundStyle(AppColors.primaryDark)
+                    
+                    Spacer()
+
+                    Button {
+                        if cartQuantity < registryItem.requestedQuantity {
+                            cartQuantity += 1
+                            onPurchase?()
+                        }
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(cartQuantity >= registryItem.requestedQuantity ? AppColors.secondaryGray : AppColors.primaryDark)
+                            .frame(width: 40, height: 40)
+                    }
+                    .disabled(cartQuantity >= registryItem.requestedQuantity)
                 }
-                .buttonStyle(.plain)
+                .background(AppColors.white)
+                .clipShape(Capsule())
+                .overlay {
+                    Capsule()
+                        .strokeBorder(AppColors.primaryDark.opacity(0.2), lineWidth: 1.5)
+                }
+                .frame(height: 40)
+            } else {
+                // Group Gift (Expanded) + Add to cart (SF-only)
+                HStack(spacing: AppSpacing.xs) {
+                    Button {
+                        onEnableGroupGifting?()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "person.2.fill")
+                                .font(.system(size: 10, weight: .semibold))
+                            Text("Group Gift")
+                                .font(AppTypography.buttonSmall)
+                        }
+                        .foregroundStyle(AppColors.primaryDark)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(AppColors.white)
+                        .clipShape(Capsule())
+                        .overlay {
+                            Capsule()
+                                .strokeBorder(AppColors.primaryDark.opacity(0.2), lineWidth: 1.5)
+                        }
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        cartQuantity = 1
+                        onPurchase?()
+                    } label: {
+                        Image(systemName: "cart")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 40, height: 40)
+                            .background(AppColors.primaryDark)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }

@@ -42,6 +42,9 @@ enum MockData {
             isPurchased: false,
             priority: 2,
             note: nil,
+            complementaryProductName: nil,
+            requestedQuantity: 1,
+            purchasedQuantity: 0,
             addedAt: .now
         ),
         RegistryItem(
@@ -53,6 +56,9 @@ enum MockData {
             isPurchased: true,
             priority: 3,
             note: "Fully funded! 🎉",
+            complementaryProductName: nil,
+            requestedQuantity: 1,
+            purchasedQuantity: 1,
             addedAt: .now
         ),
     ]

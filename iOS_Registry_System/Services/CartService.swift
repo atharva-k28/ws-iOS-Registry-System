@@ -31,6 +31,17 @@ class CartService: ObservableObject {
         items.remove(atOffsets: offsets)
     }
     
+    func updateQuantity(for itemID: UUID, delta: Int) {
+        if let index = items.firstIndex(where: { $0.id == itemID }) {
+            let newQuantity = items[index].quantity + delta
+            if newQuantity <= 0 {
+                items.remove(at: index)
+            } else {
+                items[index].quantity = newQuantity
+            }
+        }
+    }
+    
     func clearCart() {
         items = []
     }

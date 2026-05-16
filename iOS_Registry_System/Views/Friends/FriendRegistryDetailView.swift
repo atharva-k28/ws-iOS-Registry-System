@@ -115,30 +115,14 @@ struct FriendRegistryDetailView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button {
+                GlassButton(icon: "chevron.left") {
                     dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(AppColors.primaryDark)
-                        .frame(width: 40, height: 40)
-                        .background(AppColors.white)
-                        .clipShape(Circle())
-                        .softShadow()
                 }
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    // Share action
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(AppColors.primaryDark)
-                        .frame(width: 40, height: 40)
-                        .background(AppColors.white)
-                        .clipShape(Circle())
-                        .softShadow()
+                GlassButton(icon: "cart") {
+                    viewModel.showCart = true
                 }
             }
         }
@@ -250,43 +234,56 @@ struct FriendRegistryDetailView: View {
     }
 
     private func registryGrid(for items: [RegistryItem]) -> some View {
-        LazyVGrid(
-            columns: [
-                GridItem(.flexible(), spacing: AppSpacing.cardGap),
-                GridItem(.flexible(), spacing: AppSpacing.cardGap)
-            ],
-            spacing: AppSpacing.cardGap
-        ) {
-            ForEach(items) { item in
-                if let product = viewModel.product(for: item) {
-                    RegistryItemCard(
-                        product: product,
-                        registryItem: item,
-                        isGroupGifting: viewModel.isGroupGifting(for: item),
-                        onPurchase: {
-                            CartService.shared.addToCart(
-                                product: product,
-                                registryItem: item,
-                                eventName: viewModel.event.title
-                            )
-                            viewModel.showCart = true
-                        },
-                        onContribute: {
-                            // Contribute action
-                        },
-                        onShare: {
-                            // Share action
-                        },
-                        onEnableGroupGifting: {
-                            viewModel.enableGroupGifting(for: item)
-                        },
-                        onTap: {
-                            viewModel.selectedItem = item
+        HStack(alignment: .top, spacing: 8) {
+            // Left Column
+            VStack(spacing: 8) {
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    if index % 2 == 0 {
+                        if let product = viewModel.product(for: item) {
+                            registryCard(item: item, product: product)
                         }
-                    )
+                    }
+                }
+            }
+            
+            // Right Column
+            VStack(spacing: 8) {
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    if index % 2 != 0 {
+                        if let product = viewModel.product(for: item) {
+                            registryCard(item: item, product: product)
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private func registryCard(item: RegistryItem, product: Product) -> some View {
+        RegistryItemCard(
+            product: product,
+            registryItem: item,
+            isGroupGifting: viewModel.isGroupGifting(for: item),
+            onPurchase: {
+                CartService.shared.addToCart(
+                    product: product,
+                    registryItem: item,
+                    eventName: viewModel.event.title
+                )
+            },
+            onContribute: {
+                // Contribute action
+            },
+            onShare: {
+                // Share action
+            },
+            onEnableGroupGifting: {
+                viewModel.enableGroupGifting(for: item)
+            },
+            onTap: {
+                viewModel.selectedItem = item
+            }
+        )
     }
 
     // MARK: - Empty State

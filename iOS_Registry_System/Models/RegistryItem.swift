@@ -19,6 +19,8 @@ struct RegistryItem: Codable, Identifiable, Hashable {
     var priority: Int
     var note: String?
     var complementaryProductName: String?
+    var requestedQuantity: Int
+    var purchasedQuantity: Int
     var addedAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -31,6 +33,8 @@ struct RegistryItem: Codable, Identifiable, Hashable {
         case priority
         case note
         case complementaryProductName = "complementary_product_name"
+        case requestedQuantity = "requested_quantity"
+        case purchasedQuantity = "purchased_quantity"
         case addedAt = "added_at"
     }
 
@@ -56,6 +60,9 @@ extension RegistryItem {
         isPurchased: false,
         priority: 1,
         note: "We'd love the Marseille color!",
+        complementaryProductName: nil,
+        requestedQuantity: 1,
+        purchasedQuantity: 0,
         addedAt: .now
     )
 
@@ -70,6 +77,8 @@ extension RegistryItem {
             priority: 1,
             note: "We'd love the Marseille color!",
             complementaryProductName: "Dyson V15",
+            requestedQuantity: 1,
+            purchasedQuantity: 0,
             addedAt: .now
         ),
         RegistryItem(
@@ -82,6 +91,8 @@ extension RegistryItem {
             priority: 2,
             note: nil,
             complementaryProductName: nil,
+            requestedQuantity: 1,
+            purchasedQuantity: 1,
             addedAt: .now
         ),
         RegistryItem(
@@ -94,6 +105,8 @@ extension RegistryItem {
             priority: 3,
             note: "The aromatique scent is our favorite",
             complementaryProductName: nil,
+            requestedQuantity: 4,
+            purchasedQuantity: 0,
             addedAt: .now
         ),
         RegistryItem(
@@ -106,6 +119,8 @@ extension RegistryItem {
             priority: 2,
             note: nil,
             complementaryProductName: nil,
+            requestedQuantity: 1,
+            purchasedQuantity: 0,
             addedAt: .now
         ),
         RegistryItem(
@@ -118,6 +133,8 @@ extension RegistryItem {
             priority: 1,
             note: "This would make our mornings!",
             complementaryProductName: "Riedel Vinum Set",
+            requestedQuantity: 1,
+            purchasedQuantity: 0,
             addedAt: .now
         ),
         RegistryItem(
@@ -127,10 +144,12 @@ extension RegistryItem {
             targetAmount: 329.00,
             currentAmount: 329.00,
             isPurchased: false,
-            priority: 3,
+            priority: 2,
             note: nil,
+            complementaryProductName: nil,
+            requestedQuantity: 2,
+            purchasedQuantity: 2,
             addedAt: .now
         ),
     ]
 }
-

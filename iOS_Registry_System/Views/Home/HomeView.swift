@@ -12,7 +12,7 @@ import SwiftUI
 struct HomeView: View {
 
     @State private var viewModel = HomeViewModel()
-    @State private var selectedProduct: Product? = nil
+    @State private var activeModal: HomeModal?
 
     var body: some View {
         NavigationStack {
@@ -43,6 +43,10 @@ struct HomeView: View {
                         description: "",
                         actionTitle: ""
                     )
+                    .contentShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
+                    .onTapGesture {
+                        activeModal = .packagingReveal
+                    }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
                     
                     // MARK: Collections List
@@ -53,7 +57,7 @@ struct HomeView: View {
                             actionText: "Shop Bar",
                             imageSeed: "margarita",
                             onTap: {
-                                selectedProduct = Product(
+                                activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Mix bright, bar-worthy cocktails",
                                     brand: "Williams Sonoma",
@@ -63,7 +67,7 @@ struct HomeView: View {
                                     category: "Margarita Season",
                                     affiliateURL: nil,
                                     isAIRecommended: true
-                                )
+                                ))
                             }
                         )
                         CollectionCard(
@@ -72,7 +76,7 @@ struct HomeView: View {
                             actionText: "Shop Outdoor",
                             imageSeed: "grill",
                             onTap: {
-                                selectedProduct = Product(
+                                activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Cook al fresco all summer",
                                     brand: "Williams Sonoma",
@@ -82,7 +86,7 @@ struct HomeView: View {
                                     category: "The Outdoor Kitchen",
                                     affiliateURL: nil,
                                     isAIRecommended: true
-                                )
+                                ))
                             }
                         )
                         CollectionCard(
@@ -91,7 +95,7 @@ struct HomeView: View {
                             actionText: "Shop Made In",
                             imageSeed: "pans",
                             onTap: {
-                                selectedProduct = Product(
+                                activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Heritage cast iron & stainless",
                                     brand: "Williams Sonoma",
@@ -101,7 +105,7 @@ struct HomeView: View {
                                     category: "Made in Cookware®",
                                     affiliateURL: nil,
                                     isAIRecommended: true
-                                )
+                                ))
                             }
                         )
                         CollectionCard(
@@ -110,7 +114,7 @@ struct HomeView: View {
                             actionText: "Shop Gourmet",
                             imageSeed: "food",
                             onTap: {
-                                selectedProduct = Product(
+                                activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Chef-prepared gourmet meals",
                                     brand: "Williams Sonoma",
@@ -120,7 +124,7 @@ struct HomeView: View {
                                     category: "Ready To Serve",
                                     affiliateURL: nil,
                                     isAIRecommended: true
-                                )
+                                ))
                             }
                         )
                     }
@@ -135,7 +139,7 @@ struct HomeView: View {
                             
                         HStack(spacing: AppSpacing.sm) {
                             SmallCollectionCard(title: "Coffee HQ", imageSeed: "coffee", onTap: {
-                                selectedProduct = Product(
+                                activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Coffee HQ",
                                     brand: "Williams Sonoma",
@@ -145,10 +149,10 @@ struct HomeView: View {
                                     category: "Morning Routine",
                                     affiliateURL: nil,
                                     isAIRecommended: true
-                                )
+                                ))
                             })
                             SmallCollectionCard(title: "Red White & Blue", imageSeed: "blue", onTap: {
-                                selectedProduct = Product(
+                                activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Red White & Blue",
                                     brand: "Williams Sonoma",
@@ -158,7 +162,7 @@ struct HomeView: View {
                                     category: "Holiday Collection",
                                     affiliateURL: nil,
                                     isAIRecommended: true
-                                )
+                                ))
                             })
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
@@ -182,11 +186,19 @@ struct HomeView: View {
             }
             .appBackground()
             .transparentNavigationBar()
-            .sheet(item: $selectedProduct) { product in
-                ProductDetailView(product: product)
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
-                    .presentationCornerRadius(28)
+            .sheet(item: $activeModal) { modal in
+                switch modal {
+                case .product(let product):
+                    ProductDetailView(product: product)
+                        .presentationDetents([.large])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                case .packagingReveal:
+                    PackagingRevealView()
+                        .presentationDetents([.large])
+                        .presentationDragIndicator(.visible)
+                        .presentationCornerRadius(28)
+                }
             }
             .task {
                 await viewModel.loadHomeData()
@@ -295,6 +307,20 @@ struct HomeView: View {
             }
         }
         .padding(.horizontal, AppSpacing.screenHorizontal)
+    }
+}
+
+private enum HomeModal: Identifiable {
+    case product(Product)
+    case packagingReveal
+
+    var id: String {
+        switch self {
+        case .product(let product):
+            return "product-\(product.id.uuidString)"
+        case .packagingReveal:
+            return "packaging-reveal"
+        }
     }
 }
 

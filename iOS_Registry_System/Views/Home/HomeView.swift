@@ -17,15 +17,19 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
+                VStack(alignment: .leading, spacing: 0) {
 
                     // MARK: Header
 
                     headerSection
 
+                    emptyTapShield(height: AppSpacing.sectionGap)
+
                     // MARK: Featured Events
 
                     sectionHeader(title: "Upcoming Events", subtitle: "Registries you're part of")
+
+                    emptyTapShield(height: AppSpacing.sectionHeaderGap)
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: AppSpacing.cardGap) {
@@ -36,6 +40,8 @@ struct HomeView: View {
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
                     }
+
+                    emptyTapShield(height: AppSpacing.sectionGap)
 
                     // MARK: Curated Hero
                     QuietlyCuratedCard(
@@ -48,9 +54,11 @@ struct HomeView: View {
                         activeModal = .packagingReveal
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
+
+                    emptyTapShield(height: AppSpacing.sectionGap)
                     
                     // MARK: Collections List
-                    VStack(spacing: AppSpacing.lg) {
+                    VStack(spacing: 0) {
                         CollectionCard(
                             title: "Mix bright, bar-worthy cocktails",
                             category: "Margarita Season",
@@ -70,6 +78,9 @@ struct HomeView: View {
                                 ))
                             }
                         )
+
+                        emptyTapShield(height: AppSpacing.lg)
+
                         CollectionCard(
                             title: "Cook al fresco all summer",
                             category: "The Outdoor Kitchen",
@@ -89,6 +100,9 @@ struct HomeView: View {
                                 ))
                             }
                         )
+
+                        emptyTapShield(height: AppSpacing.lg)
+
                         CollectionCard(
                             title: "Heritage cast iron & stainless",
                             category: "Made in Cookware®",
@@ -108,6 +122,9 @@ struct HomeView: View {
                                 ))
                             }
                         )
+
+                        emptyTapShield(height: AppSpacing.lg)
+
                         CollectionCard(
                             title: "Chef-prepared gourmet meals",
                             category: "Ready To Serve",
@@ -129,6 +146,8 @@ struct HomeView: View {
                         )
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
+
+                    emptyTapShield(height: AppSpacing.sectionGap)
                     
                     // MARK: More to explore
                     VStack(alignment: .leading, spacing: AppSpacing.md) {
@@ -137,7 +156,7 @@ struct HomeView: View {
                             .foregroundStyle(AppColors.primaryText)
                             .padding(.horizontal, AppSpacing.screenHorizontal)
                             
-                        HStack(spacing: AppSpacing.sm) {
+                        HStack(spacing: 0) {
                             SmallCollectionCard(title: "Coffee HQ", imageSeed: "coffee", onTap: {
                                 activeModal = .product(Product(
                                     id: UUID(),
@@ -151,6 +170,9 @@ struct HomeView: View {
                                     isAIRecommended: true
                                 ))
                             })
+
+                            emptyTapShield(width: AppSpacing.sm)
+
                             SmallCollectionCard(title: "Red White & Blue", imageSeed: "blue", onTap: {
                                 activeModal = .product(Product(
                                     id: UUID(),
@@ -167,6 +189,8 @@ struct HomeView: View {
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
                     }
+
+                    emptyTapShield(height: AppSpacing.sectionGap)
                     
                     // MARK: Registry Progress
                     RegistryProgressCard(
@@ -307,6 +331,23 @@ struct HomeView: View {
             }
         }
         .padding(.horizontal, AppSpacing.screenHorizontal)
+    }
+
+    private func emptyTapShield(height: CGFloat) -> some View {
+        Color.white.opacity(0.001)
+            .frame(maxWidth: .infinity)
+            .frame(height: height)
+            .contentShape(Rectangle())
+            .highPriorityGesture(TapGesture().onEnded {})
+            .accessibilityHidden(true)
+    }
+
+    private func emptyTapShield(width: CGFloat) -> some View {
+        Color.white.opacity(0.001)
+            .frame(width: width)
+            .contentShape(Rectangle())
+            .highPriorityGesture(TapGesture().onEnded {})
+            .accessibilityHidden(true)
     }
 }
 

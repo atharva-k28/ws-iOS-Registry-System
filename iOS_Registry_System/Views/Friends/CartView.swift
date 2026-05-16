@@ -13,11 +13,10 @@ struct CartView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            header
-            
+            // Cart Items List
             if cartService.items.isEmpty {
                 emptyCartView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
                     VStack(spacing: AppSpacing.md) {
@@ -28,37 +27,26 @@ struct CartView: View {
                     .padding(AppSpacing.screenHorizontal)
                     .padding(.top, AppSpacing.md)
                 }
+                .frame(maxWidth: .infinity)
                 
                 checkoutSection
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appBackground()
+        .navigationTitle("Your Bag")
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                GlassButton(icon: "chevron.left") {
+                    dismiss()
+                }
+            }
+        }
     }
 
     // MARK: - Components
-
-    private var header: some View {
-        HStack {
-            GlassButton(icon: "chevron.left") {
-                dismiss()
-            }
-            
-            Spacer()
-            
-            Text("Your Cart")
-                .font(AppTypography.title3)
-                .foregroundStyle(AppColors.primaryText)
-            
-            Spacer()
-            
-            // Empty placeholder for balance
-            Color.clear.frame(width: 40, height: 40)
-        }
-        .padding(.horizontal, AppSpacing.screenHorizontal)
-        .padding(.top, 10)
-        .padding(.bottom, AppSpacing.sm)
-    }
 
     private var emptyCartView: some View {
         VStack(spacing: AppSpacing.lg) {

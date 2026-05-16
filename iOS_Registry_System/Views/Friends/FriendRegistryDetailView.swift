@@ -112,6 +112,8 @@ struct FriendRegistryDetailView: View {
             }
         }
         .appBackground()
+        .navigationTitle(viewModel.event.title)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -132,7 +134,12 @@ struct FriendRegistryDetailView: View {
         }
         .sheet(item: $viewModel.selectedItem) { item in
             if let product = viewModel.product(for: item) {
-                RegistryItemDetailView(item: item, product: product, eventName: viewModel.event.title)
+                RegistryItemDetailView(
+                    item: item,
+                    product: product,
+                    eventName: viewModel.event.title,
+                    isGroupGifting: viewModel.isGroupGifting(for: item)
+                )
             }
         }
         .navigationDestination(isPresented: $viewModel.showCart) {
@@ -245,6 +252,7 @@ struct FriendRegistryDetailView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity)
             
             // Right Column
             VStack(spacing: 8) {
@@ -256,6 +264,7 @@ struct FriendRegistryDetailView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity)
         }
     }
 

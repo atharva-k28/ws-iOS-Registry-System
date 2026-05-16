@@ -11,8 +11,9 @@ struct RegistryItemDetailView: View {
     let item: RegistryItem
     let product: Product
     let eventName: String
+    let isGroupGifting: Bool
     @Environment(\.dismiss) private var dismiss
-    @State private var showCart = false
+    @State private var cartQuantity = 0
 
     var body: some View {
         NavigationStack {
@@ -52,9 +53,20 @@ struct RegistryItemDetailView: View {
                                 .font(AppTypography.premiumTitle)
                                 .foregroundStyle(AppColors.primaryText)
                             
-                            Text(CurrencyFormatter.format(product.price))
-                                .font(AppTypography.title1)
-                                .foregroundStyle(AppColors.primaryDark)
+                            // Price & Asked Qty
+                            HStack(alignment: .lastTextBaseline) {
+                                Text(CurrencyFormatter.format(product.price))
+                                    .font(AppTypography.title1)
+                                    .foregroundStyle(AppColors.primaryDark)
+                                
+                                Spacer()
+                                
+                                if item.requestedQuantity > 0 {
+                                    Text("Asked: \(item.requestedQuantity - cartQuantity)")
+                                        .font(AppTypography.subheadlineMedium)
+                                        .foregroundStyle(AppColors.secondaryGray)
+                                }
+                            }
                         }
 
                         // Description
@@ -82,12 +94,13 @@ struct RegistryItemDetailView: View {
                                     .foregroundStyle(AppColors.secondaryGray)
                             }
                             .padding(AppSpacing.md)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .background(AppColors.surface)
                             .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
                         }
 
-                        // Progress (if active)
-                        if !item.isPurchased && item.progress > 0 {
+                        // Progress (for Group Gifting)
+                        if isGroupGifting && !item.isPurchased {
                             VStack(alignment: .leading, spacing: AppSpacing.sm) {
                                 Text("Contribution Progress")
                                     .font(AppTypography.subheadlineMedium)
@@ -101,37 +114,32 @@ struct RegistryItemDetailView: View {
                                 )
                             }
                             .padding(AppSpacing.md)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .background(AppColors.surface)
                             .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
                         }
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
                     
-                    Spacer(minLength: 100)
+                    Spacer(minLength: 120)
                 }
             }
             .appBackground()
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: AppSpacing.sm) {
-                        GlassButton(icon: "cart") {
-                            showCart = true
-                        }
-                        GlassButton(icon: "xmark", iconSize: 14) {
-                            dismiss()
-                        }
+                    GlassButton(icon: "xmark", iconSize: 14) {
+                        dismiss()
                     }
                 }
             }
-            .navigationDestination(isPresented: $showCart) {
-                CartView()
-            }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: AppSpacing.sm) {
-                    if !item.isPurchased && item.progress < 1.0 {
-                        HStack(spacing: AppSpacing.md) {
+                    if !item.isPurchased {
+                        if isGroupGifting {
+                            // Group Gifting: Only Contribute
                             Button {
-                                // Contribute
+                                // Contribute action
                             } label: {
                                 Text("Contribute")
                                     .font(AppTypography.buttonLarge)
@@ -145,25 +153,86 @@ struct RegistryItemDetailView: View {
                                             .strokeBorder(AppColors.primaryDark, lineWidth: 1.5)
                                     }
                             }
+                        } else {
+                            // Purchase Item: Group Gift + Add to cart / Toggle
+                            if cartQuantity > 0 {
+                                // Quantity Toggle
+                                HStack {
+                                    Button {
+                                        if cartQuantity > 0 { cartQuantity -= 1 }
+                                    } label: {
+                                        Image(systemName: "minus")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundStyle(AppColors.primaryDark)
+                                            .frame(width: 56, height: 56)
+                                    }
 
-                            Button {
-                                CartService.shared.addToCart(
-                                    product: product,
-                                    registryItem: item,
-                                    eventName: eventName
-                                )
-                            } label: {
-                                Text("Purchase Full")
-                                    .font(AppTypography.buttonLarge)
-                                    .foregroundStyle(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(AppColors.primaryDark)
-                                    .clipShape(Capsule())
+                                    Spacer()
+                                    
+                                    Text("\(cartQuantity)")
+                                        .font(AppTypography.buttonLarge)
+                                        .foregroundStyle(AppColors.primaryDark)
+                                    
+                                    Spacer()
+
+                                    Button {
+                                        if cartQuantity < item.requestedQuantity {
+                                            cartQuantity += 1
+                                            CartService.shared.addToCart(product: product, registryItem: item, eventName: eventName)
+                                        }
+                                    } label: {
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundStyle(cartQuantity >= item.requestedQuantity ? AppColors.secondaryGray : AppColors.primaryDark)
+                                            .frame(width: 56, height: 56)
+                                    }
+                                    .disabled(cartQuantity >= item.requestedQuantity)
+                                }
+                                .background(AppColors.white)
+                                .clipShape(Capsule())
+                                .overlay {
+                                    Capsule()
+                                        .strokeBorder(AppColors.primaryDark, lineWidth: 1.5)
+                                }
+                                .frame(height: 56)
+                            } else {
+                                HStack(spacing: AppSpacing.md) {
+                                    Button {
+                                        // Enable Group Gift
+                                    } label: {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "person.2.fill")
+                                                .font(.system(size: 14, weight: .semibold))
+                                            Text("Group Gift")
+                                                .font(AppTypography.buttonLarge)
+                                        }
+                                        .foregroundStyle(AppColors.primaryDark)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 56)
+                                        .background(AppColors.white)
+                                        .clipShape(Capsule())
+                                        .overlay {
+                                            Capsule()
+                                                .strokeBorder(AppColors.primaryDark, lineWidth: 1.5)
+                                        }
+                                    }
+
+                                    Button {
+                                        cartQuantity = 1
+                                        CartService.shared.addToCart(product: product, registryItem: item, eventName: eventName)
+                                    } label: {
+                                        Image(systemName: "cart.badge.plus")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                            .frame(width: 56, height: 56)
+                                            .background(AppColors.primaryDark)
+                                            .clipShape(Circle())
+                                    }
+                                }
                             }
                         }
                     } else {
-                        Text(item.isPurchased ? "Item Already Purchased" : "Goal Reached!")
+                        Text("Item Purchased")
                             .font(AppTypography.subheadlineMedium)
                             .foregroundStyle(AppColors.secondaryGray)
                             .padding()

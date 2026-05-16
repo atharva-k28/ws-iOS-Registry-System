@@ -176,6 +176,7 @@ struct RegistryItemCard: View {
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
         .softShadow()
         .opacity(isCompleted ? 0.5 : 1.0)
+        .contentShape(Rectangle())
         .onTapGesture {
             onTap?()
         }

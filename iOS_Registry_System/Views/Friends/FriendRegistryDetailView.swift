@@ -21,6 +21,7 @@ struct FriendRegistryDetailView: View {
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
 
@@ -147,8 +148,11 @@ struct FriendRegistryDetailView: View {
         }
         .sheet(item: $viewModel.selectedItem) { item in
             if let product = viewModel.product(for: item) {
-                RegistryItemDetailView(item: item, product: product)
+                RegistryItemDetailView(item: item, product: product, eventName: viewModel.event.title)
             }
+        }
+        .navigationDestination(isPresented: $viewModel.showCart) {
+            CartView()
         }
     }
 
@@ -260,7 +264,12 @@ struct FriendRegistryDetailView: View {
                         registryItem: item,
                         isGroupGifting: viewModel.isGroupGifting(for: item),
                         onPurchase: {
-                            // Purchase action
+                            CartService.shared.addToCart(
+                                product: product,
+                                registryItem: item,
+                                eventName: viewModel.event.title
+                            )
+                            viewModel.showCart = true
                         },
                         onContribute: {
                             // Contribute action

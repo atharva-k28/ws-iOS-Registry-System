@@ -10,7 +10,9 @@ import SwiftUI
 struct RegistryItemDetailView: View {
     let item: RegistryItem
     let product: Product
+    let eventName: String
     @Environment(\.dismiss) private var dismiss
+    @State private var showCart = false
 
     var body: some View {
         NavigationStack {
@@ -120,6 +122,9 @@ struct RegistryItemDetailView: View {
                     }
                 }
             }
+            .navigationDestination(isPresented: $showCart) {
+                CartView()
+            }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: AppSpacing.sm) {
                     if !item.isPurchased && item.progress < 1.0 {
@@ -141,7 +146,12 @@ struct RegistryItemDetailView: View {
                             }
 
                             Button {
-                                // Purchase
+                                CartService.shared.addToCart(
+                                    product: product,
+                                    registryItem: item,
+                                    eventName: eventName
+                                )
+                                showCart = true
                             } label: {
                                 Text("Purchase Full")
                                     .font(AppTypography.buttonLarge)

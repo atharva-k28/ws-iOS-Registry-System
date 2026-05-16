@@ -22,6 +22,7 @@ final class FriendRegistryDetailViewModel {
     var errorMessage: String?
     var selectedCategory: String? = nil
     var selectedItem: RegistryItem?
+    var showCart = false
 
     // MARK: Init
 

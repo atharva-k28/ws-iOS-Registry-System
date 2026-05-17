@@ -35,41 +35,31 @@ struct FriendsView: View {
                     // MARK: Search Bar & Filters
 
                     VStack(spacing: AppSpacing.md) {
-                        HStack(spacing: AppSpacing.md) {
-                            HStack(spacing: AppSpacing.xs) {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(AppColors.secondaryGray)
+                        HStack(spacing: AppSpacing.xs) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 16))
+                                .foregroundStyle(AppColors.secondaryGray)
 
-                                TextField("Search friends", text: $viewModel.searchText)
-                                    .font(AppTypography.body)
-                                    .foregroundStyle(AppColors.primaryText)
-                            }
-                            .padding(AppSpacing.md)
-                            .background(AppColors.white)
-                            .clipShape(Capsule())
-                            .softShadow()
-                            
-                            Button(action: {
-                                // Filter action
-                            }) {
-                                Image(systemName: "line.3.horizontal.decrease")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 50, height: 50)
-                                    .background(AppColors.primaryDark)
-                                    .clipShape(Circle())
-                                    .softShadow()
-                            }
+                            TextField("Search friends", text: $viewModel.searchText)
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppColors.primaryText)
                         }
+                        .padding(AppSpacing.md)
+                        .background(AppColors.white)
+                        .clipShape(Capsule())
+                        .softShadow()
                         .padding(.horizontal, AppSpacing.screenHorizontal)
 
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: AppSpacing.xs) {
-                                StatusChip(title: "All", isSelected: true)
-                                StatusChip(title: "Wedding")
-                                StatusChip(title: "Baby")
-                                StatusChip(title: "Housewarming")
+                                ForEach(FriendsViewModel.FriendCategory.allCases) { category in
+                                    StatusChip(
+                                        title: category.rawValue,
+                                        isSelected: viewModel.selectedCategory == category
+                                    ) {
+                                        viewModel.selectedCategory = category
+                                    }
+                                }
                             }
                             .padding(.horizontal, AppSpacing.screenHorizontal)
                         }

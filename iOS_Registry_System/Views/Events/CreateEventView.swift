@@ -24,10 +24,10 @@ private struct CreateEventType: Identifiable {
     static let all: [CreateEventType] = [
         .init(type: .wedding,      icon: "heart",         label: "Wedding"),
         .init(type: .housewarming, icon: "house",         label: "Housewarming"),
-        .init(type: .specialEvent, icon: "gift",          label: "Anniversary"),
+        .init(type: .anniversary,  icon: "gift",          label: "Anniversary"),
         .init(type: .babyShower,   icon: "stroller",      label: "Baby"),
         .init(type: .birthday,     icon: "graduationcap", label: "Graduation"),
-        .init(type: .specialEvent, icon: "sparkles",      label: "Other"),
+        .init(type: .other,        icon: "sparkles",      label: "Other"),
     ]
 }
 

@@ -467,9 +467,17 @@ struct EventCommandCenterView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AppSpacing.sm) {
-                    categoryCard(title: "Kitchen", subtitle: "12 items", imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&q=80")
-                    categoryCard(title: "Dining", subtitle: "8 items", imageUrl: "https://images.unsplash.com/photo-1603199505524-3e4cdaef1f6a?w=300&q=80")
-                    categoryCard(title: "Outdoor", subtitle: "5 items", imageUrl: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300&q=80")
+                    NavigationLink(destination: RegistryCategoryDetailView(categoryTitle: "Kitchen")) {
+                        categoryCard(title: "Kitchen", subtitle: "12 items", imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&q=80")
+                    }.buttonStyle(.plain)
+                    
+                    NavigationLink(destination: RegistryCategoryDetailView(categoryTitle: "Dining")) {
+                        categoryCard(title: "Dining", subtitle: "8 items", imageUrl: "https://images.unsplash.com/photo-1603199505524-3e4cdaef1f6a?w=300&q=80")
+                    }.buttonStyle(.plain)
+                    
+                    NavigationLink(destination: RegistryCategoryDetailView(categoryTitle: "Outdoor")) {
+                        categoryCard(title: "Outdoor", subtitle: "5 items", imageUrl: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300&q=80")
+                    }.buttonStyle(.plain)
                 }
             }
         }

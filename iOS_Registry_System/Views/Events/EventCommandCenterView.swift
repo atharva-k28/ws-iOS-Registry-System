@@ -60,9 +60,13 @@ struct EventCommandCenterView: View {
                 Button { dismiss() } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AppColors.primaryText)
                         .frame(width: 36, height: 36)
-                        .background(Circle().fill(.ultraThinMaterial))
+                        .background(
+                            Circle()
+                                .fill(.regularMaterial)
+                                .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 0.5))
+                        )
                 }
                 .buttonStyle(.plain)
             }
@@ -71,18 +75,26 @@ struct EventCommandCenterView: View {
                     Button { showInviteSheet = true } label: {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AppColors.primaryText)
                             .frame(width: 36, height: 36)
-                            .background(Circle().fill(.ultraThinMaterial))
+                            .background(
+                                Circle()
+                                    .fill(.regularMaterial)
+                                    .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 0.5))
+                            )
                     }
                     .buttonStyle(.plain)
 
                     Button { showSettings = true } label: {
                         Image(systemName: "gearshape")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AppColors.primaryText)
                             .frame(width: 36, height: 36)
-                            .background(Circle().fill(.ultraThinMaterial))
+                            .background(
+                                Circle()
+                                    .fill(.regularMaterial)
+                                    .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 0.5))
+                            )
                     }
                     .buttonStyle(.plain)
                 }

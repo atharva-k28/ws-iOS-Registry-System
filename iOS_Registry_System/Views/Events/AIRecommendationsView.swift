@@ -221,7 +221,6 @@ struct AIRecommendationsView: View {
                     inspiredByCard
                     quoteCard
                     youMightLoveSection
-                    filtersSection
 
                     Color.clear.frame(height: 64)
                 }
@@ -364,6 +363,8 @@ struct AIRecommendationsView: View {
                 .tracking(2)
                 .foregroundStyle(AppColors.primaryText)
 
+            filtersSection
+
             LazyVGrid(
                 columns: [GridItem(.flexible(), spacing: AppSpacing.md), GridItem(.flexible(), spacing: AppSpacing.md)],
                 spacing: AppSpacing.md
@@ -400,6 +401,7 @@ struct AIRecommendationsView: View {
                             .tint(AppColors.secondaryGray)
                     }
                 }
+                .frame(minWidth: 0, maxWidth: .infinity)
                 .frame(height: 148)
                 .clipped()
 
@@ -444,6 +446,7 @@ struct AIRecommendationsView: View {
             }
             .padding(AppSpacing.sm)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppColors.white)
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
         .softShadow()
@@ -484,8 +487,10 @@ struct AIRecommendationsView: View {
                     .buttonStyle(.plain)
                 }
             }
+            .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.vertical, 4)
         }
+        .padding(.horizontal, -AppSpacing.screenHorizontal)
     }
 }
 

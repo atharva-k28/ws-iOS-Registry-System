@@ -22,19 +22,20 @@ struct MainTabBar: View {
                 tabButton(for: tab)
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(.ultraThinMaterial)
+            Capsule()
+                .fill(.regularMaterial)
+                .environment(\.colorScheme, .light)
+                .shadow(color: Color.black.opacity(0.08), radius: 12, y: 6)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(Color.white.opacity(0.45), lineWidth: 0.5)
+                    Capsule()
+                        .stroke(Color.white.opacity(0.8), lineWidth: 0.5)
                 )
         )
-        .floatingShadow()
-        .padding(.horizontal, 32)
-        .padding(.bottom, 2)
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.bottom, AppSpacing.sm)
     }
 
     // MARK: - Tab Button
@@ -56,7 +57,7 @@ struct MainTabBar: View {
                     .background {
                         if isSelected {
                             Circle()
-                                .fill(Color.blue)
+                                .fill(AppColors.accentRed)
                                 .matchedGeometryEffect(id: "activeIcon", in: tabAnimation)
                         }
                     }
@@ -64,7 +65,7 @@ struct MainTabBar: View {
 
                 Text(tab.title)
                     .font(.system(size: 10, weight: isSelected ? .medium : .regular))
-                    .foregroundStyle(isSelected ? Color.blue : AppColors.primaryText)
+                    .foregroundStyle(isSelected ? AppColors.accentRed : AppColors.primaryText)
                     .lineLimit(1)
             }
             .padding(.horizontal, 4)

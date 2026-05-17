@@ -12,6 +12,7 @@ import SwiftUI
 struct FriendsView: View {
 
     @State private var viewModel = FriendsViewModel()
+    @State private var selectedEvent: Event?
 
     var body: some View {
         NavigationStack {
@@ -79,7 +80,7 @@ struct FriendsView: View {
                     LazyVStack(spacing: AppSpacing.cardGap) {
                         ForEach(viewModel.filteredFriendEvents) { event in
                             FriendEventCard(event: event) {
-                                // View action
+                                selectedEvent = event
                             }
                         }
                     }
@@ -92,6 +93,9 @@ struct FriendsView: View {
             }
             .appBackground()
             .transparentNavigationBar()
+            .navigationDestination(item: $selectedEvent) { event in
+                FriendRegistryDetailView(event: event)
+            }
             .task {
                 await viewModel.loadFriendEvents()
             }

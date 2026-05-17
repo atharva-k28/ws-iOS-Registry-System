@@ -48,10 +48,28 @@ extension Product {
         isAIRecommended: true
     )
 
+    // Stable IDs for cross-referencing with RegistryItem mocks
+    static let mockID1 = UUID(uuidString: "A0000001-0000-0000-0000-000000000001")!
+    static let mockID2 = UUID(uuidString: "A0000001-0000-0000-0000-000000000002")!
+    static let mockID3 = UUID(uuidString: "A0000001-0000-0000-0000-000000000003")!
+    static let mockID4 = UUID(uuidString: "A0000001-0000-0000-0000-000000000004")!
+    static let mockID5 = UUID(uuidString: "A0000001-0000-0000-0000-000000000005")!
+    static let mockID6 = UUID(uuidString: "A0000001-0000-0000-0000-000000000006")!
+
     static let mockList: [Product] = [
-        .mock,
         Product(
-            id: UUID(),
+            id: mockID1,
+            name: "Le Creuset Dutch Oven",
+            brand: "Le Creuset",
+            productDescription: "Classic 5.5 Qt Round Dutch Oven in Marseille",
+            price: 419.95,
+            imageURL: nil,
+            category: "Kitchen",
+            affiliateURL: nil,
+            isAIRecommended: true
+        ),
+        Product(
+            id: mockID2,
             name: "Dyson V15 Detect",
             brand: "Dyson",
             productDescription: "Cordless vacuum with laser dust detection",
@@ -62,7 +80,7 @@ extension Product {
             isAIRecommended: false
         ),
         Product(
-            id: UUID(),
+            id: mockID3,
             name: "Aesop Reverence Kit",
             brand: "Aesop",
             productDescription: "Hand care duo with aromatique balm",
@@ -71,6 +89,39 @@ extension Product {
             category: "Wellness",
             affiliateURL: nil,
             isAIRecommended: true
-        )
+        ),
+        Product(
+            id: mockID4,
+            name: "Riedel Vinum Set",
+            brand: "Riedel",
+            productDescription: "Set of 8 crystal wine glasses for red & white",
+            price: 239.00,
+            imageURL: nil,
+            category: "Dining",
+            affiliateURL: nil,
+            isAIRecommended: false
+        ),
+        Product(
+            id: mockID5,
+            name: "Breville Barista Express",
+            brand: "Breville",
+            productDescription: "Espresso machine with integrated grinder",
+            price: 699.95,
+            imageURL: nil,
+            category: "Kitchen",
+            affiliateURL: nil,
+            isAIRecommended: true
+        ),
+        Product(
+            id: mockID6,
+            name: "Parachute Linen Duvet",
+            brand: "Parachute",
+            productDescription: "European flax linen duvet cover, king size",
+            price: 329.00,
+            imageURL: nil,
+            category: "Home",
+            affiliateURL: nil,
+            isAIRecommended: false
+        ),
     ]
 }

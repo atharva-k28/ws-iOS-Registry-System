@@ -18,6 +18,9 @@ struct RegistryItem: Codable, Identifiable, Hashable {
     var isPurchased: Bool
     var priority: Int
     var note: String?
+    var complementaryProductName: String?
+    var requestedQuantity: Int
+    var purchasedQuantity: Int
     var addedAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -29,6 +32,9 @@ struct RegistryItem: Codable, Identifiable, Hashable {
         case isPurchased = "is_purchased"
         case priority
         case note
+        case complementaryProductName = "complementary_product_name"
+        case requestedQuantity = "requested_quantity"
+        case purchasedQuantity = "purchased_quantity"
         case addedAt = "added_at"
     }
 
@@ -42,15 +48,108 @@ struct RegistryItem: Codable, Identifiable, Hashable {
 // MARK: - Mock
 
 extension RegistryItem {
+
+    static let mockEventID = UUID(uuidString: "E0000001-0000-0000-0000-000000000001")!
+
     static let mock = RegistryItem(
         id: UUID(),
-        eventID: UUID(),
-        productID: UUID(),
+        eventID: mockEventID,
+        productID: Product.mockID1,
         targetAmount: 419.95,
         currentAmount: 280.00,
         isPurchased: false,
         priority: 1,
         note: "We'd love the Marseille color!",
+        complementaryProductName: nil,
+        requestedQuantity: 1,
+        purchasedQuantity: 0,
         addedAt: .now
     )
+
+    static let mockList: [RegistryItem] = [
+        RegistryItem(
+            id: UUID(),
+            eventID: mockEventID,
+            productID: Product.mockID1,
+            targetAmount: 419.95,
+            currentAmount: 280.00,
+            isPurchased: false,
+            priority: 1,
+            note: "We'd love the Marseille color!",
+            complementaryProductName: "Dyson V15",
+            requestedQuantity: 1,
+            purchasedQuantity: 0,
+            addedAt: .now
+        ),
+        RegistryItem(
+            id: UUID(),
+            eventID: mockEventID,
+            productID: Product.mockID2,
+            targetAmount: 749.99,
+            currentAmount: 749.99,
+            isPurchased: true,
+            priority: 2,
+            note: nil,
+            complementaryProductName: nil,
+            requestedQuantity: 1,
+            purchasedQuantity: 1,
+            addedAt: .now
+        ),
+        RegistryItem(
+            id: UUID(),
+            eventID: mockEventID,
+            productID: Product.mockID3,
+            targetAmount: 89.00,
+            currentAmount: 45.00,
+            isPurchased: false,
+            priority: 3,
+            note: "The aromatique scent is our favorite",
+            complementaryProductName: nil,
+            requestedQuantity: 4,
+            purchasedQuantity: 0,
+            addedAt: .now
+        ),
+        RegistryItem(
+            id: UUID(),
+            eventID: mockEventID,
+            productID: Product.mockID4,
+            targetAmount: 239.00,
+            currentAmount: 0,
+            isPurchased: false,
+            priority: 2,
+            note: nil,
+            complementaryProductName: nil,
+            requestedQuantity: 1,
+            purchasedQuantity: 0,
+            addedAt: .now
+        ),
+        RegistryItem(
+            id: UUID(),
+            eventID: mockEventID,
+            productID: Product.mockID5,
+            targetAmount: 699.95,
+            currentAmount: 350.00,
+            isPurchased: false,
+            priority: 1,
+            note: "This would make our mornings!",
+            complementaryProductName: "Riedel Vinum Set",
+            requestedQuantity: 1,
+            purchasedQuantity: 0,
+            addedAt: .now
+        ),
+        RegistryItem(
+            id: UUID(),
+            eventID: mockEventID,
+            productID: Product.mockID6,
+            targetAmount: 329.00,
+            currentAmount: 329.00,
+            isPurchased: false,
+            priority: 2,
+            note: nil,
+            complementaryProductName: nil,
+            requestedQuantity: 2,
+            purchasedQuantity: 2,
+            addedAt: .now
+        ),
+    ]
 }

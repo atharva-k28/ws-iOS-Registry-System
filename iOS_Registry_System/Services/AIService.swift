@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import Functions
+import Supabase
 
 // MARK: - AI Service
 
@@ -37,9 +39,26 @@ final class AIService {
 
     /// Generate a smart registry based on event type and preferences
     func generateSmartRegistry(eventType: String, preferences: [String]) async throws -> [Product] {
-        // TODO: Implement smart registry generation
-        print("🤖 AIService: generateSmartRegistry — not yet implemented")
-        return []
+        struct RequestBody: Encodable {
+            let eventType: String
+            let preferences: [String]
+        }
+        
+        struct ResponseData: Codable {
+            let productIds: [UUID]
+            enum CodingKeys: String, CodingKey {
+                case productIds = "product_ids"
+            }
+        }
+        
+        let responseData: ResponseData = try await SupabaseManager.shared.client.functions.invoke(
+            "generate-smart-registry",
+            options: FunctionInvokeOptions(
+                body: RequestBody(eventType: eventType, preferences: preferences)
+            )
+        )
+        
+        return try await ProductService.shared.fetchProducts(ids: responseData.productIds)
     }
 
     /// Get gift message suggestions

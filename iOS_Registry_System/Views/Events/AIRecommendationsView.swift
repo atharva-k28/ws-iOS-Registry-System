@@ -207,9 +207,12 @@ struct AIRecommendationsView: View {
     @State private var addedItemIDs:  Set<UUID>               = []
     @State private var selectedItem:  AIRecommendationItem?   = nil
     @State private var showQuickAdd                           = false
+    @State private var recommendedProducts: [AIRecommendationItem] = []
+    @State private var isLoading                              = false
+    @State private var errorMessage: String?                  = nil
 
     private var filteredItems: [AIRecommendationItem] {
-        AIRecommendationItem.all.filter { $0.category == selectedFilter }
+        recommendedProducts.filter { $0.category == selectedFilter }
     }
 
     var body: some View {
@@ -235,6 +238,20 @@ struct AIRecommendationsView: View {
                 .tracking(2)
                 .foregroundStyle(AppColors.secondaryGray)
                 .padding(.bottom, 8)
+            
+            if isLoading {
+                ZStack {
+                    Color(hex: "FDFBF9").opacity(0.8) // Matches app background
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .tint(AppColors.primaryText)
+                        Text("Consulting AI...")
+                            .font(AppTypography.caption1Medium)
+                            .foregroundStyle(AppColors.secondaryGray)
+                    }
+                }
+                .ignoresSafeArea()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -268,6 +285,63 @@ struct AIRecommendationsView: View {
             .presentationCornerRadius(32)
             .presentationDragIndicator(.hidden)
         }
+        .task {
+            await loadRecommendations()
+        }
+    }
+
+    // MARK: - Data Loading
+
+    private func loadRecommendations() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            // 1. Fetch user's events to get the event type
+            let events = try await EventService.shared.fetchMyEvents()
+            let eventType = events.first?.eventType ?? "wedding"
+            
+            // 2. Generate smart registry products
+            let products = try await AIService.shared.generateSmartRegistry(
+                eventType: eventType,
+                preferences: ["cooking", "hosting", "decor"] // Default preferences for now
+            )
+            
+            print("🤖 AI Recommendations fetched: \(products.count) products")
+            for product in products {
+                print("   - \(product.name) (\(product.id.uuidString))")
+            }
+            
+            // 3. Map products to AIRecommendationItem
+            self.recommendedProducts = products.map { product in
+                let category: AIRecommendationFilter
+                if product.price < 50 {
+                    category = .budget
+                } else if product.price >= 200 {
+                    category = .luxury
+                } else if product.category.lowercased().contains("set") || (product.description?.lowercased().contains("set") ?? false) {
+                    category = .bundle
+                } else {
+                    category = .seasonal
+                }
+                
+                return AIRecommendationItem(
+                    title: product.name,
+                    subtitle: product.brand ?? product.category,
+                    price: Int(product.price),
+                    imageUrl: product.imageUrl ?? "https://images.unsplash.com/photo-1556909211-36987daf7b4d?w=600&q=80",
+                    category: category,
+                    tags: [product.category]
+                )
+            }
+        } catch {
+            print("❌ Failed to load AI recommendations: \(error)")
+            errorMessage = error.localizedDescription
+            // Fallback to mock data if it fails, so the screen isn't empty
+            self.recommendedProducts = AIRecommendationItem.all
+        }
+        
+        isLoading = false
     }
 
     // MARK: - Header

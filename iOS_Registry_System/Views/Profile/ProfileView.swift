@@ -174,6 +174,32 @@ struct ProfileView: View {
             menuRow(icon: "heart", title: "Saved & wishlist", destination: AnyView(SavedWishlistView()))
             Divider().padding(.leading, 64)
             menuRow(icon: "sparkles", title: "AI personalization", destination: AnyView(AIRecommendationsView()))
+            Divider().padding(.leading, 64)
+            
+            // Log Out Button
+            Button {
+                Task {
+                    await AppState.shared.signOut()
+                }
+            } label: {
+                HStack(spacing: AppSpacing.md) {
+                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                        .font(.system(size: 16))
+                        .foregroundStyle(AppColors.accentRed)
+                        .frame(width: 40, height: 40)
+                        .background(AppColors.accentRed.opacity(0.1))
+                        .clipShape(Circle())
+
+                    Text("Log Out")
+                        .font(AppTypography.bodyMedium)
+                        .foregroundStyle(AppColors.accentRed)
+
+                    Spacer()
+                }
+                .padding(.horizontal, AppSpacing.lg)
+                .padding(.vertical, AppSpacing.md)
+            }
+            .buttonStyle(.plain)
         }
         .background(AppColors.white)
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))

@@ -32,6 +32,7 @@ struct EventCommandCenterView: View {
     @State private var showRSVPReminder    = false
     @State private var showShippingAddress = false
     @State private var showThankYouNotes   = false
+    @State private var showHealthAnalyzer   = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -101,8 +102,8 @@ struct EventCommandCenterView: View {
             }
         }
         .sheet(isPresented: $showInviteSheet) {
-            InviteCollaboratorsSheet(giftTitle: event.title)
-                .presentationDetents([.large])
+            InviteCollaboratorsSheet(eventId: event.id, giftTitle: event.title)
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
         }
@@ -126,6 +127,12 @@ struct EventCommandCenterView: View {
         }
         .sheet(isPresented: $showThankYouNotes) {
             ThankYouNoteSheet()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showHealthAnalyzer) {
+            RegistryHealthSheet(items: PriorityGiftItem.allMock)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
@@ -431,6 +438,9 @@ struct EventCommandCenterView: View {
                 // Registry categories
                 registryCategoriesSection
 
+                // AI Registry Health Card
+                registryHealthAnalyzerCard
+
                 // Priority Gifts
                 VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
                     HStack {
@@ -505,6 +515,50 @@ struct EventCommandCenterView: View {
             .padding(.bottom, AppSpacing.sm)
         }
         .frame(width: 150)
+        .background(AppColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
+        .softShadow()
+    }
+
+    private var registryHealthAnalyzerCard: some View {
+        HStack(spacing: AppSpacing.md) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppColors.accentRed)
+                    Text("AI REGISTRY ANALYZER")
+                        .font(AppTypography.caption1Medium)
+                        .tracking(1.5)
+                        .foregroundStyle(AppColors.accentRed)
+                }
+                
+                Text("Analyze your registry health")
+                    .font(AppTypography.headline)
+                    .foregroundStyle(AppColors.primaryText)
+                
+                Text("Ensure a perfect blend of categories and price ranges for guest satisfaction.")
+                    .font(AppTypography.caption1)
+                    .foregroundStyle(AppColors.secondaryGray)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            
+            Spacer()
+            
+            Button {
+                showHealthAnalyzer = true
+            } label: {
+                Text("Check")
+                    .font(AppTypography.buttonSmall)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, AppSpacing.md)
+                    .padding(.vertical, 8)
+                    .background(AppColors.accentRed)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(AppSpacing.md)
         .background(AppColors.white)
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
         .softShadow()

@@ -11,6 +11,11 @@ struct CartView: View {
     @StateObject private var cartService = CartService.shared
     @Environment(\.dismiss) private var dismiss
 
+    @State private var isProcessingCheckout = false
+    @State private var checkoutError: String? = nil
+    @State private var showCheckoutErrorAlert = false
+    @State private var showCheckoutSuccessAlert = false
+
     var body: some View {
         VStack(spacing: 0) {
             // Cart Items List
@@ -43,6 +48,18 @@ struct CartView: View {
                     dismiss()
                 }
             }
+        }
+        .alert("Checkout Success", isPresented: $showCheckoutSuccessAlert) {
+            Button("OK") {
+                dismiss()
+            }
+        } message: {
+            Text("Thank you for your purchase! The registry items have been updated.")
+        }
+        .alert("Checkout Failed", isPresented: $showCheckoutErrorAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(checkoutError ?? "An unknown error occurred during checkout.")
         }
     }
 
@@ -94,14 +111,48 @@ struct CartView: View {
             .padding(.horizontal, AppSpacing.xs)
             
             Button {
-                // Checkout action
+                Task {
+                    isProcessingCheckout = true
+                    do {
+                        // Loop through all items in the cart and update them in Supabase
+                        for item in cartService.items {
+                            guard let registryItem = item.registryItem else { continue }
+                            let price = item.product?.price ?? 0.0
+                            let totalAmount = price * Double(item.quantity)
+                            
+                            // Call EventService.shared.purchaseRegistryItem to update database
+                            try await EventService.shared.purchaseRegistryItem(
+                                id: registryItem.id,
+                                quantityPurchasedDelta: item.quantity,
+                                totalAmount: totalAmount,
+                                isCashFund: registryItem.isCashFund ?? false
+                            )
+                        }
+                        
+                        // Clear cart upon successful database updates
+                        cartService.clearCart()
+                        isProcessingCheckout = false
+                        showCheckoutSuccessAlert = true
+                    } catch {
+                        isProcessingCheckout = false
+                        checkoutError = error.localizedDescription
+                        showCheckoutErrorAlert = true
+                    }
+                }
             } label: {
                 HStack {
-                    Text("Checkout")
+                    if isProcessingCheckout {
+                        ProgressView()
+                            .tint(.white)
+                            .padding(.trailing, 8)
+                    }
+                    Text(isProcessingCheckout ? "Processing..." : "Checkout")
                         .font(AppTypography.buttonLarge)
                     Spacer()
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 16, weight: .bold))
+                    if !isProcessingCheckout {
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 16, weight: .bold))
+                    }
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, AppSpacing.xl)
@@ -111,6 +162,7 @@ struct CartView: View {
                 .clipShape(Capsule())
                 .softShadow()
             }
+            .disabled(isProcessingCheckout)
         }
         .padding(AppSpacing.lg)
         .padding(.bottom, AppSpacing.tabBarHeight + AppSpacing.tabBarBottomOffset)

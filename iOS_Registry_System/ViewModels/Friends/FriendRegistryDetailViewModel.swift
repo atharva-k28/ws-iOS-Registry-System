@@ -46,8 +46,8 @@ final class FriendRegistryDetailViewModel {
 
     /// Unique product categories from loaded products
     var categories: [String] {
-        let cats = Set(products.values.compactMap { $0.category })
-        return cats.sorted()
+        let cats = Set(registryItems.compactMap { product(for: $0)?.category })
+        return cats.isEmpty ? ["Kitchen"] : cats.sorted()
     }
 
     /// Price threshold for group gifting eligibility
@@ -59,8 +59,7 @@ final class FriendRegistryDetailViewModel {
             return true
         }
 
-        guard let productId = item.productId,
-              let product = products[productId] else {
+        guard let product = product(for: item) else {
             return false
         }
 
@@ -70,7 +69,7 @@ final class FriendRegistryDetailViewModel {
     /// Registry items for 'Complete the set' section (priority 1 active items)
     var completeTheSetItems: [RegistryItem] {
         registryItems.filter { item in
-            let isCompleted = (item.fundedAmount ?? 0.0) >= (item.price * Double(item.quantityNeeded ?? 1)) || item.progress >= 1.0
+            let isCompleted = isItemCompleted(item)
             return !isCompleted && item.priority == "1"
         }.sorted { Int($0.priority ?? "0") ?? 0 < Int($1.priority ?? "0") ?? 0 }
     }
@@ -81,8 +80,8 @@ final class FriendRegistryDetailViewModel {
         let remaining = registryItems.filter { !ctsIds.contains($0.id) }
 
         return remaining.sorted { lhs, rhs in
-            let lhsCompleted = (lhs.fundedAmount ?? 0.0) >= (lhs.price * Double(lhs.quantityNeeded ?? 1)) || lhs.progress >= 1.0
-            let rhsCompleted = (rhs.fundedAmount ?? 0.0) >= (rhs.price * Double(rhs.quantityNeeded ?? 1)) || rhs.progress >= 1.0
+            let lhsCompleted = isItemCompleted(lhs)
+            let rhsCompleted = isItemCompleted(rhs)
 
             if lhsCompleted != rhsCompleted {
                 return !lhsCompleted
@@ -98,12 +97,13 @@ final class FriendRegistryDetailViewModel {
 
         if let category = selectedCategory {
             items = registryItems.filter { item in
-                guard let productId = item.productId,
-                      let product = products[productId] else {
+                guard let product = product(for: item) else {
                     return false
                 }
 
-                return product.category == category
+                let pCat = product.category.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                let sCat = category.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                return pCat == sCat
             }
         } else {
             items = registryItems
@@ -111,8 +111,8 @@ final class FriendRegistryDetailViewModel {
 
         // Active items first (by priority), then completed items last
         return items.sorted { lhs, rhs in
-            let lhsCompleted = (lhs.fundedAmount ?? 0.0) >= (lhs.price * Double(lhs.quantityNeeded ?? 1)) || lhs.progress >= 1.0
-            let rhsCompleted = (rhs.fundedAmount ?? 0.0) >= (rhs.price * Double(rhs.quantityNeeded ?? 1)) || rhs.progress >= 1.0
+            let lhsCompleted = isItemCompleted(lhs)
+            let rhsCompleted = isItemCompleted(rhs)
 
             if lhsCompleted != rhsCompleted {
                 return !lhsCompleted
@@ -130,7 +130,7 @@ final class FriendRegistryDetailViewModel {
     /// Number of items that are purchased or fully funded
     var claimedItems: Int {
         registryItems.filter {
-            ($0.fundedAmount ?? 0.0) >= ($0.price * Double($0.quantityNeeded ?? 1)) || $0.progress >= 1.0
+            isItemCompleted($0)
         }.count
     }
 
@@ -156,15 +156,48 @@ final class FriendRegistryDetailViewModel {
         }
     }
 
-    // MARK: Helpers
-
-    /// Look up the product for a registry item
-    func product(for item: RegistryItem) -> Product? {
-        guard let productId = item.productId else {
-            return nil
+    func isItemCompleted(_ item: RegistryItem) -> Bool {
+        let isGroup = isGroupGifting(for: item)
+        if item.isCashFund == true || isGroup {
+            let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
+            return (item.fundedAmount ?? 0.0) >= targetAmount || item.progress >= 1.0
+        } else {
+            return (item.quantityPurchased ?? 0) >= (item.quantityNeeded ?? 1)
         }
+    }
 
-        return products[productId]
+    /// Look up the product for a registry item, synthesizing it if it is not in the database catalog products table
+    func product(for item: RegistryItem) -> Product? {
+        if let productId = item.productId, let product = products[productId] {
+            return product
+        }
+        
+        // Dynamically synthesize a Product from the registry item's cached columns
+        return Product(
+            id: item.productId ?? item.id,
+            sku: item.sku,
+            name: item.itemName,
+            description: "A gorgeous registry gift item.",
+            brand: "Gift Registry",
+            category: "Kitchen", // default category so it satisfies filters
+            subcategory: nil,
+            price: item.price,
+            salePrice: nil,
+            originalPrice: nil,
+            isSale: false,
+            saleLabel: nil,
+            isBestSeller: item.isBestSeller ?? false,
+            isExclusive: false,
+            isFreeShipping: item.isFreeShipping ?? false,
+            isPickupAvailable: false,
+            isInStore: false,
+            imageUrl: item.imageUrl,
+            productUrl: item.itemLink,
+            isActive: true,
+            isRegistryEligible: true,
+            isGiftEligible: true,
+            createdAt: item.createdAt
+        )
     }
 
     // MARK: - Actions
@@ -178,21 +211,35 @@ final class FriendRegistryDetailViewModel {
         }
 
         do {
-            async let itemsTask = EventService.shared.fetchRegistryItems(eventID: event.id)
-            async let productsTask = ProductService.shared.fetchFeaturedProducts()
-
-            let (items, productList) = try await (itemsTask, productsTask)
-
-            registryItems = items.sorted {
+            // 1. Fetch registry items first
+            let items = try await EventService.shared.fetchRegistryItems(eventID: event.id)
+            
+            self.registryItems = items.sorted {
                 Int($0.priority ?? "0") ?? 0 < Int($1.priority ?? "0") ?? 0
             }
-
-            products = Dictionary(
+            
+            // 2. Fetch corresponding products in the registry
+            let productIds = items.compactMap { $0.productId }
+            var productList: [Product] = []
+            
+            if !productIds.isEmpty {
+                productList = try await ProductService.shared.fetchProducts(ids: productIds)
+            }
+            
+            // 3. Supplement with featured products as fallback to make sure there are always items and categories
+            if productList.isEmpty {
+                if let featured = try? await ProductService.shared.fetchFeaturedProducts() {
+                    productList = featured
+                }
+            }
+            
+            self.products = Dictionary(
                 uniqueKeysWithValues: productList.map { ($0.id, $0) }
             )
 
         } catch {
-            errorMessage = error.localizedDescription
+            print("❌ Failed to load friend registry data: \(error)")
+            self.errorMessage = error.localizedDescription
         }
     }
 }

@@ -14,6 +14,7 @@ struct FriendRegistryDetailView: View {
     let event: Event
     @State private var viewModel: FriendRegistryDetailViewModel
     @State private var contributingItem: RegistryItem? = nil
+    @State private var showConcierge = false
     @Environment(\.dismiss) private var dismiss
 
     init(event: Event) {
@@ -23,93 +24,124 @@ struct FriendRegistryDetailView: View {
 
     var body: some View {
         @Bindable var viewModel = viewModel
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
+        ZStack(alignment: .bottomTrailing) {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
 
-                // MARK: Hero Header
+                    // MARK: Hero Header
 
-                heroHeader
+                    heroHeader
 
-                // MARK: Stats Row
+                    // MARK: Stats Row
 
-                statsRow
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                    statsRow
+                        .padding(.horizontal, AppSpacing.screenHorizontal)
 
-                // MARK: Category Filters
+                    // MARK: Category Filters
 
-                if !viewModel.categories.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: AppSpacing.xs) {
-                            StatusChip(
-                                title: "All",
-                                isSelected: viewModel.selectedCategory == nil
-                            ) {
-                                viewModel.selectedCategory = nil
-                            }
-
-                            ForEach(viewModel.categories, id: \.self) { category in
+                    if !viewModel.categories.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: AppSpacing.xs) {
                                 StatusChip(
-                                    title: category,
-                                    isSelected: viewModel.selectedCategory == category
+                                    title: "All",
+                                    isSelected: viewModel.selectedCategory == nil
                                 ) {
-                                    viewModel.selectedCategory = category
+                                    viewModel.selectedCategory = nil
                                 }
-                            }
-                        }
-                        .padding(.horizontal, AppSpacing.screenHorizontal)
-                    }
-                }
 
-                // MARK: Registry Items
-
-                if viewModel.isLoading {
-                    VStack(spacing: AppSpacing.md) {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(AppColors.primaryDark)
-                        Text("Loading registry…")
-                            .font(AppTypography.footnote)
-                            .foregroundStyle(AppColors.secondaryGray)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, AppSpacing.xxxl)
-                } else if viewModel.filteredItems.isEmpty {
-                    emptyState
-                } else {
-                    if viewModel.selectedCategory == nil {
-                        // ALL VIEW - Two sections
-                        VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
-                            
-                            // COMPLETE THE SET
-                            if !viewModel.completeTheSetItems.isEmpty {
-                                VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
-                                    sectionTitle("COMPLETE THE SET", icon: "square.grid.2x2")
-                                    registryGrid(for: viewModel.completeTheSetItems)
+                                ForEach(viewModel.categories, id: \.self) { category in
+                                    StatusChip(
+                                        title: category,
+                                        isSelected: viewModel.selectedCategory == category
+                                    ) {
+                                        viewModel.selectedCategory = category
+                                    }
                                 }
-                                .padding(.horizontal, AppSpacing.screenHorizontal)
                             }
-                            
-                            // OTHER ITEMS
-                            if !viewModel.otherItems.isEmpty {
-                                VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
-                                    sectionTitle("OTHER ITEMS", icon: "gift")
-                                    registryGrid(for: viewModel.otherItems)
-                                }
-                                .padding(.horizontal, AppSpacing.screenHorizontal)
-                            }
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
                         }
+                    }
+
+                    // MARK: Registry Items
+
+                    if viewModel.isLoading {
+                        VStack(spacing: AppSpacing.md) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(AppColors.primaryDark)
+                            Text("Loading registry…")
+                                .font(AppTypography.footnote)
+                                .foregroundStyle(AppColors.secondaryGray)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, AppSpacing.xxxl)
+                    } else if let error = viewModel.errorMessage {
+                        errorState(error)
+                    } else if viewModel.filteredItems.isEmpty {
+                        emptyState
                     } else {
-                        // CATEGORY VIEW - Single filtered grid
-                        VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
-                            sectionTitle(viewModel.selectedCategory?.uppercased() ?? "", icon: "tag")
-                            registryGrid(for: viewModel.filteredItems)
+                        if viewModel.selectedCategory == nil {
+                            // ALL VIEW - Two sections
+                            VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
+                                
+                                // COMPLETE THE SET
+                                if !viewModel.completeTheSetItems.isEmpty {
+                                    VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
+                                        sectionTitle("COMPLETE THE SET", icon: "square.grid.2x2")
+                                        registryGrid(for: viewModel.completeTheSetItems)
+                                    }
+                                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                                }
+                                
+                                // OTHER ITEMS
+                                if !viewModel.otherItems.isEmpty {
+                                    VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
+                                        sectionTitle("OTHER ITEMS", icon: "gift")
+                                        registryGrid(for: viewModel.otherItems)
+                                    }
+                                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                                }
+                            }
+                        } else {
+                            // CATEGORY VIEW - Single filtered grid
+                            VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
+                                sectionTitle(viewModel.selectedCategory?.uppercased() ?? "", icon: "tag")
+                                registryGrid(for: viewModel.filteredItems)
+                            }
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
                         }
-                        .padding(.horizontal, AppSpacing.screenHorizontal)
                     }
-                }
 
-                // Bottom spacer for tab bar
-                Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.xxl)
+                    // Bottom spacer for tab bar
+                    Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.xxl)
+                }
+            }
+            
+            // Floating AI Chat Concierge Button
+            if !viewModel.isLoading {
+                Button {
+                    showConcierge = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(.white)
+                        
+                        Text("Concierge")
+                            .font(AppTypography.caption1Medium)
+                            .foregroundStyle(.white)
+                    }
+                    .padding(.horizontal, AppSpacing.md)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(AppColors.accentRed)
+                    )
+                    .softShadow()
+                }
+                .padding(.trailing, AppSpacing.screenHorizontal)
+                .padding(.bottom, AppSpacing.tabBarHeight + AppSpacing.md)
+                .buttonStyle(.plain)
             }
         }
         .appBackground()
@@ -132,6 +164,18 @@ struct FriendRegistryDetailView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .task {
             await viewModel.loadRegistryData()
+        }
+        .onAppear {
+            Task {
+                await viewModel.loadRegistryData()
+            }
+        }
+        .onChange(of: viewModel.showCart) { oldValue, newValue in
+            if !newValue {
+                Task {
+                    await viewModel.loadRegistryData()
+                }
+            }
         }
         .sheet(item: $viewModel.selectedItem) { item in
             if let product = viewModel.product(for: item) {
@@ -167,14 +211,15 @@ struct FriendRegistryDetailView: View {
                                 viewModel.enableGroupGifting(for: item)
                                 let currentFunded = viewModel.registryItems[index].fundedAmount ?? 0.0
                                 viewModel.registryItems[index].fundedAmount = currentFunded + amount
-
-                                let targetAmount =
-                                    viewModel.registryItems[index].price *
-                                    Double(viewModel.registryItems[index].quantityNeeded ?? 1)
-
-//                                if (viewModel.registryItems[index].fundedAmount ?? 0.0) >= targetAmount {
-//                                    viewModel.registryItems[index].isPurchased = true
-//                                }
+                            }
+                            
+                            Task {
+                                do {
+                                    try await EventService.shared.contributeToRegistryItem(id: item.id, amount: amount)
+                                    await viewModel.loadRegistryData()
+                                } catch {
+                                    print("❌ Failed to contribute: \(error)")
+                                }
                             }
                         }
                     }
@@ -184,6 +229,12 @@ struct FriendRegistryDetailView: View {
         }
         .navigationDestination(isPresented: $viewModel.showCart) {
             CartView()
+        }
+        .sheet(isPresented: $showConcierge) {
+            GiftConciergeChatView(registryItems: viewModel.registryItems, products: viewModel.products)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
         }
     }
 
@@ -393,6 +444,34 @@ struct FriendRegistryDetailView: View {
         if title.contains("Maya") { return "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800" }
         if title.contains("Liam") { return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800" }
         return "https://images.unsplash.com/photo-1556911220-e15024029581?w=800"
+    }
+
+    private func errorState(_ message: String) -> some View {
+        VStack(spacing: AppSpacing.md) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 32))
+                .foregroundStyle(AppColors.accentRed)
+            Text("Failed to load registry")
+                .font(AppTypography.bodyMedium)
+                .foregroundStyle(AppColors.primaryText)
+            Text(message)
+                .font(AppTypography.caption1)
+                .foregroundStyle(AppColors.secondaryGray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            
+            Button("Retry") {
+                Task { await viewModel.loadRegistryData() }
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.vertical, 8)
+            .background(AppColors.primaryText)
+            .clipShape(Capsule())
+            .foregroundStyle(.white)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, AppSpacing.xxxl)
     }
 }
 

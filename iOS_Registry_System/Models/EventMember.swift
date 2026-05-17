@@ -12,6 +12,7 @@ struct EventMember: Codable, Identifiable, Hashable {
     var eventId: UUID
     var userId: UUID?
     var membershipType: String?
+    var status: String?
     var joinedAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -19,6 +20,7 @@ struct EventMember: Codable, Identifiable, Hashable {
         case eventId = "event_id"
         case userId = "user_id"
         case membershipType = "membership_type"
+        case status
         case joinedAt = "joined_at"
     }
 }

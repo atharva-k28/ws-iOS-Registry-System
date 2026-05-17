@@ -14,6 +14,7 @@ import SwiftUI
 struct MyEventsView: View {
 
     @State private var viewModel = EventsViewModel()
+    @State private var selectedEvent: Event? = nil
 
     // Navigation state
     @State private var showAIRecommendations = false
@@ -61,11 +62,46 @@ struct MyEventsView: View {
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
 
+                    // MARK: Event Switcher Slider
+                    if viewModel.filteredEvents.count > 1 {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: AppSpacing.xs) {
+                                ForEach(viewModel.filteredEvents) { event in
+                                    let isSelected = (selectedEvent?.id ?? viewModel.filteredEvents.first?.id) == event.id
+                                    Button {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                            selectedEvent = event
+                                        }
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                                .font(.system(size: 12))
+                                                .foregroundStyle(isSelected ? .white : AppColors.secondaryGray)
+                                            
+                                            Text(event.title)
+                                                .font(AppTypography.caption1Medium)
+                                                .foregroundStyle(isSelected ? .white : AppColors.primaryText)
+                                        }
+                                        .padding(.horizontal, AppSpacing.md)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            Capsule()
+                                                .fill(isSelected ? AppColors.accentRed : AppColors.white)
+                                        )
+                                        .softShadow()
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
+                        }
+                    }
+
                     // MARK: Primary Event Card
 
-                    if let primaryEvent = viewModel.filteredEvents.first {
+                    if let activeEvent = selectedEvent ?? viewModel.filteredEvents.first {
                         EventCard(
-                            event: primaryEvent,
+                            event: activeEvent,
                             onTap: { showCommandCenter = true },
                             onManageRegistry: { showCommandCenter = true },
                             onInvite: { showInviteSheet = true }
@@ -103,6 +139,15 @@ struct MyEventsView: View {
                             }
                             .padding(.horizontal, AppSpacing.screenHorizontal)
                         }
+                    } else if !viewModel.isLoading {
+                        EmptyStateView(
+                            systemImageName: "calendar.badge.plus",
+                            title: "No Events Yet",
+                            description: "You haven't created any events. Start hosting your first registry today!",
+                            actionTitle: "Create Event",
+                            action: { showCreateEvent = true }
+                        )
+                        .padding(.horizontal, AppSpacing.screenHorizontal)
                     }
 
                     // Bottom spacer for tab bar
@@ -116,21 +161,25 @@ struct MyEventsView: View {
                 AIRecommendationsView()
             }
             .navigationDestination(isPresented: $showCommandCenter) {
-                if let primaryEvent = viewModel.filteredEvents.first {
-                    EventCommandCenterView(event: primaryEvent)
+                if let activeEvent = selectedEvent ?? viewModel.filteredEvents.first {
+                    EventCommandCenterView(event: activeEvent)
                 }
             }
             .navigationDestination(isPresented: $showCreateEvent) {
                 CreateEventView()
             }
             .sheet(isPresented: $showInviteSheet) {
-                InviteCollaboratorsSheet(giftTitle: viewModel.filteredEvents.first?.title ?? "Event")
-                    .presentationDetents([.medium])
+                let event = selectedEvent ?? viewModel.filteredEvents.first
+                InviteCollaboratorsSheet(eventId: event?.id, giftTitle: event?.title ?? "Event")
+                    .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
                     .presentationCornerRadius(32)
             }
             .task {
                 await viewModel.loadEvents()
+                if selectedEvent == nil {
+                    selectedEvent = viewModel.filteredEvents.first
+                }
             }
         }
     }

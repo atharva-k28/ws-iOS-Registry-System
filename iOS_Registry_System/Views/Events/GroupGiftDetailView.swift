@@ -69,8 +69,8 @@ struct GroupGiftDetailView: View {
             .presentationCornerRadius(32)
         }
         .sheet(isPresented: $showInviteSheet) {
-            InviteCollaboratorsSheet(giftTitle: gift.title)
-                .presentationDetents([.medium])
+            InviteCollaboratorsSheet(eventId: nil, giftTitle: gift.title)
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
         }

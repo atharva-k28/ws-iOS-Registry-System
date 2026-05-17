@@ -27,8 +27,12 @@ struct RegistryItemCard: View {
     }
 
     private var isPurchased: Bool {
-        let targetAmount = registryItem.price * Double(registryItem.quantityNeeded ?? 1)
-        return (registryItem.fundedAmount ?? 0.0) >= targetAmount
+        if registryItem.isCashFund == true || isGroupGifting {
+            let targetAmount = registryItem.price * Double(registryItem.quantityNeeded ?? 1)
+            return (registryItem.fundedAmount ?? 0.0) >= targetAmount
+        } else {
+            return (registryItem.quantityPurchased ?? 0) >= (registryItem.quantityNeeded ?? 1)
+        }
     }
 
     /// Whether the item is completed (purchased or fully funded)
@@ -288,6 +292,9 @@ struct RegistryItemCard: View {
     // MARK: - Image URL
 
     private var imageURL: String {
+        if let imageUrl = product.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
         let seed = product.name.replacingOccurrences(of: " ", with: ",")
         return "https://loremflickr.com/400/400/\(seed),product?lock=\(abs(product.id.hashValue % 100))"
     }

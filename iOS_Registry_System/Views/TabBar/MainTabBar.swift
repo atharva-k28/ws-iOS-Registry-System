@@ -2,96 +2,124 @@
 //  MainTabBar.swift
 //  iOS_Registry_System
 //
-//  Floating premium tab bar
+//  Native iOS Floating Tab Bar
 //
 
 import SwiftUI
-
-// MARK: - Main Tab Bar
 
 struct MainTabBar: View {
 
     @Binding var selectedTab: AppConstants.Tab
 
-    // Animation namespace
     @Namespace private var tabAnimation
 
     var body: some View {
+
         HStack(spacing: 0) {
+
             ForEach(AppConstants.Tab.allCases, id: \.rawValue) { tab in
                 tabButton(for: tab)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill(.regularMaterial)
-                .environment(\.colorScheme, .light)
-                .shadow(color: Color.black.opacity(0.08), radius: 12, y: 6)
+                .fill(Color.white.opacity(0.94))
+                .shadow(
+                    color: .black.opacity(0.06),
+                    radius: 12,
+                    y: 4
+                )
                 .overlay(
                     Capsule()
-                        .stroke(Color.white.opacity(0.8), lineWidth: 0.5)
+                        .stroke(
+                            Color.white.opacity(0.7),
+                            lineWidth: 0.5
+                        )
                 )
         )
-        .padding(.horizontal, AppSpacing.lg)
-        .padding(.bottom, AppSpacing.sm)
+        .padding(.horizontal, 18)
+        .padding(.bottom, 0)
     }
 
     // MARK: - Tab Button
 
     @ViewBuilder
     private func tabButton(for tab: AppConstants.Tab) -> some View {
+
         let isSelected = selectedTab == tab
 
         Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+
+            withAnimation(.easeInOut(duration: 0.22)) {
                 selectedTab = tab
             }
+
         } label: {
-            VStack(spacing: 2) {
+
+            VStack(spacing: 3) {
+
                 Image(systemName: tab.icon)
-                    .font(.system(size: 17, weight: isSelected ? .semibold : .regular))
-                    .foregroundStyle(isSelected ? Color.white : AppColors.primaryText)
-                    .frame(width: 30, height: 30)
-                    .background {
-                        if isSelected {
-                            Circle()
-                                .fill(AppColors.accentRed)
-                                .matchedGeometryEffect(id: "activeIcon", in: tabAnimation)
-                        }
-                    }
-                    .symbolEffect(.bounce, value: isSelected)
+                    .font(
+                        .system(
+                            size: 22,
+                            weight: .medium
+                        )
+                    )
 
                 Text(tab.title)
-                    .font(.system(size: 10, weight: isSelected ? .medium : .regular))
-                    .foregroundStyle(isSelected ? AppColors.accentRed : AppColors.primaryText)
-                    .lineLimit(1)
+                    .font(
+                        .system(
+                            size: 9,
+                            weight: isSelected ? .semibold : .medium
+                        )
+                    )
             }
-            .padding(.horizontal, 4)
-            .padding(.vertical, 4)
+            .foregroundStyle(
+                isSelected
+                ? Color(red: 0.96, green: 0.38, blue: 0.55)
+                : Color.black.opacity(0.82)
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background {
+
+                if isSelected {
+
+                    RoundedRectangle(cornerRadius: 26)
+                        .fill(Color.black.opacity(0.06))
+                        .matchedGeometryEffect(
+                            id: "ACTIVE_TAB",
+                            in: tabAnimation
+                        )
+                        .padding(.vertical, 2)
+                }
+            }
         }
-        .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
     }
 }
 
 // MARK: - Preview
 
-#Preview("Tab Bar") {
-    struct PreviewWrapper: View {
-        @State var tab: AppConstants.Tab = .home
-        var body: some View {
-            ZStack(alignment: .bottom) {
-                AppColors.background.ignoresSafeArea()
+#Preview {
 
-                Text("Selected: \(tab.title)")
-                    .font(AppTypography.title2)
-                    .frame(maxHeight: .infinity)
+    struct PreviewWrapper: View {
+
+        @State var tab: AppConstants.Tab = .home
+
+        var body: some View {
+
+            ZStack(alignment: .bottom) {
+
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
 
                 MainTabBar(selectedTab: $tab)
             }
         }
     }
+
     return PreviewWrapper()
 }

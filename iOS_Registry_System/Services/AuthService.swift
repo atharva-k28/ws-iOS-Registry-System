@@ -91,15 +91,50 @@ final class AuthService {
                 let container = try decoder.singleValueContainer()
                 let dateStr = try container.decode(String.self)
                 
-                let formatter = ISO8601DateFormatter()
-                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                if let date = formatter.date(from: dateStr) {
+                // 1. Try ISO8601DateFormatter
+                let isoFormatter = ISO8601DateFormatter()
+                isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                if let date = isoFormatter.date(from: dateStr) {
                     return date
                 }
                 
-                formatter.formatOptions = [.withInternetDateTime]
-                if let date = formatter.date(from: dateStr) {
+                isoFormatter.formatOptions = [.withInternetDateTime]
+                if let date = isoFormatter.date(from: dateStr) {
                     return date
+                }
+                
+                // 2. Try DateFormatter with fallback formats
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                let formats = [
+                    "yyyy-MM-dd HH:mm:ss.SSSX",
+                    "yyyy-MM-dd HH:mm:ss.SSSZZZZZ",
+                    "yyyy-MM-dd HH:mm:ss.SSSZ",
+                    "yyyy-MM-dd HH:mm:ss.SSSSSSX",
+                    "yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ",
+                    "yyyy-MM-dd HH:mm:ss.SSSSSSZ",
+                    "yyyy-MM-dd HH:mm:ssX",
+                    "yyyy-MM-dd HH:mm:ssZZZZZ",
+                    "yyyy-MM-dd HH:mm:ssZ",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSX",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ",
+                    "yyyy-MM-dd'T'HH:mm:ssX",
+                    "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+                    "yyyy-MM-dd'T'HH:mm:ssZ",
+                    "yyyy-MM-dd"
+                ]
+                
+                for format in formats {
+                    formatter.dateFormat = format
+                    if let date = formatter.date(from: dateStr) {
+                        return date
+                    }
                 }
                 
                 throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: \(dateStr)")
@@ -140,5 +175,44 @@ final class AuthService {
     func signInWithApple() async throws {
         // Implement Sign in with Apple via Supabase
         print("🔐 Auth: signInWithApple called — not fully implemented, requires UI flow")
+    }
+
+    // MARK: - User Search
+
+    /// Search for users on the platform
+    func searchUsers(query: String) async throws -> [User] {
+        guard !query.trimmingCharacters(in: .whitespaces).isEmpty else { return [] }
+        let currentUserId = currentUser?.id.uuidString ?? UUID().uuidString
+        let searchPattern = "%\(query)%"
+        let orFilter = "full_name.ilike.\(searchPattern),first_name.ilike.\(searchPattern),last_name.ilike.\(searchPattern),email.ilike.\(searchPattern)"
+        
+        let response = try await SupabaseManager.shared.client
+            .from("users")
+            .select()
+            .neq("id", value: currentUserId)
+            .or(orFilter)
+            .limit(20)
+            .execute()
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateStr = try container.decode(String.self)
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = formatter.date(from: dateStr) {
+                return date
+            }
+            
+            formatter.formatOptions = [.withInternetDateTime]
+            if let date = formatter.date(from: dateStr) {
+                return date
+            }
+            
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: \(dateStr)")
+        }
+        
+        return try decoder.decode([User].self, from: response.data)
     }
 }

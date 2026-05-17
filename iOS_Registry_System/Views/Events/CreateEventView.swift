@@ -62,6 +62,8 @@ struct CreateEventView: View {
     @State private var showDatePicker             = false
     @State private var isLoading                  = false
     @State private var errorMessage: String?      = nil
+    @State private var createdEvent: Event?        = nil
+    @State private var showAddRegistryItems        = false
 
     // Collaborator flow
     @State private var collaborators: [Collaborator]   = []
@@ -203,6 +205,16 @@ struct CreateEventView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
+            }
+        }
+        .navigationDestination(isPresented: $showAddRegistryItems) {
+            if let event = createdEvent {
+                AddRegistryItemsView(event: event) {
+                    showAddRegistryItems = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        dismiss()
+                    }
+                }
             }
         }
     }
@@ -406,8 +418,9 @@ struct CreateEventView: View {
         )
         
         do {
-            let _ = try await EventService.shared.createEvent(newEvent)
-            dismiss()
+            let event = try await EventService.shared.createEvent(newEvent)
+            createdEvent = event
+            showAddRegistryItems = true
         } catch {
             print("❌ Failed to create event: \(error)")
             errorMessage = error.localizedDescription

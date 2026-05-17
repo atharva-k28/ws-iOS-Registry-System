@@ -25,6 +25,7 @@ final class FriendsViewModel {
     }
 
     var friendEvents: [Event] = []
+    var pendingInvites: [Event] = []
     var isLoading = false
     var errorMessage: String?
     var searchText = ""
@@ -64,8 +65,29 @@ final class FriendsViewModel {
 
         do {
             friendEvents = try await EventService.shared.fetchFriendEvents()
+            pendingInvites = try await EventService.shared.fetchPendingInvites()
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func acceptInvite(event: Event) async {
+        do {
+            try await EventService.shared.acceptInvite(eventId: event.id)
+            // Move from pending to accepted
+            pendingInvites.removeAll { $0.id == event.id }
+            friendEvents.append(event)
+        } catch {
+            print("Failed to accept invite: \(error)")
+        }
+    }
+
+    func declineInvite(event: Event) async {
+        do {
+            try await EventService.shared.declineInvite(eventId: event.id)
+            pendingInvites.removeAll { $0.id == event.id }
+        } catch {
+            print("Failed to decline invite: \(error)")
         }
     }
 }

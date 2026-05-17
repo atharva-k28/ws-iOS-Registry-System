@@ -385,41 +385,230 @@ struct ContributionSheetView: View {
 // MARK: - Invite Collaborators Sheet
 
 struct InviteCollaboratorsSheet: View {
+    let eventId: UUID?
     let giftTitle: String
+    
     @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
+    @State private var searchResults: [User] = []
+    @State private var isSearching = false
+    @State private var showSuccessToast = false
+    @State private var invitedUserName = ""
+    @State private var invitedUserIds: Set<UUID> = []
+    @State private var showErrorAlert = false
+    @State private var errorMessage = ""
 
     var body: some View {
-        VStack(spacing: AppSpacing.xl) {
+        VStack(spacing: 0) {
             Capsule()
                 .fill(AppColors.secondaryGray.opacity(0.3))
                 .frame(width: 36, height: 4)
                 .padding(.top, AppSpacing.sm)
+                .padding(.bottom, AppSpacing.lg)
 
-            Image(systemName: "person.2.wave.2")
-                .font(.system(size: 48))
-                .foregroundStyle(AppColors.accentRed)
-                .symbolEffect(.pulse)
-
-            VStack(spacing: 8) {
-                Text("Invite Friends")
-                    .font(AppTypography.title2)
-                    .foregroundStyle(AppColors.primaryText)
-                Text("Share \"\(giftTitle)\" so friends can join the group gift.")
-                    .font(AppTypography.body)
+            // Search Bar
+            HStack(spacing: AppSpacing.sm) {
+                Image(systemName: "magnifyingglass")
                     .foregroundStyle(AppColors.secondaryGray)
-                    .multilineTextAlignment(.center)
+                TextField("Search users by name...", text: $searchText)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColors.primaryText)
+                    .autocorrectionDisabled()
+                    .onChange(of: searchText) { _ in
+                        Task { await performSearch(query: searchText) }
+                    }
+                
+                if isSearching {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                } else if !searchText.isEmpty {
+                    Button {
+                        searchText = ""
+                        searchResults = []
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(AppColors.secondaryGray)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-
-            VStack(spacing: AppSpacing.sm) {
-                shareButton(icon: "message", label: "Send via Messages", color: Color(hex: "34C759"))
-                shareButton(icon: "envelope",    label: "Send via Email",    color: Color(hex: "007AFF"))
-                shareButton(icon: "link",         label: "Copy Link",         color: AppColors.primaryDark)
-            }
+            .padding(AppSpacing.sm)
+            .background(AppColors.backgroundGray)
+            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
             .padding(.horizontal, AppSpacing.screenHorizontal)
+            .padding(.bottom, AppSpacing.lg)
 
-            Spacer()
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: AppSpacing.xl) {
+                    if !searchText.isEmpty {
+                        // Search Results
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("USERS ON REGISTRY")
+                                .font(AppTypography.caption1Medium)
+                                .tracking(1.5)
+                                .foregroundStyle(AppColors.secondaryGray)
+                                .padding(.horizontal, AppSpacing.screenHorizontal)
+                            
+                            if searchResults.isEmpty && !isSearching {
+                                Text("No users found matching '\(searchText)'")
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColors.secondaryGray)
+                                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                                    .padding(.top, AppSpacing.xs)
+                            } else {
+                                ForEach(searchResults) { user in
+                                    userRow(user: user)
+                                }
+                            }
+                        }
+                    }
+
+                    // Fallback Options
+                    VStack(spacing: AppSpacing.lg) {
+                        VStack(spacing: 8) {
+                            Text("Invite via Link or Message")
+                                .font(AppTypography.title2)
+                                .foregroundStyle(AppColors.primaryText)
+                            Text("Share \"\(giftTitle)\" so friends can join.")
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppColors.secondaryGray)
+                                .multilineTextAlignment(.center)
+                        }
+
+                        VStack(spacing: AppSpacing.sm) {
+                            shareButton(icon: "message", label: "Send via Messages", color: Color(hex: "34C759"))
+                            shareButton(icon: "envelope", label: "Send via Email", color: Color(hex: "007AFF"))
+                            shareButton(icon: "link", label: "Copy Link", color: AppColors.primaryDark)
+                        }
+                        .padding(.horizontal, AppSpacing.screenHorizontal)
+                    }
+                }
+                .padding(.bottom, AppSpacing.xxl)
+            }
         }
         .appBackground()
+        .overlay(alignment: .bottom) {
+            if showSuccessToast {
+                Text("Successfully invited \(invitedUserName)!")
+                    .font(AppTypography.footnoteSemibold)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, AppSpacing.lg)
+                    .padding(.vertical, AppSpacing.md)
+                    .background(Color(hex: "34C759"))
+                    .clipShape(Capsule())
+                    .padding(.bottom, AppSpacing.xl)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .task {
+            await loadExistingMembers()
+        }
+        .alert("Failed to Send Invite", isPresented: $showErrorAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage)
+        }
+    }
+
+    private func loadExistingMembers() async {
+        guard let eventId = eventId else { return }
+        do {
+            invitedUserIds = try await EventService.shared.fetchEventMemberUserIds(eventId: eventId)
+        } catch {
+            print("Failed to load existing members: \(error)")
+        }
+    }
+
+    private func performSearch(query: String) async {
+        guard !query.isEmpty else {
+            searchResults = []
+            return
+        }
+        isSearching = true
+        defer { isSearching = false }
+        do {
+            searchResults = try await AuthService.shared.searchUsers(query: query)
+        } catch {
+            print("Error searching users: \(error)")
+        }
+    }
+
+    private func inviteUser(_ user: User) {
+        guard let eventId = eventId else { return }
+        Task {
+            do {
+                try await EventService.shared.addCollaborator(eventId: eventId, userId: user.id)
+                invitedUserIds.insert(user.id)
+                invitedUserName = user.firstName ?? user.fullName
+                withAnimation(.spring()) {
+                    showSuccessToast = true
+                }
+                try await Task.sleep(nanoseconds: 2_000_000_000)
+                withAnimation {
+                    showSuccessToast = false
+                }
+            } catch {
+                print("Failed to invite user: \(error)")
+                errorMessage = error.localizedDescription
+                showErrorAlert = true
+            }
+        }
+    }
+
+    private func userRow(user: User) -> some View {
+        let alreadyInvited = invitedUserIds.contains(user.id)
+        
+        return Button {
+            if !alreadyInvited {
+                inviteUser(user)
+            }
+        } label: {
+            HStack(spacing: AppSpacing.sm) {
+                AsyncImage(url: URL(string: user.avatarUrl ?? "")) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Circle().fill(AppColors.backgroundGray)
+                }
+                .frame(width: 40, height: 40)
+                .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(user.fullName)
+                        .font(AppTypography.bodyMedium)
+                        .foregroundStyle(AppColors.primaryText)
+                    Text(user.email)
+                        .font(AppTypography.caption1)
+                        .foregroundStyle(AppColors.secondaryGray)
+                }
+                Spacer()
+                
+                if alreadyInvited {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 12))
+                        Text("Invited")
+                            .font(AppTypography.buttonSmall)
+                    }
+                    .foregroundStyle(Color(hex: "34C759"))
+                    .padding(.horizontal, AppSpacing.sm)
+                    .padding(.vertical, 6)
+                    .background(Color(hex: "34C759").opacity(0.1))
+                    .clipShape(Capsule())
+                } else {
+                    Text("Invite")
+                        .font(AppTypography.buttonSmall)
+                        .foregroundStyle(AppColors.accentRed)
+                        .padding(.horizontal, AppSpacing.sm)
+                        .padding(.vertical, 6)
+                        .background(AppColors.accentRed.opacity(0.1))
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal, AppSpacing.screenHorizontal)
+            .padding(.vertical, AppSpacing.xs)
+        }
+        .buttonStyle(.plain)
+        .disabled(alreadyInvited)
     }
 
     private func shareButton(icon: String, label: String, color: Color) -> some View {

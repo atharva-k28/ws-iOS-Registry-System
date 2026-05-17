@@ -24,7 +24,8 @@ struct ProductCard: View {
 
                 ZStack(alignment: .topTrailing) {
                     // Product Image
-                    AsyncImage(url: URL(string: "https://loremflickr.com/300/300/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))")) { image in
+                    let urlString = product.imageUrl ?? "https://loremflickr.com/300/300/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))"
+                    AsyncImage(url: URL(string: urlString)) { image in
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)

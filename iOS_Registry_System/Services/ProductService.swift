@@ -24,22 +24,50 @@ final class ProductService {
             let container = try decoder.singleValueContainer()
             let dateStr = try container.decode(String.self)
             
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            if let date = formatter.date(from: dateStr) {
+            // 1. Try ISO8601DateFormatter
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = isoFormatter.date(from: dateStr) {
                 return date
             }
             
-            formatter.formatOptions = [.withInternetDateTime]
-            if let date = formatter.date(from: dateStr) {
+            isoFormatter.formatOptions = [.withInternetDateTime]
+            if let date = isoFormatter.date(from: dateStr) {
                 return date
             }
             
-            // Fallback for date-only strings (e.g. "2026-05-17")
-            let simpleFormatter = DateFormatter()
-            simpleFormatter.dateFormat = "yyyy-MM-dd"
-            if let date = simpleFormatter.date(from: dateStr) {
-                return date
+            // 2. Try DateFormatter with fallback formats
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            
+            let formats = [
+                "yyyy-MM-dd HH:mm:ss.SSSX",
+                "yyyy-MM-dd HH:mm:ss.SSSZZZZZ",
+                "yyyy-MM-dd HH:mm:ss.SSSZ",
+                "yyyy-MM-dd HH:mm:ss.SSSSSSX",
+                "yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ",
+                "yyyy-MM-dd HH:mm:ss.SSSSSSZ",
+                "yyyy-MM-dd HH:mm:ssX",
+                "yyyy-MM-dd HH:mm:ssZZZZZ",
+                "yyyy-MM-dd HH:mm:ssZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSX",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ",
+                "yyyy-MM-dd'T'HH:mm:ssX",
+                "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+                "yyyy-MM-dd'T'HH:mm:ssZ",
+                "yyyy-MM-dd"
+            ]
+            
+            for format in formats {
+                formatter.dateFormat = format
+                if let date = formatter.date(from: dateStr) {
+                    return date
+                }
             }
             
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: \(dateStr)")
@@ -102,6 +130,17 @@ final class ProductService {
             .from("products")
             .select()
             .in("id", values: idStrings)
+            .execute()
+        return try decoder.decode([Product].self, from: response.data)
+    }
+
+    /// Fetch all products for building registry
+    func fetchAllProducts() async throws -> [Product] {
+        let response = try await SupabaseManager.shared.client
+            .from("products")
+            .select()
+            .eq("is_active", value: true)
+            .limit(100)
             .execute()
         return try decoder.decode([Product].self, from: response.data)
     }

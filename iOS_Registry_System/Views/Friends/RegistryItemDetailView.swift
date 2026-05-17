@@ -17,6 +17,15 @@ struct RegistryItemDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var cartQuantity = 0
 
+    private var isCompleted: Bool {
+        if item.isCashFund == true || isGroupGifting {
+            let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
+            return (item.fundedAmount ?? 0.0) >= targetAmount
+        } else {
+            return (item.quantityPurchased ?? 0) >= (item.quantityNeeded ?? 1)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -83,8 +92,8 @@ struct RegistryItemDetailView: View {
                         // Host Note removed as it's not in the DB schema
 
                         // Progress (for Group Gifting)
-                        let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
-                        if isGroupGifting && (item.fundedAmount ?? 0.0) < targetAmount {
+                        if isGroupGifting && !isCompleted {
+                            let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
                             VStack(alignment: .leading, spacing: AppSpacing.sm) {
                                 Text("Contribution Progress")
                                     .font(AppTypography.subheadlineMedium)
@@ -119,8 +128,7 @@ struct RegistryItemDetailView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: AppSpacing.sm) {
-                    let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
-                    if (item.fundedAmount ?? 0.0) < targetAmount {
+                    if !isCompleted {
                         if isGroupGifting {
                             // Group Gifting: Only Contribute
                             Button {
@@ -233,6 +241,9 @@ struct RegistryItemDetailView: View {
     }
 
     private var imageURL: String {
+        if let imageUrl = product.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
         let seed = product.name.replacingOccurrences(of: " ", with: ",")
         return "https://loremflickr.com/800/800/\(seed),product?lock=\(abs(product.id.hashValue % 100))"
     }

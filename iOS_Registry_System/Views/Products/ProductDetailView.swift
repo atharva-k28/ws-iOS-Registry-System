@@ -16,6 +16,7 @@ struct ProductDetailView: View {
     @State private var isFavorite = false
     @State private var showContributeSheet = false
     @State private var showARPreview = false
+    @State private var relatedProducts: [Product] = []
     
     var body: some View {
         NavigationStack {
@@ -53,7 +54,7 @@ struct ProductDetailView: View {
                         }
                         
                         // MARK: Pairs With
-                        PairsWithRail(products: []) { relatedProduct in
+                        PairsWithRail(products: relatedProducts) { relatedProduct in
                             print("Reveal packaging for: \(relatedProduct.id)")
                         }
                     }
@@ -95,6 +96,13 @@ struct ProductDetailView: View {
             ContributeSheetView()
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
+        }
+        .task {
+            relatedProducts = await AIService.shared.fetchSimilarProducts(
+                targetProductId: product.id,
+                targetProductName: product.name,
+                targetCategory: product.category ?? "Cookware"
+            )
         }
     }
     

@@ -9,7 +9,8 @@ import SwiftUI
 
 struct WalletCard: View {
     let balance: Double
-    var onWithdraw: (() -> Void)? = nil
+    var onAddFunds: () -> Void = {}
+    var onRedeem: () -> Void = {}
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
@@ -40,7 +41,7 @@ struct WalletCard: View {
             .padding(.bottom, 4)
             
             HStack(spacing: AppSpacing.md) {
-                Button(action: {}) {
+                Button(action: onAddFunds) {
                     Text("Add funds")
                         .font(AppTypography.buttonMedium)
                         .foregroundColor(AppColors.white)
@@ -50,7 +51,7 @@ struct WalletCard: View {
                         .clipShape(Capsule())
                 }
                 
-                Button(action: {}) {
+                Button(action: onRedeem) {
                     Text("Redeem")
                         .font(AppTypography.buttonMedium)
                         .foregroundColor(AppColors.white)

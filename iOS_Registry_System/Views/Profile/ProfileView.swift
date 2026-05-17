@@ -12,6 +12,9 @@ import SwiftUI
 struct ProfileView: View {
 
     @State private var viewModel = ProfileViewModel()
+    @State private var showEditProfile = false
+    @State private var showAddFunds = false
+    @State private var showRedeem = false
 
     var body: some View {
         NavigationStack {
@@ -22,8 +25,15 @@ struct ProfileView: View {
                     profileHeader
 
                     // MARK: Wallet
-                    WalletCard(balance: 248.50)
-                        .padding(.horizontal, AppSpacing.screenHorizontal)
+                    NavigationLink(destination: WalletCreditsView()) {
+                        WalletCard(
+                            balance: 248.50,
+                            onAddFunds: { showAddFunds = true },
+                            onRedeem: { showRedeem = true }
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, AppSpacing.screenHorizontal)
 
                     // MARK: Stats Row
                     statsRow
@@ -40,17 +50,27 @@ struct ProfileView: View {
             .task {
                 await viewModel.loadProfile()
             }
-            .overlay(alignment: .topTrailing) {
-                Button(action: {}) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(AppColors.primaryDark)
-                        .frame(width: 44, height: 44)
-                        .background(AppColors.white)
-                        .clipShape(Circle())
-                        .softShadow()
+            .sheet(isPresented: $showEditProfile) {
+                EditProfileView()
+            }
+            .sheet(isPresented: $showAddFunds) {
+                VStack(spacing: AppSpacing.lg) {
+                    Text("Add Funds")
+                        .font(AppTypography.title2)
+                    Text("Simulate adding funds via Apple Pay or Credit Card here.")
+                        .font(AppTypography.body)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                    Button("Done") { showAddFunds = false }
+                        .buttonStyle(.borderedProminent)
                 }
-                .padding(.horizontal, AppSpacing.screenHorizontal)
+                .presentationDetents([.medium])
+            }
+            .alert("Redeem Credits", isPresented: $showRedeem) {
+                Button("Redeem to Bank", role: .none) {}
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Transfer your available balance to your linked bank account.")
             }
         }
     }
@@ -101,7 +121,7 @@ struct ProfileView: View {
                 .clipShape(Capsule())
 
                 Button("Edit Profile") {
-                    // Action
+                    showEditProfile = true
                 }
                 .font(AppTypography.caption1Medium)
                 .padding(.horizontal, AppSpacing.sm)
@@ -147,13 +167,13 @@ struct ProfileView: View {
 
     private var menuSection: some View {
         VStack(spacing: 0) {
-            menuRow(icon: "gift", title: "Contribution history")
+            menuRow(icon: "gift", title: "Contribution history", destination: AnyView(ContributionHistoryView()))
             Divider().padding(.leading, 64)
-            menuRow(icon: "calendar", title: "Event history")
+            menuRow(icon: "calendar", title: "Event history", destination: AnyView(PostEventRecapView()))
             Divider().padding(.leading, 64)
-            menuRow(icon: "heart", title: "Saved & wishlist")
+            menuRow(icon: "heart", title: "Saved & wishlist", destination: AnyView(SavedWishlistView()))
             Divider().padding(.leading, 64)
-            menuRow(icon: "sparkles", title: "AI personalization")
+            menuRow(icon: "sparkles", title: "AI personalization", destination: AnyView(AIRecommendationsView()))
         }
         .background(AppColors.white)
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
@@ -161,10 +181,8 @@ struct ProfileView: View {
         .padding(.horizontal, AppSpacing.screenHorizontal)
     }
 
-    private func menuRow(icon: String, title: String) -> some View {
-        Button {
-            // TODO: Navigate to setting
-        } label: {
+    private func menuRow(icon: String, title: String, destination: AnyView) -> some View {
+        NavigationLink(destination: destination) {
             HStack(spacing: AppSpacing.md) {
                 Image(systemName: icon)
                     .font(.system(size: 16))

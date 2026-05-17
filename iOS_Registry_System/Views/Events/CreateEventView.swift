@@ -140,7 +140,7 @@ struct CreateEventView: View {
                     }
 
                     // Bottom clearance for sticky CTA
-                    Color.clear.frame(height: 90)
+                    Color.clear.frame(height: 180)
                 }
                 .padding(.horizontal, AppSpacing.screenHorizontal)
                 .padding(.top, AppSpacing.md)
@@ -401,7 +401,7 @@ struct CreateEventView: View {
             }
             .buttonStyle(.plain)
             .padding(.horizontal, AppSpacing.screenHorizontal)
-            .padding(.bottom, AppSpacing.lg)
+            .padding(.bottom, AppSpacing.lg + 80) // Push above custom tab bar
             .background(AppColors.background)
         }
     }

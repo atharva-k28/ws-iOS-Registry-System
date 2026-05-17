@@ -27,6 +27,11 @@ struct EventCommandCenterView: View {
     @State private var selectedTab: EventCenterTab = .overview
     @State private var showInviteSheet = false
     @State private var showSettings = false
+    @State private var selectedGuestFilter = "All"
+    // Task sheet state
+    @State private var showRSVPReminder    = false
+    @State private var showShippingAddress = false
+    @State private var showThankYouNotes   = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -85,13 +90,31 @@ struct EventCommandCenterView: View {
         }
         .sheet(isPresented: $showInviteSheet) {
             InviteCollaboratorsSheet(giftTitle: event.title)
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
         }
         .sheet(isPresented: $showSettings) {
             eventSettingsSheet
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showRSVPReminder) {
+            RSVPReminderSheet()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showShippingAddress) {
+            ShippingAddressSheet()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showThankYouNotes) {
+            ThankYouNoteSheet()
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
         }
@@ -312,9 +335,9 @@ struct EventCommandCenterView: View {
                 .tracking(1.5)
                 .foregroundStyle(AppColors.secondaryGray)
 
-            taskRow(icon: "envelope", title: "Send RSVP reminders", subtitle: "3 guests pending", priority: .medium)
-            taskRow(icon: "shippingbox", title: "Set shipping address", subtitle: "Required before event", priority: .high)
-            taskRow(icon: "heart.text.clipboard", title: "Write thank-you notes", subtitle: "After event day", priority: .low)
+            Button { showRSVPReminder    = true } label: { taskRow(icon: "envelope",            title: "Send RSVP reminders",  subtitle: "3 guests pending",    priority: .medium) }.buttonStyle(.plain)
+            Button { showShippingAddress = true } label: { taskRow(icon: "shippingbox",          title: "Set shipping address",   subtitle: "Required before event", priority: .high) }.buttonStyle(.plain)
+            Button { showThankYouNotes   = true } label: { taskRow(icon: "heart.text.clipboard", title: "Write thank-you notes",  subtitle: "After event day",      priority: .low) }.buttonStyle(.plain)
         }
     }
 
@@ -469,48 +492,85 @@ struct EventCommandCenterView: View {
 
     // MARK: - Guests Tab
 
+    private let guestFilters = ["All", "Attending", "RSVP'd", "Invited", "No Response", "Declined"]
+
+    private var filteredGuests: [(name: String, role: String, avatar: String, status: String, invitedDate: String)] {
+        if selectedGuestFilter == "All" { return guestMockData }
+        return guestMockData.filter { $0.status == selectedGuestFilter }
+    }
+
     private var guestsTab: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                // Stats
+                // Stats row
                 HStack(spacing: AppSpacing.sm) {
-                    guestStatCard(value: "24", label: "Invited")
-                    guestStatCard(value: "18", label: "Attending")
-                    guestStatCard(value: "3", label: "Pending")
+                    guestStatCard(value: "\(guestMockData.count)", label: "Total", icon: "person.2", color: AppColors.primaryText)
+                    guestStatCard(value: "\(guestMockData.filter { $0.status == "Attending" }.count)", label: "Attending", icon: "checkmark.circle", color: Color(hex: "34C759"))
+                    guestStatCard(value: "\(guestMockData.filter { $0.status == "No Response" || $0.status == "Invited" }.count)", label: "Pending", icon: "clock", color: Color(hex: "FF9500"))
+                }
+
+                // Filter chips
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: AppSpacing.xs) {
+                        ForEach(guestFilters, id: \.self) { filter in
+                            let count = filter == "All" ? guestMockData.count : guestMockData.filter { $0.status == filter }.count
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    selectedGuestFilter = filter
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text(filter)
+                                        .font(AppTypography.caption1Medium)
+                                    Text("\(count)")
+                                        .font(AppTypography.caption1)
+                                        .foregroundStyle(selectedGuestFilter == filter ? .white.opacity(0.7) : AppColors.secondaryGray)
+                                }
+                                .foregroundStyle(selectedGuestFilter == filter ? .white : AppColors.primaryText)
+                                .padding(.horizontal, AppSpacing.sm)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule()
+                                        .fill(selectedGuestFilter == filter ? AppColors.primaryText : AppColors.white)
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .stroke(selectedGuestFilter == filter ? Color.clear : Color.black.opacity(0.08), lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                 }
 
                 // Guest list
                 VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    Text("GUEST LIST")
-                        .font(AppTypography.caption1Medium)
-                        .tracking(1.5)
-                        .foregroundStyle(AppColors.secondaryGray)
+                    HStack {
+                        Text("GUEST LIST")
+                            .font(AppTypography.caption1Medium)
+                            .tracking(1.5)
+                            .foregroundStyle(AppColors.secondaryGray)
+                        Spacer()
+                        Text("\(filteredGuests.count) guests")
+                            .font(AppTypography.caption1)
+                            .foregroundStyle(AppColors.secondaryGray)
+                    }
 
-                    ForEach(guestMockData, id: \.name) { guest in
-                        HStack(spacing: AppSpacing.md) {
-                            AsyncImage(url: URL(string: guest.avatar)) { img in
-                                img.resizable().aspectRatio(contentMode: .fill)
-                            } placeholder: {
-                                Circle().fill(AppColors.backgroundGray)
-                            }
-                            .frame(width: 44, height: 44)
-                            .clipShape(Circle())
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(guest.name)
-                                    .font(AppTypography.bodyMedium)
-                                    .foregroundStyle(AppColors.primaryText)
-                                Text(guest.role)
-                                    .font(AppTypography.caption1)
-                                    .foregroundStyle(AppColors.secondaryGray)
-                            }
-                            Spacer()
-                            rsvpBadge(status: guest.status)
+                    if filteredGuests.isEmpty {
+                        VStack(spacing: AppSpacing.sm) {
+                            Image(systemName: "person.slash")
+                                .font(.system(size: 32))
+                                .foregroundStyle(AppColors.secondaryGray)
+                            Text("No guests with this status")
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppColors.secondaryGray)
                         }
-                        .padding(AppSpacing.md)
-                        .background(AppColors.white)
-                        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
-                        .softShadow()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, AppSpacing.xxl)
+                    } else {
+                        ForEach(filteredGuests, id: \.name) { guest in
+                            guestRow(guest: guest)
+                        }
                     }
                 }
 
@@ -521,8 +581,45 @@ struct EventCommandCenterView: View {
         }
     }
 
-    private func guestStatCard(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
+    private func guestRow(guest: (name: String, role: String, avatar: String, status: String, invitedDate: String)) -> some View {
+        HStack(spacing: AppSpacing.md) {
+            AsyncImage(url: URL(string: guest.avatar)) { img in
+                img.resizable().aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Circle().fill(AppColors.backgroundGray)
+            }
+            .frame(width: 44, height: 44)
+            .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(guest.name)
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.primaryText)
+                HStack(spacing: 6) {
+                    Text(guest.role)
+                        .font(AppTypography.caption1)
+                        .foregroundStyle(AppColors.secondaryGray)
+                    Text("·")
+                        .foregroundStyle(AppColors.secondaryGray)
+                    Text(guest.invitedDate)
+                        .font(AppTypography.caption1)
+                        .foregroundStyle(AppColors.secondaryGray)
+                }
+            }
+            Spacer()
+            rsvpBadge(status: guest.status)
+        }
+        .padding(AppSpacing.md)
+        .background(AppColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
+        .softShadow()
+    }
+
+    private func guestStatCard(value: String, label: String, icon: String, color: Color) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundStyle(color)
             Text(value)
                 .font(AppTypography.title2)
                 .foregroundStyle(AppColors.primaryText)
@@ -538,55 +635,43 @@ struct EventCommandCenterView: View {
     }
 
     private func rsvpBadge(status: String) -> some View {
-        Text(status)
+        let config: (Color, Color) = {
+            switch status {
+            case "Attending": return (Color(hex: "34C759"), Color(hex: "34C759").opacity(0.1))
+            case "RSVP'd":    return (Color(hex: "007AFF"), Color(hex: "007AFF").opacity(0.1))
+            case "Invited":   return (Color(hex: "FF9500"), Color(hex: "FF9500").opacity(0.1))
+            case "No Response": return (AppColors.secondaryGray, AppColors.backgroundGray)
+            case "Declined":  return (AppColors.accentRed, AppColors.accentRed.opacity(0.1))
+            default:          return (AppColors.secondaryGray, AppColors.backgroundGray)
+            }
+        }()
+
+        return Text(status)
             .font(AppTypography.caption1Medium)
-            .foregroundStyle(status == "Attending" ? Color(hex: "34C759") : (status == "Pending" ? AppColors.secondaryGray : AppColors.accentRed))
+            .foregroundStyle(config.0)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(status == "Attending" ? Color(hex: "34C759").opacity(0.1) : (status == "Pending" ? AppColors.backgroundGray : AppColors.accentRed.opacity(0.1)))
-            )
+            .background(Capsule().fill(config.1))
     }
 
     // MARK: - Timeline Tab
 
+    private var currentStepIndex: Int {
+        // Find the first incomplete step — that's "current"
+        timelineMockData.firstIndex(where: { !$0.isComplete }) ?? timelineMockData.count - 1
+    }
+
     private var timelineTab: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(timelineMockData.indices, id: \.self) { index in
-                    let item = timelineMockData[index]
-                    HStack(alignment: .top, spacing: AppSpacing.md) {
-                        // Timeline line + dot
-                        VStack(spacing: 0) {
-                            Circle()
-                                .fill(item.isComplete ? AppColors.accentRed : AppColors.backgroundGray)
-                                .frame(width: 12, height: 12)
-                            if index < timelineMockData.count - 1 {
-                                Rectangle()
-                                    .fill(AppColors.backgroundGray)
-                                    .frame(width: 2)
-                                    .frame(maxHeight: .infinity)
-                            }
-                        }
-                        .frame(width: 12)
+            VStack(alignment: .leading, spacing: AppSpacing.lg) {
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(item.date)
-                                .font(AppTypography.caption1)
-                                .foregroundStyle(AppColors.secondaryGray)
-                            Text(item.title)
-                                .font(AppTypography.bodyMedium)
-                                .foregroundStyle(AppColors.primaryText)
-                            if let sub = item.subtitle {
-                                Text(sub)
-                                    .font(AppTypography.footnote)
-                                    .foregroundStyle(AppColors.secondaryGray)
-                            }
-                        }
-                        .padding(.bottom, AppSpacing.xl)
+                // Journey progress header
+                journeyProgressHeader
 
-                        Spacer()
+                // Journey steps
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(timelineMockData.indices, id: \.self) { index in
+                        journeyStep(index: index)
                     }
                 }
 
@@ -597,7 +682,184 @@ struct EventCommandCenterView: View {
         }
     }
 
-    // MARK: - Settings Sheet
+    // MARK: Journey Progress Header
+
+    private var journeyProgressHeader: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("YOUR JOURNEY")
+                        .font(AppTypography.caption1Medium)
+                        .tracking(1.5)
+                        .foregroundStyle(AppColors.secondaryGray)
+                    Text("Step \(currentStepIndex + 1) of \(timelineMockData.count)")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+                }
+                Spacer()
+                // Circular progress
+                ZStack {
+                    Circle()
+                        .stroke(AppColors.backgroundGray, lineWidth: 5)
+                        .frame(width: 52, height: 52)
+                    Circle()
+                        .trim(from: 0, to: Double(timelineMockData.filter { $0.isComplete }.count) / Double(timelineMockData.count))
+                        .stroke(AppColors.accentRed, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .frame(width: 52, height: 52)
+                        .rotationEffect(.degrees(-90))
+                    Text("\(Int(Double(timelineMockData.filter { $0.isComplete }.count) / Double(timelineMockData.count) * 100))%")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+                }
+            }
+
+            // Completion bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(AppColors.backgroundGray)
+                        .frame(height: 6)
+                    Capsule()
+                        .fill(AppColors.accentGradient)
+                        .frame(width: geo.size.width * Double(timelineMockData.filter { $0.isComplete }.count) / Double(timelineMockData.count), height: 6)
+                }
+            }
+            .frame(height: 6)
+        }
+        .padding(AppSpacing.lg)
+        .background(AppColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
+        .softShadow()
+    }
+
+    // MARK: Journey Step
+
+    private func journeyStep(index: Int) -> some View {
+        let step = timelineMockData[index]
+        let isCurrent = index == currentStepIndex
+        let isLast = index == timelineMockData.count - 1
+
+        return HStack(alignment: .top, spacing: AppSpacing.md) {
+
+            // MARK: Rail + Node
+            VStack(spacing: 0) {
+                // Top connector (except first)
+                if index > 0 {
+                    Rectangle()
+                        .fill(step.isComplete ? AppColors.accentRed : AppColors.backgroundGray)
+                        .frame(width: 3, height: 20)
+                } else {
+                    Color.clear.frame(width: 3, height: 20)
+                }
+
+                // Node
+                ZStack {
+                    if step.isComplete {
+                        // Completed — filled circle with checkmark
+                        Circle()
+                            .fill(AppColors.accentRed)
+                            .frame(width: 32, height: 32)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.white)
+                    } else if isCurrent {
+                        // Current — pulsing ring
+                        Circle()
+                            .fill(AppColors.accentRed.opacity(0.15))
+                            .frame(width: 40, height: 40)
+                        Circle()
+                            .fill(AppColors.accentRed.opacity(0.3))
+                            .frame(width: 32, height: 32)
+                        Circle()
+                            .fill(AppColors.accentRed)
+                            .frame(width: 16, height: 16)
+                    } else {
+                        // Upcoming — empty ring
+                        Circle()
+                            .stroke(AppColors.backgroundGray, lineWidth: 2.5)
+                            .frame(width: 32, height: 32)
+                        Circle()
+                            .fill(AppColors.backgroundGray)
+                            .frame(width: 10, height: 10)
+                    }
+                }
+
+                // Bottom connector (except last)
+                if !isLast {
+                    Rectangle()
+                        .fill(step.isComplete ? AppColors.accentRed : AppColors.backgroundGray)
+                        .frame(width: 3)
+                        .frame(maxHeight: .infinity)
+                } else {
+                    Spacer(minLength: 0)
+                }
+            }
+            .frame(width: 40)
+
+            // MARK: Step Card
+            VStack(alignment: .leading, spacing: 6) {
+                // Date chip
+                Text(step.date.uppercased())
+                    .font(AppTypography.caption1Medium)
+                    .tracking(1)
+                    .foregroundStyle(isCurrent ? AppColors.accentRed : AppColors.secondaryGray)
+
+                HStack(spacing: 8) {
+                    Image(systemName: step.icon)
+                        .font(.system(size: 16))
+                        .foregroundStyle(step.isComplete ? AppColors.accentRed : (isCurrent ? AppColors.primaryText : AppColors.secondaryGray))
+                    Text(step.title)
+                        .font(isCurrent ? AppTypography.headline : AppTypography.bodyMedium)
+                        .foregroundStyle(step.isComplete || isCurrent ? AppColors.primaryText : AppColors.secondaryGray)
+                }
+
+                if let sub = step.subtitle {
+                    Text(sub)
+                        .font(AppTypography.footnote)
+                        .foregroundStyle(AppColors.secondaryGray)
+                }
+
+                if isCurrent {
+                    Text("IN PROGRESS")
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(1.5)
+                        .foregroundStyle(AppColors.accentRed)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule().fill(AppColors.accentRed.opacity(0.1))
+                        )
+                        .padding(.top, 2)
+                }
+            }
+            .padding(AppSpacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: AppCornerRadius.md)
+                    .fill(isCurrent ? AppColors.white : (step.isComplete ? AppColors.white.opacity(0.7) : AppColors.backgroundGray.opacity(0.5)))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppCornerRadius.md)
+                    .stroke(isCurrent ? AppColors.accentRed.opacity(0.3) : Color.clear, lineWidth: 1.5)
+            )
+            .shadow(color: isCurrent ? AppColors.accentRed.opacity(0.08) : .clear, radius: 8, y: 4)
+            .padding(.vertical, 4)
+        }
+    }
+
+    // MARK: - Timeline Mock Data
+
+    private var timelineMockData: [(date: String, title: String, subtitle: String?, icon: String, isComplete: Bool)] {
+        [
+            ("May 1", "Registry Created", "58 items curated", "sparkles", true),
+            ("May 8", "Save the Date", "24 guests notified via email", "envelope.fill", true),
+            ("May 15", "First Contribution", "Maya contributed $50 🎉", "gift.fill", true),
+            ("Jun 1", "RSVP Deadline", "18 of 24 responded", "calendar.badge.clock", false),
+            ("Jun 10", "Shipping Begins", "Items ship to your address", "shippingbox.fill", false),
+            ("Jun 14", "Event Day", "Sarah & James's Wedding 💍", "heart.fill", false),
+            ("Jun 21", "Thank-You Notes", "Send gratitude to contributors", "heart.text.square.fill", false),
+        ]
+    }
 
     private var eventSettingsSheet: some View {
         VStack(spacing: AppSpacing.lg) {
@@ -657,28 +919,21 @@ struct EventCommandCenterView: View {
 
     // MARK: - Mock Data
 
-    private var guestMockData: [(name: String, role: String, avatar: String, status: String)] {
+    private var guestMockData: [(name: String, role: String, avatar: String, status: String, invitedDate: String)] {
         [
-            ("Maya Chen", "Co-host", "https://i.pravatar.cc/150?img=5", "Attending"),
-            ("Liam Carter", "Guest", "https://i.pravatar.cc/150?img=8", "Attending"),
-            ("Sofia Rivera", "Family", "https://i.pravatar.cc/150?img=9", "Attending"),
-            ("Ethan Brooks", "Guest", "https://i.pravatar.cc/150?img=11", "Pending"),
-            ("Ava Martinez", "Guest", "https://i.pravatar.cc/150?img=16", "Pending"),
-            ("Noah Wilson", "Guest", "https://i.pravatar.cc/150?img=12", "Declined"),
+            ("Maya Chen", "Co-host", "https://i.pravatar.cc/150?img=5", "Attending", "May 2"),
+            ("Liam Carter", "Guest", "https://i.pravatar.cc/150?img=8", "Attending", "May 3"),
+            ("Sofia Rivera", "Family", "https://i.pravatar.cc/150?img=9", "Attending", "May 2"),
+            ("James Park", "Friend", "https://i.pravatar.cc/150?img=14", "RSVP'd", "May 5"),
+            ("Olivia Turner", "Family", "https://i.pravatar.cc/150?img=20", "RSVP'd", "May 4"),
+            ("Ethan Brooks", "Guest", "https://i.pravatar.cc/150?img=11", "Invited", "May 8"),
+            ("Ava Martinez", "Guest", "https://i.pravatar.cc/150?img=16", "Invited", "May 10"),
+            ("Mia Johnson", "Friend", "https://i.pravatar.cc/150?img=23", "No Response", "May 6"),
+            ("Lucas Kim", "Colleague", "https://i.pravatar.cc/150?img=33", "No Response", "May 7"),
+            ("Noah Wilson", "Guest", "https://i.pravatar.cc/150?img=12", "Declined", "May 3"),
         ]
     }
 
-    private var timelineMockData: [(date: String, title: String, subtitle: String?, isComplete: Bool)] {
-        [
-            ("May 1", "Registry Created", "58 items added", true),
-            ("May 8", "Save the Date Sent", "24 guests notified", true),
-            ("May 15", "First Contribution", "Maya contributed $50", true),
-            ("Jun 1", "RSVP Deadline", "18 of 24 responded", false),
-            ("Jun 10", "Shipping Begins", nil, false),
-            ("Jun 14", "Event Day 🎉", "Olivia & James's Wedding", false),
-            ("Jun 21", "Thank-you Reminders", nil, false),
-        ]
-    }
 }
 
 // MARK: - Preview

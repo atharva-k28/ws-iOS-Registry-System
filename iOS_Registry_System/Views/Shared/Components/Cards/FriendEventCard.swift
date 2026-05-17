@@ -41,7 +41,7 @@ struct FriendEventCard: View {
 
                     // Title info
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(event.eventType.replacingOccurrences(of: "_", with: " ").uppercased()) · \((event.eventDate ?? Date()).formattedLong.uppercased())")
+                        Text("\(event.eventType.replacingOccurrences(of: "_", with: " ").uppercased()) · \((event.startDate ?? Date()).formattedLong.uppercased())")
                             .font(AppTypography.caption1Medium)
                             .tracking(1.5)
                             .foregroundStyle(.white)
@@ -142,8 +142,3 @@ struct FriendEventCard: View {
     }
 }
 
-#Preview {
-    FriendEventCard(event: .mock)
-        .padding()
-        .background(AppColors.background)
-}

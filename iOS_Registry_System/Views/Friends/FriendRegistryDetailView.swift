@@ -165,10 +165,16 @@ struct FriendRegistryDetailView: View {
                         if let index = viewModel.registryItems.firstIndex(where: { $0.id == item.id }) {
                             withAnimation {
                                 viewModel.enableGroupGifting(for: item)
-                                viewModel.registryItems[index].currentAmount += amount
-                                if viewModel.registryItems[index].currentAmount >= viewModel.registryItems[index].targetAmount {
-                                    viewModel.registryItems[index].isPurchased = true
-                                }
+                                let currentFunded = viewModel.registryItems[index].fundedAmount ?? 0.0
+                                viewModel.registryItems[index].fundedAmount = currentFunded + amount
+
+                                let targetAmount =
+                                    viewModel.registryItems[index].price *
+                                    Double(viewModel.registryItems[index].quantityNeeded ?? 1)
+
+//                                if (viewModel.registryItems[index].fundedAmount ?? 0.0) >= targetAmount {
+//                                    viewModel.registryItems[index].isPurchased = true
+//                                }
                             }
                         }
                     }
@@ -217,7 +223,7 @@ struct FriendRegistryDetailView: View {
                     .foregroundStyle(.white)
 
                 // Days until
-                if let eventDate = event.eventDate {
+                if let eventDate = event.startDate {
                     HStack(spacing: AppSpacing.xxs) {
                         Image(systemName: "clock")
                             .font(.system(size: 11))
@@ -378,7 +384,7 @@ struct FriendRegistryDetailView: View {
     }
 
     private var eventDateDisplay: String {
-        (event.eventDate ?? Date()).formattedLong.uppercased()
+        (event.startDate ?? Date()).formattedLong.uppercased()
     }
 
     private var coverImageURL: String {
@@ -390,10 +396,3 @@ struct FriendRegistryDetailView: View {
     }
 }
 
-// MARK: - Preview
-
-#Preview("Friend Registry Detail") {
-    NavigationStack {
-        FriendRegistryDetailView(event: .mock)
-    }
-}

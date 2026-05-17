@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Supabase
 
 // MARK: - Product Service
 
@@ -21,29 +22,47 @@ final class ProductService {
 
     /// Fetch trending/featured products
     func fetchFeaturedProducts() async throws -> [Product] {
-        // TODO: Implement Supabase query
-        print("🛍️ ProductService: fetchFeaturedProducts — returning mock data")
-        return Product.mockList
+        let response = try await SupabaseManager.shared.client
+            .from("products")
+            .select()
+            .eq("is_active", value: true)
+            .eq("is_best_seller", value: true)
+            .limit(20)
+            .execute()
+        return try JSONDecoder().decode([Product].self, from: response.data)
     }
 
     /// Search products by query
     func searchProducts(query: String) async throws -> [Product] {
-        // TODO: Implement Supabase full-text search
-        print("🛍️ ProductService: searchProducts(\(query)) — not yet implemented")
-        return Product.mockList
+        let response = try await SupabaseManager.shared.client
+            .from("products")
+            .select()
+            .ilike("name", value: "%\(query)%")
+            .eq("is_active", value: true)
+            .limit(50)
+            .execute()
+        return try JSONDecoder().decode([Product].self, from: response.data)
     }
 
     /// Fetch product details by ID
     func fetchProduct(id: UUID) async throws -> Product? {
-        // TODO: Implement Supabase query
-        print("🛍️ ProductService: fetchProduct(\(id)) — not yet implemented")
-        return Product.mock
+        let response = try await SupabaseManager.shared.client
+            .from("products")
+            .select()
+            .eq("id", value: id.uuidString)
+            .single()
+            .execute()
+        return try JSONDecoder().decode(Product.self, from: response.data)
     }
 
     /// Fetch products by category
     func fetchProducts(category: String) async throws -> [Product] {
-        // TODO: Implement Supabase query with category filter
-        print("🛍️ ProductService: fetchProducts(category: \(category)) — not yet implemented")
-        return Product.mockList
+        let response = try await SupabaseManager.shared.client
+            .from("products")
+            .select()
+            .eq("category", value: category)
+            .eq("is_active", value: true)
+            .execute()
+        return try JSONDecoder().decode([Product].self, from: response.data)
     }
 }

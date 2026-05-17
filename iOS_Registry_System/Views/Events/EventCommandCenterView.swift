@@ -153,7 +153,7 @@ struct EventCommandCenterView: View {
 
             // Event info
             VStack(alignment: .leading, spacing: 6) {
-                if let date = event.eventDate {
+                if let date = event.startDate {
                     Text(date.daysUntil.uppercased())
                         .font(AppTypography.caption1Medium)
                         .fontWeight(.bold)
@@ -163,7 +163,7 @@ struct EventCommandCenterView: View {
                         .background(Capsule().fill(.white))
                 }
 
-                Text("\(event.eventType.replacingOccurrences(of: "_", with: " ").uppercased()) · \((event.eventDate ?? Date()).formattedLong.uppercased())")
+                Text("\(event.eventType.replacingOccurrences(of: "_", with: " ").uppercased()) · \((event.startDate ?? Date()).formattedLong.uppercased())")
                     .font(AppTypography.caption2)
                     .tracking(1)
                     .foregroundStyle(.white.opacity(0.8))
@@ -280,7 +280,7 @@ struct EventCommandCenterView: View {
                     .font(AppTypography.caption1Medium)
                     .tracking(1.5)
                     .foregroundStyle(AppColors.secondaryGray)
-                Text(event.eventDate?.daysUntil ?? "—")
+                Text(event.startDate?.daysUntil ?? "—")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(AppColors.primaryText)
                 Text("until the celebration")
@@ -956,10 +956,3 @@ struct EventCommandCenterView: View {
 
 }
 
-// MARK: - Preview
-
-#Preview("Event Command Center") {
-    NavigationStack {
-        EventCommandCenterView(event: .mock)
-    }
-}

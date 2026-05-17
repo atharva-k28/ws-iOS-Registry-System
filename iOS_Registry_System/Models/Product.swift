@@ -11,117 +11,52 @@ import Foundation
 
 struct Product: Codable, Identifiable, Hashable {
     let id: UUID
+    var sku: String? = nil
     var name: String
-    var brand: String?
-    var productDescription: String?
+    var description: String? = nil
+    var brand: String? = nil
+    var category: String
+    var subcategory: String? = nil
     var price: Double
-    var imageURL: String?
-    var category: String?
-    var affiliateURL: String?
-    var isAIRecommended: Bool
+    var salePrice: Double? = nil
+    var originalPrice: Double? = nil
+    var isSale: Bool? = nil
+    var saleLabel: String? = nil
+    var isBestSeller: Bool? = nil
+    var isExclusive: Bool? = nil
+    var isFreeShipping: Bool? = nil
+    var isPickupAvailable: Bool? = nil
+    var isInStore: Bool? = nil
+    var imageUrl: String? = nil
+    var productUrl: String? = nil
+    var isActive: Bool? = nil
+    var isRegistryEligible: Bool? = nil
+    var isGiftEligible: Bool? = nil
+    var createdAt: Date? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
+        case sku
         case name
+        case description
         case brand
-        case productDescription = "description"
-        case price
-        case imageURL = "image_url"
         case category
-        case affiliateURL = "affiliate_url"
-        case isAIRecommended = "is_ai_recommended"
+        case subcategory
+        case price
+        case salePrice = "sale_price"
+        case originalPrice = "original_price"
+        case isSale = "is_sale"
+        case saleLabel = "sale_label"
+        case isBestSeller = "is_best_seller"
+        case isExclusive = "is_exclusive"
+        case isFreeShipping = "is_free_shipping"
+        case isPickupAvailable = "is_pickup_available"
+        case isInStore = "is_in_store"
+        case imageUrl = "image_url"
+        case productUrl = "product_url"
+        case isActive = "is_active"
+        case isRegistryEligible = "is_registry_eligible"
+        case isGiftEligible = "is_gift_eligible"
+        case createdAt = "created_at"
     }
-}
-
-// MARK: - Mock
-
-extension Product {
-    static let mock = Product(
-        id: UUID(),
-        name: "Le Creuset Dutch Oven",
-        brand: "Le Creuset",
-        productDescription: "Classic 5.5 Qt Round Dutch Oven in Marseille",
-        price: 419.95,
-        imageURL: nil,
-        category: "Kitchen",
-        affiliateURL: nil,
-        isAIRecommended: true
-    )
-
-    // Stable IDs for cross-referencing with RegistryItem mocks
-    static let mockID1 = UUID(uuidString: "A0000001-0000-0000-0000-000000000001")!
-    static let mockID2 = UUID(uuidString: "A0000001-0000-0000-0000-000000000002")!
-    static let mockID3 = UUID(uuidString: "A0000001-0000-0000-0000-000000000003")!
-    static let mockID4 = UUID(uuidString: "A0000001-0000-0000-0000-000000000004")!
-    static let mockID5 = UUID(uuidString: "A0000001-0000-0000-0000-000000000005")!
-    static let mockID6 = UUID(uuidString: "A0000001-0000-0000-0000-000000000006")!
-
-    static let mockList: [Product] = [
-        Product(
-            id: mockID1,
-            name: "Le Creuset Dutch Oven",
-            brand: "Le Creuset",
-            productDescription: "Classic 5.5 Qt Round Dutch Oven in Marseille",
-            price: 419.95,
-            imageURL: nil,
-            category: "Kitchen",
-            affiliateURL: nil,
-            isAIRecommended: true
-        ),
-        Product(
-            id: mockID2,
-            name: "Dyson V15 Detect",
-            brand: "Dyson",
-            productDescription: "Cordless vacuum with laser dust detection",
-            price: 749.99,
-            imageURL: nil,
-            category: "Home",
-            affiliateURL: nil,
-            isAIRecommended: false
-        ),
-        Product(
-            id: mockID3,
-            name: "Aesop Reverence Kit",
-            brand: "Aesop",
-            productDescription: "Hand care duo with aromatique balm",
-            price: 89.00,
-            imageURL: nil,
-            category: "Wellness",
-            affiliateURL: nil,
-            isAIRecommended: true
-        ),
-        Product(
-            id: mockID4,
-            name: "Riedel Vinum Set",
-            brand: "Riedel",
-            productDescription: "Set of 8 crystal wine glasses for red & white",
-            price: 239.00,
-            imageURL: nil,
-            category: "Dining",
-            affiliateURL: nil,
-            isAIRecommended: false
-        ),
-        Product(
-            id: mockID5,
-            name: "Breville Barista Express",
-            brand: "Breville",
-            productDescription: "Espresso machine with integrated grinder",
-            price: 699.95,
-            imageURL: nil,
-            category: "Kitchen",
-            affiliateURL: nil,
-            isAIRecommended: true
-        ),
-        Product(
-            id: mockID6,
-            name: "Parachute Linen Duvet",
-            brand: "Parachute",
-            productDescription: "European flax linen duvet cover, king size",
-            price: 329.00,
-            imageURL: nil,
-            category: "Home",
-            affiliateURL: nil,
-            isAIRecommended: false
-        ),
-    ]
 }

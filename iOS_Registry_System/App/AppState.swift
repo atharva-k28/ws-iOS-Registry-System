@@ -20,6 +20,7 @@ final class AppState {
     // MARK: State
 
     var isAuthenticated = false
+    var mfaRequired = false
     var isLoading = true
     var selectedTab: AppConstants.Tab = .home
     var currentUser: User?
@@ -37,11 +38,8 @@ final class AppState {
 
         await AuthService.shared.restoreSession()
         isAuthenticated = AuthService.shared.isAuthenticated
+        mfaRequired = AuthService.shared.mfaRequired
         currentUser = AuthService.shared.currentUser
-
-        // TODO: For development, skip auth and go straight to main app
-        // Remove this line when auth is implemented
-        isAuthenticated = true
     }
 
     /// Handle sign out
@@ -49,6 +47,7 @@ final class AppState {
         do {
             try await AuthService.shared.signOut()
             isAuthenticated = false
+            mfaRequired = false
             currentUser = nil
             selectedTab = .home
         } catch {

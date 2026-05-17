@@ -125,14 +125,14 @@ struct FriendContributionSheetView: View {
                 // Inline progress bar
                 ContributionProgressBar(
                     progress: isPreviouslyGroupGifting ? item.progress : 0.0,
-                    currentAmount: isPreviouslyGroupGifting ? item.currentAmount : 0.0,
-                    targetAmount: item.targetAmount,
+                    currentAmount: isPreviouslyGroupGifting ? (item.fundedAmount ?? 0.0) : 0.0,
+                    targetAmount: item.price * Double(item.quantityNeeded ?? 1),
                     showLabels: false,
                     height: 3
                 )
                 .padding(.top, 4)
 
-                Text("$\(Int(isPreviouslyGroupGifting ? item.currentAmount : 0.0)) of $\(Int(item.targetAmount)) raised")
+                Text("$\(Int(isPreviouslyGroupGifting ? (item.fundedAmount ?? 0.0) : 0.0)) of $\(Int(item.price * Double(item.quantityNeeded ?? 1))) raised")
                     .font(AppTypography.caption1)
                     .foregroundStyle(AppColors.secondaryGray)
             }
@@ -385,8 +385,10 @@ struct FriendContributionSuccessView: View {
     private let confettiEmojis = ["🎉", "✨", "💝", "🌹", "🎊", "💫", "🥂"]
 
     private var newProgress: Double {
-        let baseAmount = isPreviouslyGroupGifting ? item.currentAmount : 0.0
-        return min((baseAmount + amount) / item.targetAmount, 1.0)
+        let baseAmount = isPreviouslyGroupGifting ? (item.fundedAmount ?? 0.0) : 0.0
+        let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
+
+        return min((baseAmount + amount) / targetAmount, 1.0)
     }
     private var newPercent: Int { Int(newProgress * 100) }
 

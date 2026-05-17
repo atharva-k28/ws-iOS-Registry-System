@@ -11,31 +11,32 @@ import Foundation
 
 struct User: Codable, Identifiable, Hashable {
     let id: UUID
+    var fullName: String
     var email: String
-    var displayName: String
-    var avatarURL: String?
-    var bio: String?
+    var phone: String?
+    var avatarUrl: String?
     var createdAt: Date?
+    var firstName: String?
+    var lastName: String?
+    var address: String?
+    var address2: String?
+    var city: String?
+    var state: String?
+    var zip: String?
 
     enum CodingKeys: String, CodingKey {
         case id
+        case fullName = "full_name"
         case email
-        case displayName = "display_name"
-        case avatarURL = "avatar_url"
-        case bio
+        case phone
+        case avatarUrl = "avatar_url"
         case createdAt = "created_at"
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case address
+        case address2
+        case city
+        case state
+        case zip
     }
-}
-
-// MARK: - Mock
-
-extension User {
-    static let mock = User(
-        id: UUID(),
-        email: "jane@example.com",
-        displayName: "Jane Doe",
-        avatarURL: nil,
-        bio: "Love curating the perfect gifts ✨",
-        createdAt: .now
-    )
 }

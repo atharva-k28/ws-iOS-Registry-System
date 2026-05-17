@@ -27,7 +27,8 @@ struct RegistryItemCard: View {
     }
 
     private var isPurchased: Bool {
-        registryItem.isPurchased
+        let targetAmount = registryItem.price * Double(registryItem.quantityNeeded ?? 1)
+        return (registryItem.fundedAmount ?? 0.0) >= targetAmount
     }
 
     /// Whether the item is completed (purchased or fully funded)
@@ -116,16 +117,7 @@ struct RegistryItemCard: View {
 
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
 
-                // Complementary message
-                if let complements = registryItem.complementaryProductName {
-                    HStack(spacing: 4) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 10))
-                        Text("Complements \(complements)")
-                            .font(AppTypography.caption2)
-                    }
-                    .foregroundStyle(AppColors.secondaryGray)
-                }
+                // Complementary message removed as it's not in the DB schema
 
                 // Product name
                 Text(product.name)
@@ -142,8 +134,8 @@ struct RegistryItemCard: View {
                     
                     Spacer()
                     
-                    if registryItem.requestedQuantity > 0 {
-                        Text("Asked: \(registryItem.requestedQuantity - cartQuantity)")
+                    if (registryItem.quantityNeeded ?? 0) > 0 {
+                        Text("Asked: \((registryItem.quantityNeeded ?? 0) - cartQuantity)")
                             .font(AppTypography.caption1Medium)
                             .foregroundStyle(AppColors.secondaryGray)
                     }
@@ -153,8 +145,8 @@ struct RegistryItemCard: View {
                 if isGroupGifting && !isPurchased {
                     ContributionProgressBar(
                         progress: registryItem.progress,
-                        currentAmount: registryItem.currentAmount,
-                        targetAmount: registryItem.targetAmount,
+                        currentAmount: registryItem.fundedAmount ?? 0.0,
+                        targetAmount: registryItem.price * Double(registryItem.quantityNeeded ?? 1),
                         showLabels: true,
                         height: 4,
                         tint: isFunded ? AppColors.primaryDark : AppColors.accentRed
@@ -233,17 +225,17 @@ struct RegistryItemCard: View {
                     Spacer()
 
                     Button {
-                        if cartQuantity < registryItem.requestedQuantity {
+                        if cartQuantity < (registryItem.quantityNeeded ?? 1) {
                             cartQuantity += 1
                             onPurchase?()
                         }
                     } label: {
                         Image(systemName: "plus")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(cartQuantity >= registryItem.requestedQuantity ? AppColors.secondaryGray : AppColors.primaryDark)
+                            .foregroundStyle(cartQuantity >= (registryItem.quantityNeeded ?? 1) ? AppColors.secondaryGray : AppColors.primaryDark)
                             .frame(width: 40, height: 40)
                     }
-                    .disabled(cartQuantity >= registryItem.requestedQuantity)
+                    .disabled(cartQuantity >= (registryItem.quantityNeeded ?? 1))
                 }
                 .background(AppColors.white)
                 .clipShape(Capsule())
@@ -307,21 +299,21 @@ struct RegistryItemCard: View {
     ScrollView {
         LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 16) {
             RegistryItemCard(
-                product: Product.mockList[0],
-                registryItem: RegistryItem.mockList[0],
+                product: Product(id: UUID(), name: "Dummy 0", category: "Dummy", price: 99.99),
+                registryItem: RegistryItem(id: UUID(), registryId: UUID(), itemName: "Dummy 0", price: 99.99),
                 isGroupGifting: true
             )
             RegistryItemCard(
-                product: Product.mockList[1],
-                registryItem: RegistryItem.mockList[1]
+                product: Product(id: UUID(), name: "Dummy 1", category: "Dummy", price: 99.99),
+                registryItem: RegistryItem(id: UUID(), registryId: UUID(), itemName: "Dummy 1", price: 99.99)
             )
             RegistryItemCard(
-                product: Product.mockList[2],
-                registryItem: RegistryItem.mockList[2]
+                product: Product(id: UUID(), name: "Dummy 2", category: "Dummy", price: 99.99),
+                registryItem: RegistryItem(id: UUID(), registryId: UUID(), itemName: "Dummy 2", price: 99.99)
             )
             RegistryItemCard(
-                product: Product.mockList[3],
-                registryItem: RegistryItem.mockList[3]
+                product: Product(id: UUID(), name: "Dummy 3", category: "Dummy", price: 99.99),
+                registryItem: RegistryItem(id: UUID(), registryId: UUID(), itemName: "Dummy 3", price: 99.99)
             )
         }
         .padding(20)

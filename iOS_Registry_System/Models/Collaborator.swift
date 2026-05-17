@@ -89,24 +89,4 @@ struct Collaborator: Identifiable {
     }
 }
 
-// MARK: - Mock
 
-extension Collaborator {
-    static let mockPending = Collaborator(
-        name: "James Carter",
-        avatarURL: "https://i.pravatar.cc/150?img=11",
-        role: .partner,
-        status: .pending,
-        invitedDate: .now,
-        permissions: CollaboratorRole.partner.defaultPermissions
-    )
-
-    static let mockActive = Collaborator(
-        name: "Maya Chen",
-        avatarURL: "https://i.pravatar.cc/150?img=5",
-        role: .family,
-        status: .active,
-        invitedDate: Calendar.current.date(byAdding: .day, value: -3, to: .now) ?? .now,
-        permissions: CollaboratorRole.family.defaultPermissions
-    )
-}

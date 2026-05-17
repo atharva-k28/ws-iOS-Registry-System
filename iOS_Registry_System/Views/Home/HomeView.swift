@@ -68,13 +68,11 @@ struct HomeView: View {
                                 activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Mix bright, bar-worthy cocktails",
+                                    description: "Everything you need to craft the perfect margarita at home.",
                                     brand: "Williams Sonoma",
-                                    productDescription: "Everything you need to craft the perfect margarita at home.",
-                                    price: 150.0,
-                                    imageURL: CollectionCard.imageUrl(for: "margarita"),
                                     category: "Margarita Season",
-                                    affiliateURL: nil,
-                                    isAIRecommended: true
+                                    price: 150.0,
+                                    imageUrl: CollectionCard.imageUrl(for: "margarita")
                                 ))
                             }
                         )
@@ -90,13 +88,11 @@ struct HomeView: View {
                                 activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Cook al fresco all summer",
+                                    description: "Premium outdoor grilling equipment for the perfect summer barbecue.",
                                     brand: "Williams Sonoma",
-                                    productDescription: "Premium outdoor grilling equipment for the perfect summer barbecue.",
-                                    price: 850.0,
-                                    imageURL: CollectionCard.imageUrl(for: "grill"),
                                     category: "The Outdoor Kitchen",
-                                    affiliateURL: nil,
-                                    isAIRecommended: true
+                                    price: 850.0,
+                                    imageUrl: CollectionCard.imageUrl(for: "grill")
                                 ))
                             }
                         )
@@ -112,13 +108,11 @@ struct HomeView: View {
                                 activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Heritage cast iron & stainless",
+                                    description: "Heirloom-quality skillets, pre-seasoned and ready for everyday luxury. Tri-ply construction, lifetime guarantee.",
                                     brand: "Williams Sonoma",
-                                    productDescription: "Heirloom-quality skillets, pre-seasoned and ready for everyday luxury. Tri-ply construction, lifetime guarantee.",
-                                    price: 320.0,
-                                    imageURL: CollectionCard.imageUrl(for: "pans"),
                                     category: "Made in Cookware®",
-                                    affiliateURL: nil,
-                                    isAIRecommended: true
+                                    price: 320.0,
+                                    imageUrl: CollectionCard.imageUrl(for: "pans")
                                 ))
                             }
                         )
@@ -134,13 +128,11 @@ struct HomeView: View {
                                 activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Chef-prepared gourmet meals",
+                                    description: "Ready-to-serve gourmet meals crafted by world-renowned chefs.",
                                     brand: "Williams Sonoma",
-                                    productDescription: "Ready-to-serve gourmet meals crafted by world-renowned chefs.",
-                                    price: 120.0,
-                                    imageURL: CollectionCard.imageUrl(for: "food"),
                                     category: "Ready To Serve",
-                                    affiliateURL: nil,
-                                    isAIRecommended: true
+                                    price: 120.0,
+                                    imageUrl: CollectionCard.imageUrl(for: "food")
                                 ))
                             }
                         )
@@ -161,13 +153,11 @@ struct HomeView: View {
                                 activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Coffee HQ",
+                                    description: "The finest espresso machines and accessories.",
                                     brand: "Williams Sonoma",
-                                    productDescription: "The finest espresso machines and accessories.",
-                                    price: 450.0,
-                                    imageURL: SmallCollectionCard.imageUrl(for: "coffee"),
                                     category: "Morning Routine",
-                                    affiliateURL: nil,
-                                    isAIRecommended: true
+                                    price: 450.0,
+                                    imageUrl: SmallCollectionCard.imageUrl(for: "coffee")
                                 ))
                             })
 
@@ -177,13 +167,11 @@ struct HomeView: View {
                                 activeModal = .product(Product(
                                     id: UUID(),
                                     name: "Red White & Blue",
+                                    description: "Patriotic tableware for your next holiday gathering.",
                                     brand: "Williams Sonoma",
-                                    productDescription: "Patriotic tableware for your next holiday gathering.",
-                                    price: 85.0,
-                                    imageURL: SmallCollectionCard.imageUrl(for: "blue"),
                                     category: "Holiday Collection",
-                                    affiliateURL: nil,
-                                    isAIRecommended: true
+                                    price: 85.0,
+                                    imageUrl: SmallCollectionCard.imageUrl(for: "blue")
                                 ))
                             })
                         }

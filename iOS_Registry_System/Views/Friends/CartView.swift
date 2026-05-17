@@ -139,18 +139,18 @@ struct CartItemRow: View {
             .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.eventName.uppercased())
+                Text((item.eventName ?? "Default Event").uppercased())
                     .font(AppTypography.caption2)
                     .foregroundStyle(AppColors.accentRed)
                     .tracking(1)
                 
-                Text(item.product.name)
+                Text(item.product?.name ?? "Unknown Product")
                     .font(AppTypography.subheadlineMedium)
                     .foregroundStyle(AppColors.primaryText)
                     .lineLimit(2)
                 
                 HStack {
-                    Text(CurrencyFormatter.format(item.product.price))
+                    Text(CurrencyFormatter.format(item.product?.price ?? 0.0))
                         .font(AppTypography.priceSmall)
                         .foregroundStyle(AppColors.primaryDark)
                     
@@ -173,16 +173,16 @@ struct CartItemRow: View {
                             .frame(minWidth: 20)
 
                         Button {
-                            if item.quantity < item.registryItem.requestedQuantity {
+                            if item.quantity < (item.registryItem?.quantityNeeded ?? 1) {
                                 CartService.shared.updateQuantity(for: item.id, delta: 1)
                             }
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(item.quantity >= item.registryItem.requestedQuantity ? AppColors.secondaryGray : AppColors.primaryDark)
+                                .foregroundStyle(item.quantity >= (item.registryItem?.quantityNeeded ?? 1) ? AppColors.secondaryGray : AppColors.primaryDark)
                                 .frame(width: 28, height: 28)
                         }
-                        .disabled(item.quantity >= item.registryItem.requestedQuantity)
+                        .disabled(item.quantity >= (item.registryItem?.quantityNeeded ?? 1))
                     }
                     .background(AppColors.backgroundGray.opacity(0.5))
                     .clipShape(Capsule())
@@ -196,8 +196,10 @@ struct CartItemRow: View {
     }
     
     private var imageURL: String {
-        let seed = item.product.name.replacingOccurrences(of: " ", with: ",")
-        return "https://loremflickr.com/200/200/\(seed),product?lock=\(abs(item.product.id.hashValue % 100))"
+        let name = item.product?.name ?? "Product"
+        let seed = name.replacingOccurrences(of: " ", with: ",")
+        let id = item.product?.id ?? UUID()
+        return "https://loremflickr.com/200/200/\(seed),product?lock=\(abs(id.hashValue % 100))"
     }
 }
 

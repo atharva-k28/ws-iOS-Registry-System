@@ -15,8 +15,19 @@ struct ProductDetailView: View {
     @State private var showToast = false
     @State private var isFavorite = false
     @State private var showContributeSheet = false
+    @State private var showARPreview = false
     
     var body: some View {
+        NavigationStack {
+            productDetailContent
+                .navigationDestination(isPresented: $showARPreview) {
+                    ARPreviewView(product: product)
+                        .navigationBarBackButtonHidden(true)
+                }
+        }
+    }
+
+    private var productDetailContent: some View {
         ZStack(alignment: .bottom) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
@@ -144,32 +155,47 @@ struct ProductDetailView: View {
             VStack {
                 HStack {
                     Spacer()
-                    Button {
-                        isFavorite.toggle()
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    } label: {
-                        Image(systemName: isFavorite ? "heart.fill" : "heart")
-                            .font(.system(size: 16))
-                            .foregroundColor(isFavorite ? AppColors.accentRed : AppColors.primaryDark)
-                            .frame(width: 36, height: 36)
-                            .background(AppColors.white)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(isFavorite ? AppColors.accentRed : AppColors.backgroundGray, lineWidth: 1))
+
+                    VStack(spacing: AppSpacing.xs) {
+                        Button {
+                            isFavorite.toggle()
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        } label: {
+                            Image(systemName: isFavorite ? "heart.fill" : "heart")
+                                .font(.system(size: 16))
+                                .foregroundColor(isFavorite ? AppColors.accentRed : AppColors.primaryDark)
+                                .frame(width: 36, height: 36)
+                                .background(AppColors.white)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(isFavorite ? AppColors.accentRed : AppColors.backgroundGray, lineWidth: 1))
+                        }
+
+                        Button {
+                            showARPreview = true
+                        } label: {
+                            Image(systemName: "arkit")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(AppColors.primaryDark)
+                                .frame(width: 36, height: 36)
+                                .background(AppColors.white)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(AppColors.backgroundGray, lineWidth: 1))
+                        }
                     }
                     .padding(AppSpacing.md)
                 }
                 Spacer()
             }
             
-            // Bottom Left Ivory Glass Pill
-            Text("Recommended for you")
-                .font(AppTypography.caption1.italic())
-                .foregroundColor(AppColors.primaryDark)
-                .padding(.horizontal, AppSpacing.md)
-                .padding(.vertical, 8)
-                .background(AppColors.white.opacity(0.85))
-                .clipShape(Capsule())
-                .padding(AppSpacing.md)
+//            // Bottom Left Ivory Glass Pill
+//            Text("Recommended for you")
+//                .font(AppTypography.caption1.italic())
+//                .foregroundColor(AppColors.primaryDark)
+//                .padding(.horizontal, AppSpacing.md)
+//                .padding(.vertical, 8)
+//                .background(AppColors.white.opacity(0.85))
+//                .clipShape(Capsule())
+//                .padding(AppSpacing.md)
         }
         .frame(height: 300)
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))

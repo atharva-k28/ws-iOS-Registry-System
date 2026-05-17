@@ -23,23 +23,30 @@ struct PackagingRevealView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            packagingBackdrop
+
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: AppSpacing.xxl) {
+                VStack(spacing: AppSpacing.xl) {
                     topBar
 
                     revealStage
-                        .frame(height: 360)
-                        .padding(.top, AppSpacing.sm)
+                        .frame(height: isRevealed ? 360 : 560)
 
-                    insideBundleCard
-                        .padding(.horizontal, AppSpacing.screenHorizontal)
+                    if isRevealed {
+                        insideBundleCard
+                            .padding(.horizontal, AppSpacing.screenHorizontal)
+                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+                    }
 
                     Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.massive)
                 }
                 .padding(.top, AppSpacing.md)
             }
 
-            ctaDock
+            if isRevealed {
+                ctaDock
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+            }
 
             if showToast {
                 toastView
@@ -51,6 +58,7 @@ struct PackagingRevealView: View {
             guard newValue else { return }
             revealCardsIfNeeded()
         }
+        .animation(reduceMotion ? .easeInOut(duration: 0.18) : .spring(response: 0.5, dampingFraction: 0.82), value: isRevealed)
     }
 
     private var topBar: some View {
@@ -81,6 +89,39 @@ struct PackagingRevealView: View {
         .padding(.horizontal, AppSpacing.screenHorizontal)
     }
 
+    private var packagingBackdrop: some View {
+        ZStack {
+            AppColors.background.ignoresSafeArea()
+
+            LinearGradient(
+                colors: [
+                    Color(hex: "FFF8EF").opacity(0.78),
+                    AppColors.background.opacity(0.95),
+                    Color(hex: "F3ECE3").opacity(0.72)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            RadialGradient(
+                colors: [Color(hex: "F6D8BA").opacity(0.44), .clear],
+                center: .topTrailing,
+                startRadius: 20,
+                endRadius: 320
+            )
+            .ignoresSafeArea()
+
+            RadialGradient(
+                colors: [Color(hex: "8F5E45").opacity(0.14), .clear],
+                center: .bottomLeading,
+                startRadius: 40,
+                endRadius: 360
+            )
+            .ignoresSafeArea()
+        }
+    }
+
     private var revealStage: some View {
         ZStack {
             if isRevealed {
@@ -97,62 +138,93 @@ struct PackagingRevealView: View {
 
     private var packagedBox: some View {
         ZStack {
-            VStack {
-                HStack {
-                    Text("A curated bundle")
+            VStack(spacing: AppSpacing.xl) {
+                VStack(spacing: AppSpacing.sm) {
+                    Text("A CURATED BUNDLE")
                         .font(AppTypography.caption1Medium)
-                        .foregroundColor(AppColors.primaryDark)
+                        .tracking(1.8)
+                        .foregroundColor(AppColors.secondaryGray)
                         .padding(.horizontal, AppSpacing.md)
                         .padding(.vertical, AppSpacing.xs)
-                        .background(AppColors.white.opacity(0.86))
+                        .background(AppColors.white.opacity(0.72))
                         .clipShape(Capsule())
-                        .overlay(Capsule().stroke(AppColors.white.opacity(0.9), lineWidth: 1))
+                        .overlay(Capsule().stroke(AppColors.white.opacity(0.86), lineWidth: 1))
 
-                    Spacer()
+                    Text("Unwrap a table\nmade for hosting.")
+                        .font(.system(size: 32, weight: .bold, design: .serif))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(AppColors.primaryDark)
+                        .lineSpacing(2)
+
+                    Text("Four pieces, chosen to feel effortless together.")
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(AppColors.secondaryGray)
+                        .multilineTextAlignment(.center)
                 }
 
-                Spacer()
-            }
-            .padding(.horizontal, AppSpacing.screenHorizontal)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
+                        .fill(AppColors.white.opacity(0.46))
+                        .frame(width: 300, height: 254)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                .stroke(AppColors.white.opacity(0.72), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.05), radius: 34, y: 18)
 
-            ZStack {
-                giftBox
-                    .matchedGeometryEffect(id: "bundleSurface", in: revealNamespace)
+                    Circle()
+                        .fill(Color(hex: "D7B48F").opacity(0.16))
+                        .frame(width: 246, height: 246)
 
-                Circle()
-                    .trim(from: 0, to: pressProgress)
-                    .stroke(AppColors.primaryDark, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .frame(width: 190, height: 190)
-                    .opacity(pressProgress > 0 ? 1 : 0)
-            }
-            .onLongPressGesture(
-                minimumDuration: 0.5,
-                maximumDistance: 44,
-                pressing: { pressing in
-                    handlePressing(pressing)
-                },
-                perform: revealBundle
-            )
+                    ZStack {
+                        giftBox
+                            .matchedGeometryEffect(id: "bundleSurface", in: revealNamespace)
 
-            VStack {
-                Spacer()
+                        Circle()
+                            .trim(from: 0, to: pressProgress)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color(hex: "6A4533"), AppColors.primaryDark],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                            )
+                            .rotationEffect(.degrees(-90))
+                            .frame(width: 214, height: 214)
+                            .opacity(pressProgress > 0 ? 1 : 0)
+                    }
+                    .onLongPressGesture(
+                        minimumDuration: 0.5,
+                        maximumDistance: 44,
+                        pressing: { pressing in
+                            handlePressing(pressing)
+                        },
+                        perform: revealBundle
+                    )
+                }
 
-                HStack(spacing: AppSpacing.xs) {
-                    Image(systemName: "hand.tap")
-                        .font(.system(size: 13, weight: .semibold))
+                HStack(spacing: AppSpacing.sm) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(hex: "F6D8BA").opacity(0.62))
+                            .frame(width: 32, height: 32)
+                        Image(systemName: "hand.tap.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
 
                     Text("Press & hold to unwrap")
-                        .font(AppTypography.caption1Medium)
+                        .font(AppTypography.buttonMedium)
                 }
                 .foregroundColor(AppColors.primaryDark)
-                .padding(.horizontal, AppSpacing.md)
+                .padding(.horizontal, AppSpacing.lg)
                 .padding(.vertical, AppSpacing.sm)
-                .background(AppColors.white.opacity(0.9))
+                .background(AppColors.white.opacity(0.92))
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(AppColors.white, lineWidth: 1))
+                .overlay(Capsule().stroke(AppColors.white.opacity(0.88), lineWidth: 1))
+                .shadow(color: .black.opacity(0.06), radius: 18, y: 8)
             }
-            .padding(.bottom, AppSpacing.md)
+            .padding(.horizontal, AppSpacing.screenHorizontal)
         }
     }
 
@@ -166,29 +238,30 @@ struct PackagingRevealView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: 160, height: 160)
-                .shadow(color: .black.opacity(0.18), radius: 28, y: 16)
+                .frame(width: 176, height: 176)
+                .shadow(color: Color(hex: "6A4533").opacity(0.24), radius: 34, y: 22)
+                .shadow(color: .black.opacity(0.12), radius: 18, y: 10)
 
             Rectangle()
                 .fill(espressoRibbon)
-                .frame(width: 30, height: 160)
+                .frame(width: 34, height: 176)
 
             Rectangle()
                 .fill(espressoRibbon)
-                .frame(width: 160, height: 30)
+                .frame(width: 176, height: 34)
 
-            VStack(spacing: AppSpacing.xxs) {
-                Text("Williams Sonoma")
-                    .font(.system(size: 16, weight: .semibold, design: .serif))
-                Text("EST. 1956")
-                    .font(AppTypography.caption2)
-                    .tracking(1.6)
-            }
-            .foregroundColor(AppColors.white)
-            .padding(.horizontal, AppSpacing.md)
-            .padding(.vertical, AppSpacing.sm)
-            .background(Color.black.opacity(0.24))
-            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.sm, style: .continuous))
+//            VStack(spacing: AppSpacing.xxs) {
+//                Text("Williams Sonoma")
+//                    .font(.system(size: 18, weight: .semibold, design: .serif))
+//                Text("EST. 1956")
+//                    .font(AppTypography.caption2)
+//                    .tracking(1.6)
+//            }
+//            .foregroundColor(AppColors.white)
+//            .padding(.horizontal, AppSpacing.md)
+//            .padding(.vertical, AppSpacing.sm)
+//            .background(Color.black.opacity(0.24))
+//            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.sm, style: .continuous))
         }
         .accessibilityLabel("Williams Sonoma curated gift box. Press and hold to unwrap.")
     }

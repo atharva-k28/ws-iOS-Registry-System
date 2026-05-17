@@ -24,7 +24,8 @@ struct ProductCard: View {
 
                 ZStack(alignment: .topTrailing) {
                     // Product Image
-                    AsyncImage(url: URL(string: "https://loremflickr.com/300/300/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))")) { image in
+                    let urlString = product.imageUrl ?? "https://loremflickr.com/300/300/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))"
+                    AsyncImage(url: URL(string: urlString)) { image in
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
@@ -41,7 +42,7 @@ struct ProductCard: View {
 
                     // Badges and Actions
                     HStack(alignment: .top) {
-                        if product.isAIRecommended {
+                        if product.isBestSeller ?? false {
                             AIBadge()
                         }
                         
@@ -126,7 +127,7 @@ struct AIBadge: View {
 #Preview("Product Card") {
     ScrollView {
         LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 16) {
-            ForEach(Product.mockList) { product in
+            ForEach([Product(id: UUID(), name: "Dummy Product", category: "Dummy", price: 99.99)]) { product in
                 ProductCard(product: product)
             }
         }

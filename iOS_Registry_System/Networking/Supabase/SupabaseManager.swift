@@ -6,8 +6,7 @@
 //
 
 import Foundation
-// TODO: Uncomment after adding Supabase SPM package
-// import Supabase
+import Supabase
 
 // MARK: - Supabase Manager
 
@@ -20,17 +19,15 @@ final class SupabaseManager {
 
     // MARK: Client
 
-    // TODO: Uncomment after adding Supabase SPM package
-    // let client: SupabaseClient
+    let client: SupabaseClient
 
     // MARK: Init
 
     private init() {
-        // TODO: Initialize Supabase client
-        // client = SupabaseClient(
-        //     supabaseURL: SupabaseConfig.url,
-        //     supabaseKey: SupabaseConfig.anonKey
-        // )
+        client = SupabaseClient(
+            supabaseURL: SupabaseConfig.url,
+            supabaseKey: SupabaseConfig.anonKey
+        )
     }
 
     // MARK: - Health Check

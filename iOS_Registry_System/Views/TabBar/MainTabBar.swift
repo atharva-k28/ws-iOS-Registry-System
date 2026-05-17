@@ -2,91 +2,124 @@
 //  MainTabBar.swift
 //  iOS_Registry_System
 //
-//  Floating premium tab bar
+//  Native iOS Floating Tab Bar
 //
 
 import SwiftUI
-
-// MARK: - Main Tab Bar
 
 struct MainTabBar: View {
 
     @Binding var selectedTab: AppConstants.Tab
 
-    // Animation namespace
     @Namespace private var tabAnimation
 
     var body: some View {
+
         HStack(spacing: 0) {
+
             ForEach(AppConstants.Tab.allCases, id: \.rawValue) { tab in
                 tabButton(for: tab)
             }
         }
-        .padding(.horizontal, AppSpacing.xs)
-        .padding(.vertical, AppSpacing.xs)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 4)
         .background(
             Capsule()
-                .fill(AppColors.white)
+                .fill(Color.white.opacity(0.94))
+                .shadow(
+                    color: .black.opacity(0.06),
+                    radius: 12,
+                    y: 4
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            Color.white.opacity(0.7),
+                            lineWidth: 0.5
+                        )
+                )
         )
-        .floatingShadow()
-        .padding(.horizontal, AppSpacing.xl)
-        .padding(.bottom, AppSpacing.xs)
+        .padding(.horizontal, 18)
+        .padding(.bottom, 0)
     }
 
     // MARK: - Tab Button
 
     @ViewBuilder
     private func tabButton(for tab: AppConstants.Tab) -> some View {
+
         let isSelected = selectedTab == tab
 
         Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+
+            withAnimation(.easeInOut(duration: 0.22)) {
                 selectedTab = tab
             }
+
         } label: {
-            HStack(spacing: 6) {
+
+            VStack(spacing: 3) {
+
                 Image(systemName: tab.icon)
-                    .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
-                    .symbolEffect(.bounce, value: isSelected)
+                    .font(
+                        .system(
+                            size: 22,
+                            weight: .medium
+                        )
+                    )
+
+                Text(tab.title)
+                    .font(
+                        .system(
+                            size: 9,
+                            weight: isSelected ? .semibold : .medium
+                        )
+                    )
+            }
+            .foregroundStyle(
+                isSelected
+                ? Color(red: 0.96, green: 0.38, blue: 0.55)
+                : Color.black.opacity(0.82)
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background {
 
                 if isSelected {
-                    Text(tab.title)
-                        .font(AppTypography.caption1Medium)
-                        .lineLimit(1)
-                }
-            }
-            .padding(.horizontal, isSelected ? AppSpacing.md : AppSpacing.sm)
-            .frame(height: 48)
-            .foregroundStyle(isSelected ? AppColors.white : AppColors.secondaryGray)
-            .background {
-                if isSelected {
-                    Capsule()
-                        .fill(AppColors.primaryDark)
-                        .matchedGeometryEffect(id: "activeTab", in: tabAnimation)
+
+                    RoundedRectangle(cornerRadius: 26)
+                        .fill(Color.black.opacity(0.06))
+                        .matchedGeometryEffect(
+                            id: "ACTIVE_TAB",
+                            in: tabAnimation
+                        )
+                        .padding(.vertical, 2)
                 }
             }
         }
-        .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
     }
 }
 
 // MARK: - Preview
 
-#Preview("Tab Bar") {
-    struct PreviewWrapper: View {
-        @State var tab: AppConstants.Tab = .home
-        var body: some View {
-            ZStack(alignment: .bottom) {
-                AppColors.background.ignoresSafeArea()
+#Preview {
 
-                Text("Selected: \(tab.title)")
-                    .font(AppTypography.title2)
-                    .frame(maxHeight: .infinity)
+    struct PreviewWrapper: View {
+
+        @State var tab: AppConstants.Tab = .home
+
+        var body: some View {
+
+            ZStack(alignment: .bottom) {
+
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
 
                 MainTabBar(selectedTab: $tab)
             }
         }
     }
+
     return PreviewWrapper()
 }

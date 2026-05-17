@@ -29,7 +29,7 @@ final class ProfileViewModel {
         defer { isLoading = false }
 
         // TODO: Fetch real user profile from Supabase
-        user = User.mock
+        user = AuthService.shared.currentUser
         totalContributions = 12
         eventsHosted = 3
     }

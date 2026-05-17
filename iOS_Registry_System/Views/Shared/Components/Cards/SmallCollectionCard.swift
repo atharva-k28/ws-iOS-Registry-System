@@ -13,43 +13,47 @@ struct SmallCollectionCard: View {
     var onTap: (() -> Void)?
 
     var body: some View {
-        Button {
-            onTap?()
-        } label: {
-            VStack(alignment: .leading, spacing: 0) {
-                // Image
-                AsyncImage(url: URL(string: "https://loremflickr.com/300/300/cookware,tableware,plates?lock=\(abs(imageSeed.hashValue % 100))")) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.gray.opacity(0.2)
-                }
-                .frame(height: 140)
-                .clipped()
-                
-                // Footer
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(AppTypography.bodyMedium)
-                        .foregroundColor(AppColors.primaryText)
-                    
-                    HStack(spacing: 4) {
-                        Text("Shop now")
-                            .font(AppTypography.caption1)
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 10))
-                    }
-                    .foregroundColor(AppColors.secondaryGray)
-                }
-                .padding(AppSpacing.md)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AppColors.white)
+        VStack(alignment: .leading, spacing: 0) {
+            // Image
+            AsyncImage(url: URL(string: SmallCollectionCard.imageUrl(for: imageSeed))) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Color.gray.opacity(0.2)
             }
-            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
-            .softShadow()
+            .frame(height: 140)
+            .clipped()
+
+            // Footer
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(AppTypography.bodyMedium)
+                    .foregroundColor(AppColors.primaryText)
+
+                HStack(spacing: 4) {
+                    Text("Shop now")
+                        .font(AppTypography.caption1)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 10))
+                }
+                .foregroundColor(AppColors.secondaryGray)
+            }
+            .padding(AppSpacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppColors.white)
         }
-        .buttonStyle(.plain)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
+        .onTapGesture {
+            onTap?()
+        }
+        .accessibilityAddTraits(.isButton)
+        .softShadow()
+    }
+    
+    static func imageUrl(for seed: String) -> String {
+        return "https://loremflickr.com/300/300/cookware,tableware,plates?lock=\(abs(seed.hashValue % 100))"
     }
 }
 

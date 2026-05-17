@@ -1,0 +1,684 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme iOS_Registry_System build CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = 
+    CODE_SIGNING_ALLOWED = NO
+    CODE_SIGNING_REQUIRED = NO
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.46.0
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.3.2
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.0
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.0
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.9.0
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.5.1
+
+2026-05-17 14:16:08.672 xcodebuild[94909:5804607] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:00008132-0001608C1E03001C, name:My Mac }
+{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+{ platform:iOS Simulator, arch:arm64, id:7CA3440A-09E0-497D-A744-C66FBE6CA316, OS:26.0, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:792A4B63-81E9-4B92-92D9-636EA5A1969D, OS:26.1, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:50AF3CCB-D322-4E76-BC87-CEAEF67D46B7, OS:26.2, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:4E60FCB2-20D8-4D7C-B08C-F30C51154268, OS:26.0, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:3E547C8D-7E6F-4D31-81BF-E5768F87732A, OS:26.1, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:241ABE3F-D06A-4FCB-BBCD-61B65831D035, OS:26.2, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:90293D34-BAEC-4C15-838D-E0BB3596EF8A, OS:26.0, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:103E5656-17F0-4C62-85B0-9B285DC4F31E, OS:26.1, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:9068823A-DB2F-417B-9C5B-CA59A1F2014B, OS:26.2, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:76EA5E4D-EE51-494F-8FAB-70EAAD4A9C0A, OS:26.0, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:E163AF37-31D6-424A-8E0F-A5D43E9F307B, OS:26.0, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:26033283-F114-45A7-B69C-014C87AA71C4, OS:26.1, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:CBF6D036-4B8F-4000-B91D-A9D469F15842, OS:26.2, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:F1E36EB3-269A-4D22-9ABD-6FABE6984964, OS:26.0, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:8A914A97-D92F-4A13-921D-D52F36BD1AEE, OS:26.0, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:2A654E12-DF5E-4E76-91FA-A3D433A286FF, OS:26.1, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:E0AA3323-1571-4881-ABA4-92E5B91E262F, OS:26.2, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:8A3D1FBA-9D0F-42AC-B828-00C5D5E5C415, OS:26.0, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:9FFE7980-69C0-4A58-BA3D-EB7E24F568A2, OS:26.1, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:09E8EE4F-8D99-4176-9A5B-DE73233684C8, OS:26.2, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:3FEBFCF3-2838-4F37-A63F-E94B88B98EC3, OS:26.0, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:CE67B7FD-C6FD-4175-A4D3-500AE21059B6, OS:26.1, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:2C52B4F7-83A5-4C4F-9639-69E64DA00B4C, OS:26.2, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:84DDC52D-878F-4A3D-AC19-CDAE4B2CEC18, OS:26.0, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:BDB1A20E-9096-44F7-AD59-335A5942FFD1, OS:26.1, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:9B495343-F97B-4D28-97D9-16DAA321B1E1, OS:26.2, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:EF0143CE-4E4D-4776-B20D-25314767CE03, OS:26.0, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:F494D95C-57CB-4A6A-9B3D-06AC25E20B70, OS:26.1, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:BBABE936-C32C-41FB-94AC-5B7AA8132562, OS:26.2, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:9EB84724-A923-4934-AEED-EF4C22DF5BE9, OS:26.0, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:A5099EF5-643F-418C-9A2C-F5D6EE404097, OS:26.1, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:9145E96E-B445-4910-A4D6-E4DD3D1A6ABD, OS:26.2, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:E586B78C-1B59-4DE2-A044-F9C0C82B6A1E, OS:26.0, name:iPhone Air }
+{ platform:iOS Simulator, arch:arm64, id:7D4443F7-0A8E-41B5-931B-7549DB373778, OS:26.1, name:iPhone Air }
+{ platform:iOS Simulator, arch:arm64, id:8BF6A5B0-59D5-457F-8B11-B115B911F653, OS:26.2, name:iPhone Air }
+note: Using codesigning identity override: 
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (23 targets)
+    Target 'iOS_Registry_System' in project 'iOS_Registry_System'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'swift-crypto_Crypto' in project 'swift-crypto' (no dependencies)
+    Target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay' (no dependencies)
+    Target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+    Target 'HTTPTypes' in project 'swift-http-types' (no dependencies)
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+ReadFileContents /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/share/docc/features.json
+
+Build description signature: 5180848bfadc17e85b55664493e9197f
+Build description path: /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/XCBuildData/5180848bfadc17e85b55664493e9197f.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk /Users/sdc-user/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.2-23C53-3794476bd08197c3e2abd9bb477ef7f7.sdkstatcache
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.2-23C53-3794476bd08197c3e2abd9bb477ef7f7.sdkstatcache
+
+ProcessInfoPlistFile /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/swift-crypto_Crypto.bundle/Info.plist /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/swift-crypto.build/Debug-iphoneos/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist (in target 'swift-crypto_Crypto' from project 'swift-crypto')
+    cd /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/swift-crypto
+    builtin-infoPlistUtility /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/swift-crypto.build/Debug-iphoneos/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/swift-crypto_Crypto.bundle/Info.plist
+
+SwiftDriver Auth normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Auth -Onone -enforce-exclusivity\=checked @/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -enable-upcoming-feature ExistentialAny -enable-experimental-feature StrictConcurrency -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -target arm64-apple-ios13.0 -g -module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk/Developer/Library/Frameworks -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.2-23C53-3794476bd08197c3e2abd9bb477ef7f7.sdkstatcache -output-file-map /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -package-name supabase_swift -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth_const_extract_protocols.json -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/include -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/DerivedSources-normal/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/DerivedSources/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth-Swift.h -working-directory /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ AuthAdminOAuth.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthAdminOAuth.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthAdminOAuth.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ AuthClientConfiguration.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthClientConfiguration.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthClientConfiguration.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ AuthAdmin.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthAdmin.swift (in target 'Auth' from project 'Supabase')
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthAdmin.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ KeychainLocalStorage.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/KeychainLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/KeychainLocalStorage.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ AuthClient.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthClient.swift (in target 'Auth' from project 'Supabase')
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthClient.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ WinCredLocalStorage.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/WinCredLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/WinCredLocalStorage.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Auth (in target 'Auth' from project 'Supabase')
+
+EmitSwiftModule normal arm64 (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ Types.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Types.swift (in target 'Auth' from project 'Supabase')
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Types.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling WinCredLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Compiling KeychainLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 Compiling\ AuthLocalStorage.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/AuthLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/AuthLocalStorage.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling AuthClientConfiguration.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AuthLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AuthAdminOAuth.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 Compiling\ APIClient.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/APIClient.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/APIClient.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ CodeVerifierStorage.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/CodeVerifierStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/CodeVerifierStorage.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ EventEmitter.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/EventEmitter.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/EventEmitter.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ SessionManager.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/SessionManager.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/SessionManager.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ Defaults.swift,\ Deprecated.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Defaults.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Deprecated.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Defaults.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Deprecated.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling AuthAdmin.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 Compiling\ AuthError.swift,\ AuthMFA.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthError.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthMFA.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthError.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthMFA.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling EventEmitter.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 Compiling\ Constants.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/Constants.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/Constants.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling Defaults.swift, Deprecated.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 Compiling\ SessionStorage.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/SessionStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/SessionStorage.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling CodeVerifierStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 Compiling\ Dependencies.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/Dependencies.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/Dependencies.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling SessionManager.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Compiling APIClient.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for Auth (in target 'Auth' from project 'Supabase')
+
+SwiftDriver\ Compilation\ Requirements Auth normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Auth -Onone -enforce-exclusivity\=checked @/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -enable-upcoming-feature ExistentialAny -enable-experimental-feature StrictConcurrency -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -target arm64-apple-ios13.0 -g -module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -suppress-warnings -index-store-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk/Developer/Library/Frameworks -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.2-23C53-3794476bd08197c3e2abd9bb477ef7f7.sdkstatcache -output-file-map /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -package-name supabase_swift -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth_const_extract_protocols.json -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/include -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/DerivedSources-normal/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/DerivedSources/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth-Swift.h -working-directory /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+Copy /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/Auth.swiftmodule/arm64-apple-ios.abi.json /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth.abi.json (in target 'Auth' from project 'Supabase')
+    cd /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/SourcePackages/checkouts/supabase-swift
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/Supabase.build/Debug-iphoneos/Auth.build/Objects-normal/arm64/Auth.abi.json /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/Auth.swiftmodule/arm64-apple-ios.abi.json
+
+SwiftDriver iOS_Registry_System normal arm64 com.apple.xcode.tools.swift.compiler (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name iOS_Registry_System -Onone -enforce-exclusivity\=checked @/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_System.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -target arm64-apple-ios26.0 -g -module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -emit-localized-strings -emit-localized-strings-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.2-23C53-3794476bd08197c3e2abd9bb477ef7f7.sdkstatcache -output-file-map /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_System-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_System.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_System_const_extract_protocols.json -Xcc -iquote -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-generated-files.hmap -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-own-target-headers.hmap -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System-d5392c08a191927f742b6731cef053ff-VFS-iphoneos/all-product-headers.yaml -Xcc -iquote -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-project-headers.hmap -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/include -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources-normal/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_System-Swift.h -working-directory /Users/sdc-user/Downloads/ws-iOS-Registry-System -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal arm64 Compiling Constants.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SessionStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Compiling Dependencies.swift (in target 'Auth' from project 'Supabase')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AuthError.swift, AuthMFA.swift (in target 'Auth' from project 'Supabase')
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/MobileCoreServices-S8X1DJPR5SBXSG3CVKYKG37E.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/AuthenticationServices-8KSLMCKLB27U3MWV4GS8BFJJ4.pcm
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ iOS_Registry_System (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+
+EmitSwiftModule normal arm64 (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 Compiling\ FriendsView.swift,\ RegistryItemDetailView.swift,\ HomeView.swift,\ ContributeSheetView.swift,\ GroupGiftingCard.swift,\ PairsWithRail.swift,\ QuantityStepper.swift,\ ARPreviewView.swift,\ PackagingRevealView.swift,\ ProductDetailView.swift,\ ProfileView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/FriendsView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/RegistryItemDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Home/HomeView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/ContributeSheetView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/GroupGiftingCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/PairsWithRail.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/QuantityStepper.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ARPreviewView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/PackagingRevealView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ProductDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Profile/ProfileView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/FriendsView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/RegistryItemDetailView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Home/HomeView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/ContributeSheetView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/GroupGiftingCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/PairsWithRail.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/QuantityStepper.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ARPreviewView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/PackagingRevealView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ProductDetailView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Profile/ProfileView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 Compiling\ Collaborator.swift,\ Contribution.swift,\ Event.swift,\ PriorityGiftItem.swift,\ Product.swift,\ Registry.swift,\ RegistryItem.swift,\ User.swift,\ SupabaseConfig.swift,\ SupabaseManager.swift,\ MockData.swift,\ AIService.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Collaborator.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Contribution.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Event.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/PriorityGiftItem.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Product.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Registry.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/RegistryItem.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/User.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Networking/Supabase/SupabaseConfig.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Networking/Supabase/SupabaseManager.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Resources/MockData/MockData.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Services/AIService.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Collaborator.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Contribution.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Event.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/PriorityGiftItem.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Product.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Registry.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/RegistryItem.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/User.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Networking/Supabase/SupabaseConfig.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Networking/Supabase/SupabaseManager.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Resources/MockData/MockData.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Services/AIService.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 Compiling\ QuietlyCuratedCard.swift,\ RegistryItemCard.swift,\ RegistryProgressCard.swift,\ SmallCollectionCard.swift,\ SuggestionCard.swift,\ WalletCard.swift,\ AppHeader.swift,\ ProgressBar.swift,\ LoadingView.swift,\ MainTabBar.swift,\ GeneratedAssetSymbols.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/QuietlyCuratedCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/RegistryItemCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/RegistryProgressCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/SmallCollectionCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/SuggestionCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/WalletCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Headers/AppHeader.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Indicators/ProgressBar.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Loaders/LoadingView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/TabBar/MainTabBar.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/QuietlyCuratedCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/RegistryItemCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/RegistryProgressCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/SmallCollectionCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/SuggestionCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/WalletCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Headers/AppHeader.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Indicators/ProgressBar.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Loaders/LoadingView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/TabBar/MainTabBar.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 Compiling\ MFAVerificationView.swift,\ SignInView.swift,\ SignUpView.swift,\ AIRecommendationsView.swift,\ CollaboratorCard.swift,\ CollaboratorTypeSheet.swift,\ ContributionSheetView.swift,\ ContributionSuccessView.swift,\ ContributorsListView.swift,\ CreateEventView.swift,\ EventCommandCenterView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/MFAVerificationView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/SignInView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/SignUpView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/AIRecommendationsView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CollaboratorCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CollaboratorTypeSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributionSheetView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributionSuccessView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributorsListView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CreateEventView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/EventCommandCenterView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/MFAVerificationView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/SignInView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/SignUpView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/AIRecommendationsView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CollaboratorCard.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CollaboratorTypeSheet.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributionSheetView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributionSuccessView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributorsListView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CreateEventView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/EventCommandCenterView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 Compiling\ AppRouter.swift,\ AppState.swift,\ iOS_Registry_SystemApp.swift,\ Constants.swift,\ Date+Extensions.swift,\ View+Extensions.swift,\ Helpers.swift,\ Colors.swift,\ Shadows.swift,\ Spacing.swift,\ Typography.swift,\ CartItem.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppRouter.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppState.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/iOS_Registry_SystemApp.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Constants/Constants.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/Date+Extensions.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/View+Extensions.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Helpers/Helpers.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Colors.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Shadows.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Spacing.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Typography.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/CartItem.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppRouter.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppState.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/iOS_Registry_SystemApp.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Constants/Constants.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/Date+Extensions.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/View+Extensions.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Helpers/Helpers.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Colors.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Shadows.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Spacing.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Typography.swift -primary-file /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/CartItem.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Collaborator.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Contribution.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Event.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/PriorityGiftItem.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Product.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/Registry.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/RegistryItem.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/User.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Networking/Supabase/SupabaseConfig.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Networking/Supabase/SupabaseManager.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Resources/MockData/MockData.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Services/AIService.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Services/AuthService.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Services/CartService.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Services/EventService.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Services/ProductService.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/ViewModels/Auth/AuthViewModel.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/ViewModels/Events/EventsViewModel.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/ViewModels/Friends/FriendRegistryDetailViewModel.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/ViewModels/Friends/FriendsViewModel.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/ViewModels/Home/HomeViewModel.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/ViewModels/Profile/ProfileViewModel.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/AuthLandingView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/MFAEnrollmentView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/MFAVerificationView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/SignInView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Auth/SignUpView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/AIRecommendationsView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CollaboratorCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CollaboratorTypeSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributionSheetView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributionSuccessView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ContributorsListView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/CreateEventView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/EventCommandCenterView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/GroupGiftDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/InviteCollaboratorView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ManageAccessView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/MyEventsView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/PriorityGiftsListView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/RegistryCategoryDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/RSVPReminderSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ShippingAddressSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ThankYouNoteSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/CartView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/FriendRegistryDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/FriendsView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/RegistryItemDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Home/HomeView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/ContributeSheetView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/GroupGiftingCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/PairsWithRail.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/Components/QuantityStepper.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ARPreviewView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/PackagingRevealView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ProductDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Profile/ProfileView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Badges/CountdownBadge.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Badges/StatusChip.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Buttons/GlassButton.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Buttons/PrimaryButton.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/CollectionCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/ContributionProgressBar.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/ContributionWidget.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/EventCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/FriendEventCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/PriorityGiftCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/ProductCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/QuietlyCuratedCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/RegistryItemCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/RegistryProgressCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/SmallCollectionCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/SuggestionCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/WalletCard.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Headers/AppHeader.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Indicators/ProgressBar.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Loaders/LoadingView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/TabBar/MainTabBar.swift /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources/GeneratedAssetSymbols.swift -supplementary-output-file-map /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/supplementaryOutputs-1 -emit-localized-strings -emit-localized-strings-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64 -target arm64-apple-ios26.0 -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -module-can-import-version SwiftUI 7.2.5.1 7.2.5 -module-can-import-version UIKit 9126.2.4.1 9126.2.4 -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_System-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -I /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/PackageFrameworks -F /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=5 -module-cache-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_System_const_extract_protocols.json -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -default-isolation\=MainActor -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/sdc-user/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/sdc-user/Downloads/ws-iOS-Registry-System -enable-anonymous-context-mangled-names -file-compilation-dir /Users/sdc-user/Downloads/ws-iOS-Registry-System -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.2-23C53-3794476bd08197c3e2abd9bb477ef7f7.sdkstatcache -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-generated-files.hmap -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-own-target-headers.hmap -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System-d5392c08a191927f742b6731cef053ff-VFS-iphoneos/all-product-headers.yaml -Xcc -iquote -Xcc /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/iOS_Registry_System-project-headers.hmap -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Products/Debug-iphoneos/include -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources-normal/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources/arm64 -Xcc -I/Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name iOS_Registry_System -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.2 -target-sdk-name iphoneos26.2 -clang-target arm64-apple-ios26.2 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/AppRouter.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/AppState.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_SystemApp.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Constants.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Date+Extensions.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/View+Extensions.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Helpers.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Colors.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Shadows.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Spacing.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Typography.o -o /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Build/Intermediates.noindex/iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/CartItem.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/AppRouter.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/AppState.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/iOS_Registry_SystemApp.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Constants.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Date+Extensions.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/View+Extensions.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Helpers.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Colors.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Shadows.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Spacing.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/Typography.o -index-unit-output-path /iOS_Registry_System.build/Debug-iphoneos/iOS_Registry_System.build/Objects-normal/arm64/CartItem.o -index-store-path /Users/sdc-user/Library/Developer/Xcode/DerivedData/iOS_Registry_System-bjttyuvobqldzvbifmquokelecyv/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppRouter.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+/Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/EventCommandCenterView.swift:963:40: error: type 'Event' has no member 'mock'
+        EventCommandCenterView(event: .mock)
+                                      ~^~~~
+/Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/FriendRegistryDetailView.swift:363:42: error: type 'Event' has no member 'mock'
+        FriendRegistryDetailView(event: .mock)
+                                        ~^~~~
+/Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ARPreviewView.swift:291:29: error: type 'Product' has no member 'mock'
+    ARPreviewView(product: .mock)
+                           ~^~~~
+/Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Products/ProductDetailView.swift:294:33: error: type 'Product' has no member 'mock'
+    ProductDetailView(product: .mock)
+                               ~^~~~
+/Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/EventCard.swift:136:31: error: type 'Event' has no member 'mock'
+            EventCard(event: .mock)
+                             ~^~~~
+/Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Shared/Components/Cards/FriendEventCard.swift:146:29: error: type 'Event' has no member 'mock'
+    FriendEventCard(event: .mock)
+                           ~^~~~
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppState.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/iOS_Registry_SystemApp.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Constants/Constants.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/Date+Extensions.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/View+Extensions.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Helpers/Helpers.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Colors.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Shadows.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Spacing.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Typography.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/CartItem.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 Compiling\ GroupGiftDetailView.swift,\ InviteCollaboratorView.swift,\ ManageAccessView.swift,\ MyEventsView.swift,\ PriorityGiftsListView.swift,\ RegistryCategoryDetailView.swift,\ RSVPReminderSheet.swift,\ ShippingAddressSheet.swift,\ ThankYouNoteSheet.swift,\ CartView.swift,\ FriendRegistryDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/GroupGiftDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/InviteCollaboratorView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ManageAccessView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/MyEventsView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/PriorityGiftsListView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/RegistryCategoryDetailView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/RSVPReminderSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ShippingAddressSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ThankYouNoteSheet.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/CartView.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/FriendRegistryDetailView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/GroupGiftDetailView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/InviteCollaboratorView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ManageAccessView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/MyEventsView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/PriorityGiftsListView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/RegistryCategoryDetailView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/RSVPReminderSheet.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ShippingAddressSheet.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Events/ThankYouNoteSheet.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/CartView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Views/Friends/FriendRegistryDetailView.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+    cd /Users/sdc-user/Downloads/ws-iOS-Registry-System
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling AuthClient.swift (in target 'Auth' from project 'Supabase')
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal arm64 Compiling\ AppRouter.swift,\ AppState.swift,\ iOS_Registry_SystemApp.swift,\ Constants.swift,\ Date+Extensions.swift,\ View+Extensions.swift,\ Helpers.swift,\ Colors.swift,\ Shadows.swift,\ Spacing.swift,\ Typography.swift,\ CartItem.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppRouter.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppState.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/iOS_Registry_SystemApp.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Constants/Constants.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/Date+Extensions.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Extensions/View+Extensions.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Helpers/Helpers.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Colors.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Shadows.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Spacing.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Core/Theme/Typography.swift /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/Models/CartItem.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+	SwiftCompile normal arm64 /Users/sdc-user/Downloads/ws-iOS-Registry-System/iOS_Registry_System/App/AppRouter.swift (in target 'iOS_Registry_System' from project 'iOS_Registry_System')
+	Building project iOS_Registry_System with scheme iOS_Registry_System
+(3 failures)

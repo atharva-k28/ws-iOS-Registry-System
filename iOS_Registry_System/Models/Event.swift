@@ -14,7 +14,9 @@ enum EventType: String, Codable, CaseIterable, Identifiable {
     case babyShower = "baby_shower"
     case housewarming = "housewarming"
     case birthday = "birthday"
+    case anniversary = "anniversary"
     case specialEvent = "special_event"
+    case other = "other"
 
     var id: String { rawValue }
 
@@ -24,7 +26,9 @@ enum EventType: String, Codable, CaseIterable, Identifiable {
         case .babyShower: return "Baby Shower"
         case .housewarming: return "Housewarming"
         case .birthday: return "Birthday"
+        case .anniversary: return "Anniversary"
         case .specialEvent: return "Special Event"
+        case .other: return "Other"
         }
     }
 
@@ -34,7 +38,9 @@ enum EventType: String, Codable, CaseIterable, Identifiable {
         case .babyShower: return "stroller.fill"
         case .housewarming: return "house.fill"
         case .birthday: return "birthday.cake.fill"
+        case .anniversary: return "gift.fill"
         case .specialEvent: return "sparkles"
+        case .other: return "star.fill"
         }
     }
 }

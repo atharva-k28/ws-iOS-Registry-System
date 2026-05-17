@@ -22,15 +22,20 @@ struct MainTabBar: View {
                 tabButton(for: tab)
             }
         }
-        .padding(.horizontal, AppSpacing.xs)
-        .padding(.vertical, AppSpacing.xs)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
         .background(
             Capsule()
-                .fill(AppColors.white)
+                .fill(.regularMaterial)
+                .environment(\.colorScheme, .light)
+                .shadow(color: Color.black.opacity(0.08), radius: 12, y: 6)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white.opacity(0.8), lineWidth: 0.5)
+                )
         )
-        .floatingShadow()
-        .padding(.horizontal, AppSpacing.xl)
-        .padding(.bottom, AppSpacing.xs)
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.bottom, AppSpacing.sm)
     }
 
     // MARK: - Tab Button
@@ -44,27 +49,27 @@ struct MainTabBar: View {
                 selectedTab = tab
             }
         } label: {
-            HStack(spacing: 6) {
+            VStack(spacing: 2) {
                 Image(systemName: tab.icon)
-                    .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
+                    .font(.system(size: 17, weight: isSelected ? .semibold : .regular))
+                    .foregroundStyle(isSelected ? Color.white : AppColors.primaryText)
+                    .frame(width: 30, height: 30)
+                    .background {
+                        if isSelected {
+                            Circle()
+                                .fill(AppColors.accentRed)
+                                .matchedGeometryEffect(id: "activeIcon", in: tabAnimation)
+                        }
+                    }
                     .symbolEffect(.bounce, value: isSelected)
 
-                if isSelected {
-                    Text(tab.title)
-                        .font(AppTypography.caption1Medium)
-                        .lineLimit(1)
-                }
+                Text(tab.title)
+                    .font(.system(size: 10, weight: isSelected ? .medium : .regular))
+                    .foregroundStyle(isSelected ? AppColors.accentRed : AppColors.primaryText)
+                    .lineLimit(1)
             }
-            .padding(.horizontal, isSelected ? AppSpacing.md : AppSpacing.sm)
-            .frame(height: 48)
-            .foregroundStyle(isSelected ? AppColors.white : AppColors.secondaryGray)
-            .background {
-                if isSelected {
-                    Capsule()
-                        .fill(AppColors.primaryDark)
-                        .matchedGeometryEffect(id: "activeTab", in: tabAnimation)
-                }
-            }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 4)
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)

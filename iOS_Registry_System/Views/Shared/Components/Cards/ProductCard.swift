@@ -41,7 +41,7 @@ struct ProductCard: View {
 
                     // Badges and Actions
                     HStack(alignment: .top) {
-                        if product.isAIRecommended {
+                        if product.isBestSeller ?? false {
                             AIBadge()
                         }
                         
@@ -126,7 +126,7 @@ struct AIBadge: View {
 #Preview("Product Card") {
     ScrollView {
         LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 16) {
-            ForEach(Product.mockList) { product in
+            ForEach([Product(id: UUID(), name: "Dummy Product", category: "Dummy", price: 99.99)]) { product in
                 ProductCard(product: product)
             }
         }

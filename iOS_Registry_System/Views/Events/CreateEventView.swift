@@ -60,6 +60,8 @@ struct CreateEventView: View {
     @State private var eventTitle                 = ""
     @State private var isPublic                   = true
     @State private var showDatePicker             = false
+    @State private var isLoading                  = false
+    @State private var errorMessage: String?      = nil
 
     // Collaborator flow
     @State private var collaborators: [Collaborator]   = []
@@ -376,6 +378,43 @@ struct CreateEventView: View {
         }
     }
 
+    // MARK: - Actions
+
+    private func createEvent() async {
+        guard let userId = AuthService.shared.currentUser?.id else {
+            errorMessage = "User not logged in"
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        let title = eventTitle.isEmpty ? "My \((selectedType?.rawValue ?? "event").capitalized)" : eventTitle
+        
+        let newEvent = Event(
+            id: UUID(),
+            ownerUserId: userId,
+            title: title,
+            eventType: selectedType?.rawValue ?? "other",
+            venue: nil,
+            startDate: eventDate,
+            endDate: nil,
+            coverImage: nil,
+            isPrivate: !isPublic,
+            createdAt: Date(),
+            eventDate: eventDate
+        )
+        
+        do {
+            let _ = try await EventService.shared.createEvent(newEvent)
+            dismiss()
+        } catch {
+            print("❌ Failed to create event: \(error)")
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
     // MARK: - Continue Button
 
     private var continueButton: some View {
@@ -389,16 +428,28 @@ struct CreateEventView: View {
             .frame(height: 24)
             .allowsHitTesting(false)
 
-            Button { dismiss() } label: {
-                Text("Continue")
-                    .font(AppTypography.buttonLarge)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(AppColors.accentRed)
-                    .clipShape(Capsule())
-                    .shadow(color: AppColors.accentRed.opacity(0.35), radius: 16, y: 6)
+            Button {
+                Task {
+                    await createEvent()
+                }
+            } label: {
+                HStack {
+                    if isLoading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text("Continue")
+                            .font(AppTypography.buttonLarge)
+                    }
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(AppColors.accentRed)
+                .clipShape(Capsule())
+                .shadow(color: AppColors.accentRed.opacity(0.35), radius: 16, y: 6)
             }
+            .disabled(isLoading)
             .buttonStyle(.plain)
             .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.bottom, AppSpacing.lg + 80) // Push above custom tab bar

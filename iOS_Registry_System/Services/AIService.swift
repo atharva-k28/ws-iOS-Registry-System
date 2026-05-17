@@ -23,14 +23,14 @@ final class AIService {
     func getRecommendations(for eventType: String, budget: Double? = nil) async throws -> [Product] {
         // TODO: Implement AI recommendation engine (OpenAI / custom ML)
         print("🤖 AIService: getRecommendations — not yet implemented")
-        return Product.mockList.filter { $0.isAIRecommended }
+        return []
     }
 
     /// Get personalized recommendations based on user preferences
     func getPersonalizedRecommendations(userID: UUID) async throws -> [Product] {
         // TODO: Implement personalized AI recommendations
         print("🤖 AIService: getPersonalizedRecommendations — not yet implemented")
-        return Product.mockList
+        return []
     }
 
     // MARK: - Smart Features
@@ -39,7 +39,7 @@ final class AIService {
     func generateSmartRegistry(eventType: String, preferences: [String]) async throws -> [Product] {
         // TODO: Implement smart registry generation
         print("🤖 AIService: generateSmartRegistry — not yet implemented")
-        return Product.mockList
+        return []
     }
 
     /// Get gift message suggestions

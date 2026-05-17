@@ -197,7 +197,7 @@ private struct LargeGiftCard: View {
 
     private var contributorAvatars: some View {
         HStack(spacing: -10) {
-            ForEach(gift.contributors.prefix(4)) { contributor in
+            ForEach(Array(gift.contributors.prefix(4))) { contributor in
                 AsyncImage(url: URL(string: contributor.avatarURL ?? "")) { image in
                     image.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: {

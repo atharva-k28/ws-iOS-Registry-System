@@ -21,6 +21,10 @@ struct iOS_Registry_SystemApp: App {
                 } else if appState.isAuthenticated {
                     // Main app
                     AppRouter()
+                } else if appState.currentUser != nil && appState.mfaRequired {
+                    // Auth flow - MFA required but signed in with password
+                    // You might want to switch between enrollment or verification here based on factors
+                    MFAVerificationView()
                 } else {
                     // Auth flow
                     AuthLandingView()

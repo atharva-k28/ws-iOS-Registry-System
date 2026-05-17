@@ -77,7 +77,7 @@ struct ProfileView: View {
                 .softShadow()
 
             VStack(spacing: AppSpacing.xxxs) {
-                Text(viewModel.user?.displayName ?? "Olivia Bennett")
+                Text(viewModel.user?.fullName ?? "Olivia Bennett")
                     .font(AppTypography.title2)
                     .foregroundStyle(AppColors.primaryText)
 

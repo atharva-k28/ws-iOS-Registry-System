@@ -38,7 +38,7 @@ struct EventCard: View {
                 // Top Left Badge
                 VStack {
                     HStack {
-                        if let date = event.eventDate {
+                        if let date = event.startDate {
                             Text(date.daysUntil.uppercased())
                                 .font(AppTypography.caption1Medium)
                                 .fontWeight(.bold)
@@ -57,7 +57,7 @@ struct EventCard: View {
                 // Bottom Glassmorphic Card
                 VStack(alignment: .leading, spacing: AppSpacing.sm) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(event.eventType.replacingOccurrences(of: "_", with: " ").uppercased()) · \((event.eventDate ?? Date()).formattedLong.uppercased())")
+                        Text("\(event.eventType.replacingOccurrences(of: "_", with: " ").uppercased()) · \((event.startDate ?? Date()).formattedLong.uppercased())")
                             .font(AppTypography.caption2)
                             .tracking(1)
                             .foregroundStyle(.white.opacity(0.8))
@@ -126,18 +126,4 @@ struct EventCard: View {
         if typeLower.contains("birth") { return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800" }
         return "https://loremflickr.com/400/300/tableware,kitchen?lock=\(abs(event.id.hashValue % 100))"
     }
-}
-
-// MARK: - Preview
-
-#Preview("Event Card") {
-    ScrollView {
-        VStack(spacing: 16) {
-            EventCard(event: .mock)
-            EventCard(event: Event.mockList[1])
-            EventCard(event: Event.mockList[2])
-        }
-        .padding(20)
-    }
-    .background(AppColors.background)
 }

@@ -13,7 +13,7 @@ struct ARPreviewView: View {
     let product: Product
 
     private var imageURL: String {
-        product.imageURL ?? "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=900"
+        product.imageUrl ?? "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=900"
     }
 
     var body: some View {
@@ -287,6 +287,3 @@ private enum BracketCorner {
     case bottomTrailing
 }
 
-#Preview {
-    ARPreviewView(product: .mock)
-}

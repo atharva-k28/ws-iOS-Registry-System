@@ -11,34 +11,25 @@ import Foundation
 
 struct Contribution: Codable, Identifiable, Hashable {
     let id: UUID
-    var registryItemID: UUID
-    var contributorID: UUID
+    var reservationId: UUID
+    var contributorBy: UUID? = nil
     var amount: Double
-    var message: String?
-    var isAnonymous: Bool
-    var createdAt: Date?
+    var contributionType: String? = nil
+    var paymentStatus: String? = nil
+    var transactionReference: String? = nil
+    var message: String? = nil
+    var createdAt: Date? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
-        case registryItemID = "registry_item_id"
-        case contributorID = "contributor_id"
+        case reservationId = "reservation_id"
+        case contributorBy = "contributor_by"
         case amount
+        case contributionType = "contribution_type"
+        case paymentStatus = "payment_status"
+        case transactionReference = "transaction_reference"
         case message
-        case isAnonymous = "is_anonymous"
         case createdAt = "created_at"
     }
 }
 
-// MARK: - Mock
-
-extension Contribution {
-    static let mock = Contribution(
-        id: UUID(),
-        registryItemID: UUID(),
-        contributorID: UUID(),
-        amount: 50.00,
-        message: "Congrats! Can't wait for the big day 🎉",
-        isAnonymous: false,
-        createdAt: .now
-    )
-}

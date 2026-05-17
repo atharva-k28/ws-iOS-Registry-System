@@ -53,7 +53,7 @@ struct ProductDetailView: View {
                         }
                         
                         // MARK: Pairs With
-                        PairsWithRail(products: Product.mockList) { relatedProduct in
+                        PairsWithRail(products: []) { relatedProduct in
                             print("Reveal packaging for: \(relatedProduct.id)")
                         }
                     }
@@ -139,7 +139,7 @@ struct ProductDetailView: View {
         ZStack(alignment: .bottomLeading) {
             AppColors.backgroundGray
                 .overlay {
-                    let urlString = product.imageURL ?? "https://loremflickr.com/600/600/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))"
+                    let urlString = product.imageUrl ?? "https://loremflickr.com/600/600/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))"
                     AsyncImage(url: URL(string: urlString)) { image in
                         image
                             .resizable()
@@ -227,7 +227,7 @@ struct ProductDetailView: View {
             }
             .padding(.top, 4)
             
-            Text(product.productDescription ?? "Heirloom-quality pieces, selected for everyday luxury and built to anchor a beautiful registry.")
+            Text(product.description ?? "Heirloom-quality pieces, selected for everyday luxury and built to anchor a beautiful registry.")
                 .font(AppTypography.body)
                 .foregroundColor(AppColors.secondaryGray)
                 .padding(.top, AppSpacing.xs)
@@ -288,8 +288,4 @@ struct ProductDetailView: View {
         .padding(.horizontal, AppSpacing.md)
         .padding(.bottom, AppSpacing.md)
     }
-}
-
-#Preview {
-    ProductDetailView(product: .mock)
 }

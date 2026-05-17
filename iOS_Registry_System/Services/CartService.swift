@@ -19,10 +19,16 @@ class CartService: ObservableObject {
     func addToCart(product: Product, registryItem: RegistryItem, eventName: String) {
         // For simplicity, we'll allow multiple entries of the same item if from different registries
         // but if it's the exact same registry item, we increment quantity
-        if let index = items.firstIndex(where: { $0.registryItem.id == registryItem.id }) {
+        if let index = items.firstIndex(where: { $0.registryItem?.id == registryItem.id }) {
             items[index].quantity += 1
         } else {
-            let newItem = CartItem(product: product, registryItem: registryItem, eventName: eventName)
+            let newItem = CartItem(
+                userId: UUID(), // Dummy
+                productId: product.id,
+                product: product,
+                registryItem: registryItem,
+                eventName: eventName
+            )
             items.append(newItem)
         }
     }
@@ -47,7 +53,7 @@ class CartService: ObservableObject {
     }
     
     var totalPrice: Double {
-        items.reduce(0) { $0 + ($1.product.price * Double($1.quantity)) }
+        items.reduce(0) { $0 + (($1.product?.price ?? 0.0) * Double($1.quantity)) }
     }
     
     var itemCount: Int {

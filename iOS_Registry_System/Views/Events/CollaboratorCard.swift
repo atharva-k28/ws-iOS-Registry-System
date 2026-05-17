@@ -256,8 +256,22 @@ struct CollaboratorStack: View {
 
 #Preview("Pending State") {
     VStack(spacing: 16) {
-        CollaboratorCard(collaborator: .mockPending)
-        CollaboratorCard(collaborator: .mockActive)
+        CollaboratorCard(collaborator: Collaborator(
+            name: "James Carter",
+            avatarURL: "https://i.pravatar.cc/150?img=11",
+            role: .partner,
+            status: .pending,
+            invitedDate: .now,
+            permissions: CollaboratorRole.partner.defaultPermissions
+        ))
+        CollaboratorCard(collaborator: Collaborator(
+            name: "Maya Chen",
+            avatarURL: "https://i.pravatar.cc/150?img=5",
+            role: .family,
+            status: .active,
+            invitedDate: Calendar.current.date(byAdding: .day, value: -3, to: .now) ?? .now,
+            permissions: CollaboratorRole.family.defaultPermissions
+        ))
     }
     .padding()
     .background(AppColors.background)

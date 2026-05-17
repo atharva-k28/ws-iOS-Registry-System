@@ -25,7 +25,7 @@ struct PairsWithRail: View {
                             ZStack {
                                 AppColors.backgroundGray
                                     .overlay {
-                                        let urlString = product.imageURL ?? "https://loremflickr.com/200/200/\(product.name.replacingOccurrences(of: " ", with: ",")),kitchen?lock=\(abs(product.id.hashValue % 100))"
+                                        let urlString = product.imageUrl ?? "https://loremflickr.com/200/200/\(product.name.replacingOccurrences(of: " ", with: ",")),kitchen?lock=\(abs(product.id.hashValue % 100))"
                                         AsyncImage(url: URL(string: urlString)) { image in
                                             image
                                                 .resizable()
@@ -63,6 +63,6 @@ struct PairsWithRail: View {
 }
 
 #Preview {
-    PairsWithRail(products: Product.mockList, onSelect: { _ in })
+    PairsWithRail(products: [], onSelect: { _ in })
         .padding()
 }

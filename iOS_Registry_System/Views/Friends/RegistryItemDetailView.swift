@@ -43,11 +43,7 @@ struct RegistryItemDetailView: View {
                         
                         // Header info
                         VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                            if let complements = item.complementaryProductName {
-                                Text("Complements \(complements)")
-                                    .font(AppTypography.caption1Medium)
-                                    .foregroundStyle(AppColors.accentRed)
-                            }
+                            // Complements field removed as it's not in the DB schema
                             
                             Text(product.name)
                                 .font(AppTypography.premiumTitle)
@@ -61,8 +57,8 @@ struct RegistryItemDetailView: View {
                                 
                                 Spacer()
                                 
-                                if item.requestedQuantity > 0 {
-                                    Text("Asked: \(item.requestedQuantity - cartQuantity)")
+                                if (item.quantityNeeded ?? 0) > 0 {
+                                    Text("Asked: \((item.quantityNeeded ?? 0) - cartQuantity)")
                                         .font(AppTypography.subheadlineMedium)
                                         .foregroundStyle(AppColors.secondaryGray)
                                 }
@@ -70,7 +66,7 @@ struct RegistryItemDetailView: View {
                         }
 
                         // Description
-                        if let desc = product.productDescription {
+                        if let desc = product.description {
                             VStack(alignment: .leading, spacing: AppSpacing.xs) {
                                 Text("About this item")
                                     .font(AppTypography.subheadlineMedium)
@@ -82,33 +78,19 @@ struct RegistryItemDetailView: View {
                             }
                         }
 
-                        // Host Note
-                        if let note = item.note {
-                            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                                Text("Host's Note")
-                                    .font(AppTypography.subheadlineMedium)
-                                
-                                Text("\"\(note)\"")
-                                    .font(AppTypography.body)
-                                    .italic()
-                                    .foregroundStyle(AppColors.secondaryGray)
-                            }
-                            .padding(AppSpacing.md)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(AppColors.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
-                        }
+                        // Host Note removed as it's not in the DB schema
 
                         // Progress (for Group Gifting)
-                        if isGroupGifting && !item.isPurchased {
+                        let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
+                        if isGroupGifting && (item.fundedAmount ?? 0.0) < targetAmount {
                             VStack(alignment: .leading, spacing: AppSpacing.sm) {
                                 Text("Contribution Progress")
                                     .font(AppTypography.subheadlineMedium)
                                 
                                 ContributionProgressBar(
                                     progress: item.progress,
-                                    currentAmount: item.currentAmount,
-                                    targetAmount: item.targetAmount,
+                                    currentAmount: item.fundedAmount ?? 0.0,
+                                    targetAmount: targetAmount,
                                     showLabels: true,
                                     height: 12
                                 )
@@ -135,7 +117,8 @@ struct RegistryItemDetailView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: AppSpacing.sm) {
-                    if !item.isPurchased {
+                    let targetAmount = item.price * Double(item.quantityNeeded ?? 1)
+                    if (item.fundedAmount ?? 0.0) < targetAmount {
                         if isGroupGifting {
                             // Group Gifting: Only Contribute
                             Button {
@@ -176,17 +159,17 @@ struct RegistryItemDetailView: View {
                                     Spacer()
 
                                     Button {
-                                        if cartQuantity < item.requestedQuantity {
+                                        if cartQuantity < (item.quantityNeeded ?? 1) {
                                             cartQuantity += 1
                                             CartService.shared.addToCart(product: product, registryItem: item, eventName: eventName)
                                         }
                                     } label: {
                                         Image(systemName: "plus")
                                             .font(.system(size: 18, weight: .bold))
-                                            .foregroundStyle(cartQuantity >= item.requestedQuantity ? AppColors.secondaryGray : AppColors.primaryDark)
+                                            .foregroundStyle(cartQuantity >= (item.quantityNeeded ?? 1) ? AppColors.secondaryGray : AppColors.primaryDark)
                                             .frame(width: 56, height: 56)
                                     }
-                                    .disabled(cartQuantity >= item.requestedQuantity)
+                                    .disabled(cartQuantity >= (item.quantityNeeded ?? 1))
                                 }
                                 .background(AppColors.white)
                                 .clipShape(Capsule())

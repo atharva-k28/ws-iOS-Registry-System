@@ -12,12 +12,10 @@ import Foundation
 enum SupabaseConfig {
 
     /// Supabase project URL
-    /// TODO: Replace with your actual Supabase project URL
-    static let projectURL = "https://your-project-id.supabase.co"
+    static let projectURL = "https://groxfqvymzoildwbrzvd.supabase.co"
 
     /// Supabase anonymous/public key
-    /// TODO: Replace with your actual Supabase anon key
-    static let anonKey = "your-anon-key-here"
+    static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdyb3hmcXZ5bXpvaWxkd2JyenZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NjI4MDQsImV4cCI6MjA5NDQzODgwNH0.45Xi8PNlepAF0fp4hAedf1BO5zjJn65fDbEMMhOsoGM"
 
     /// Full URL object
     static var url: URL {

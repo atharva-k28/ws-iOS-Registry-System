@@ -23,6 +23,7 @@ final class FriendRegistryDetailViewModel {
     var selectedCategory: String? = nil
     var selectedItem: RegistryItem?
     var showCart = false
+    var enabledGroupGiftingIds: Set<UUID> = []
 
     // MARK: Init
 
@@ -33,11 +34,7 @@ final class FriendRegistryDetailViewModel {
     // MARK: Actions
 
     func enableGroupGifting(for item: RegistryItem) {
-        if let index = registryItems.firstIndex(where: { $0.id == item.id }) {
-            // In a real app, this would call a service
-            registryItems[index].targetAmount = registryItems[index].targetAmount // No-op for now but triggers UI update
-            // For the mock, we can simulate price >= threshold if needed, but the UI is driven by isGroupGifting helper
-        }
+        enabledGroupGiftingIds.insert(item.id)
     }
 
     // MARK: Computed
@@ -53,6 +50,9 @@ final class FriendRegistryDetailViewModel {
 
     /// Whether a registry item qualifies for group gifting
     func isGroupGifting(for item: RegistryItem) -> Bool {
+        if enabledGroupGiftingIds.contains(item.id) {
+            return true
+        }
         guard let product = products[item.productID] else { return false }
         return product.price >= Self.groupGiftingThreshold
     }

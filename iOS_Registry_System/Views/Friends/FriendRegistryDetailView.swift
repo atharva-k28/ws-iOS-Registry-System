@@ -13,6 +13,7 @@ struct FriendRegistryDetailView: View {
 
     let event: Event
     @State private var viewModel: FriendRegistryDetailViewModel
+    @State private var contributingItem: RegistryItem? = nil
     @Environment(\.dismiss) private var dismiss
 
     init(event: Event) {
@@ -138,8 +139,41 @@ struct FriendRegistryDetailView: View {
                     item: item,
                     product: product,
                     eventName: viewModel.event.title,
-                    isGroupGifting: viewModel.isGroupGifting(for: item)
+                    isGroupGifting: viewModel.isGroupGifting(for: item),
+                    onContribute: {
+                        viewModel.selectedItem = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                            contributingItem = item
+                        }
+                    },
+                    onEnableGroupGifting: {
+                        viewModel.selectedItem = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                            contributingItem = item
+                        }
+                    }
                 )
+            }
+        }
+        .sheet(item: $contributingItem) { item in
+            if let product = viewModel.product(for: item) {
+                FriendContributionSheetView(
+                    item: item,
+                    product: product,
+                    isPreviouslyGroupGifting: viewModel.isGroupGifting(for: item),
+                    onContribute: { amount in
+                        if let index = viewModel.registryItems.firstIndex(where: { $0.id == item.id }) {
+                            withAnimation {
+                                viewModel.enableGroupGifting(for: item)
+                                viewModel.registryItems[index].currentAmount += amount
+                                if viewModel.registryItems[index].currentAmount >= viewModel.registryItems[index].targetAmount {
+                                    viewModel.registryItems[index].isPurchased = true
+                                }
+                            }
+                        }
+                    }
+                )
+                .presentationDetents([.fraction(0.85), .large])
             }
         }
         .navigationDestination(isPresented: $viewModel.showCart) {
@@ -281,13 +315,13 @@ struct FriendRegistryDetailView: View {
                 )
             },
             onContribute: {
-                // Contribute action
+                contributingItem = item
             },
             onShare: {
                 // Share action
             },
             onEnableGroupGifting: {
-                viewModel.enableGroupGifting(for: item)
+                contributingItem = item
             },
             onTap: {
                 viewModel.selectedItem = item

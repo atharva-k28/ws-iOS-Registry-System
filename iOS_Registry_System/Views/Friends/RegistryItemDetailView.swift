@@ -12,6 +12,8 @@ struct RegistryItemDetailView: View {
     let product: Product
     let eventName: String
     let isGroupGifting: Bool
+    var onContribute: (() -> Void)? = nil
+    var onEnableGroupGifting: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
     @State private var cartQuantity = 0
 
@@ -139,7 +141,7 @@ struct RegistryItemDetailView: View {
                         if isGroupGifting {
                             // Group Gifting: Only Contribute
                             Button {
-                                // Contribute action
+                                onContribute?()
                             } label: {
                                 Text("Contribute")
                                     .font(AppTypography.buttonLarge)
@@ -198,7 +200,7 @@ struct RegistryItemDetailView: View {
                             } else {
                                 HStack(spacing: AppSpacing.md) {
                                     Button {
-                                        // Enable Group Gift
+                                        onEnableGroupGifting?()
                                     } label: {
                                         HStack(spacing: 8) {
                                             Image(systemName: "person.2.fill")

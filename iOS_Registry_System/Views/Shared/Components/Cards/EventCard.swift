@@ -85,7 +85,7 @@ struct EventCard: View {
                         Button {
                             onInvite?()
                         } label: {
-                            Text("Invite")
+                            Text("Invite Guest")
                                 .font(AppTypography.buttonMedium)
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, AppSpacing.md)

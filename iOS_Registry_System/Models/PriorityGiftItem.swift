@@ -15,6 +15,8 @@ struct Contributor: Identifiable, Hashable {
     let avatarURL: String?
     let amount: Double
     let timeAgo: String
+    var itemName: String? = nil
+    var date: Date? = nil
 }
 
 // MARK: - Priority Gift Item

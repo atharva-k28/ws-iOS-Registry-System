@@ -537,7 +537,7 @@ struct InviteCollaboratorsSheet: View {
         guard let eventId = eventId else { return }
         Task {
             do {
-                try await EventService.shared.addCollaborator(eventId: eventId, userId: user.id)
+                try await EventService.shared.addGuest(eventId: eventId, userId: user.id)
                 invitedUserIds.insert(user.id)
                 invitedUserName = user.firstName ?? user.fullName
                 withAnimation(.spring()) {

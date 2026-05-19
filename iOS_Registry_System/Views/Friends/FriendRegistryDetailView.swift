@@ -331,31 +331,18 @@ struct FriendRegistryDetailView: View {
         }
     }
 
+    private let gridColumns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
     private func registryGrid(for items: [RegistryItem]) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            // Left Column
-            VStack(spacing: 8) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    if index % 2 == 0 {
-                        if let product = viewModel.product(for: item) {
-                            registryCard(item: item, product: product)
-                        }
-                    }
+        LazyVGrid(columns: gridColumns, spacing: 12) {
+            ForEach(items) { item in
+                if let product = viewModel.product(for: item) {
+                    registryCard(item: item, product: product)
                 }
             }
-            .frame(maxWidth: .infinity)
-            
-            // Right Column
-            VStack(spacing: 8) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    if index % 2 != 0 {
-                        if let product = viewModel.product(for: item) {
-                            registryCard(item: item, product: product)
-                        }
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity)
         }
     }
 

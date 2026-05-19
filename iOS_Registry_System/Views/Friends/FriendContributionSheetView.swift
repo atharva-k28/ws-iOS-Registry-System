@@ -359,6 +359,12 @@ struct FriendContributionSheetView: View {
     }
 
     private var imageURL: String {
+        if let imageUrl = product.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
+        if let imageUrl = item.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
         let seed = product.name.replacingOccurrences(of: " ", with: ",")
         return "https://loremflickr.com/400/400/\(seed),product?lock=\(abs(product.id.hashValue % 100))"
     }
@@ -590,6 +596,12 @@ struct FriendContributionSuccessView: View {
     }
 
     private var imageURL: String {
+        if let imageUrl = product.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
+        if let imageUrl = item.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
         let seed = product.name.replacingOccurrences(of: " ", with: ",")
         return "https://loremflickr.com/400/400/\(seed),product?lock=\(abs(product.id.hashValue % 100))"
     }

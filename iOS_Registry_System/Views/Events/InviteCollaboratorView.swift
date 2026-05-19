@@ -48,6 +48,11 @@ struct InviteCollaboratorView: View {
     @State private var emailInput = ""
     @State private var showCustomiseAccess = false
     @State private var permissions: CollaboratorPermissions
+    
+    // Real user search state
+    @State private var searchResults: [User] = []
+    @State private var isSearching = false
+    @State private var selectedUser: User? = nil
 
     init(role: CollaboratorRole, onInviteSent: @escaping (Collaborator) -> Void) {
         self.role = role
@@ -55,9 +60,18 @@ struct InviteCollaboratorView: View {
         _permissions = State(initialValue: role.defaultPermissions)
     }
 
-    private var filteredContacts: [MockContact] {
-        guard !searchText.isEmpty else { return suggestedContacts }
-        return suggestedContacts.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    private func performSearch(query: String) async {
+        guard !query.isEmpty else {
+            searchResults = []
+            return
+        }
+        isSearching = true
+        defer { isSearching = false }
+        do {
+            searchResults = try await AuthService.shared.searchUsers(query: query)
+        } catch {
+            print("Error searching users: \(error)")
+        }
     }
 
     var body: some View {
@@ -106,6 +120,11 @@ struct InviteCollaboratorView: View {
                     .presentationCornerRadius(32)
             }
             .safeAreaInset(edge: .bottom) { sendButton }
+            .onChange(of: searchText) { _ in
+                Task {
+                    await performSearch(query: searchText)
+                }
+            }
         }
     }
 
@@ -253,26 +272,57 @@ struct InviteCollaboratorView: View {
             .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
             .softShadow()
 
-            // Suggested contacts
-            VStack(alignment: .leading, spacing: 6) {
-                Text("SUGGESTED")
-                    .font(AppTypography.caption1Medium)
-                    .tracking(1.5)
-                    .foregroundStyle(AppColors.secondaryGray)
+            if isSearching {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+                .padding(.vertical, AppSpacing.md)
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    if searchText.isEmpty {
+                        Text("SUGGESTED")
+                            .font(AppTypography.caption1Medium)
+                            .tracking(1.5)
+                            .foregroundStyle(AppColors.secondaryGray)
 
-                ForEach(filteredContacts) { contact in
-                    contactRow(contact: contact)
+                        ForEach(suggestedContacts) { contact in
+                            mockContactRow(contact: contact)
+                        }
+                    } else {
+                        Text("SEARCH RESULTS")
+                            .font(AppTypography.caption1Medium)
+                            .tracking(1.5)
+                            .foregroundStyle(AppColors.secondaryGray)
+
+                        if searchResults.isEmpty {
+                            Text("No users found")
+                                .font(AppTypography.footnote)
+                                .foregroundStyle(AppColors.secondaryGray)
+                                .padding(.vertical, AppSpacing.sm)
+                        } else {
+                            ForEach(searchResults) { user in
+                                userRow(user: user)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    private func contactRow(contact: MockContact) -> some View {
+    private func mockContactRow(contact: MockContact) -> some View {
         let isSelected = selectedContact?.id == contact.id
 
         return Button {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                selectedContact = isSelected ? nil : contact
+                if isSelected {
+                    selectedContact = nil
+                } else {
+                    selectedContact = contact
+                    selectedUser = nil
+                }
             }
         } label: {
             HStack(spacing: AppSpacing.md) {
@@ -297,7 +347,59 @@ struct InviteCollaboratorView: View {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "plus.circle")
                     .font(.system(size: 22))
                     .foregroundStyle(isSelected ? Color(hex: "34C759") : AppColors.secondaryGray)
-                    .animation(.spring(response: 0.3), value: isSelected)
+            }
+            .padding(AppSpacing.sm)
+            .background(AppColors.white)
+            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppCornerRadius.md)
+                    .stroke(isSelected ? Color(hex: "34C759").opacity(0.4) : Color.clear, lineWidth: 1.5)
+            )
+            .softShadow()
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func userRow(user: User) -> some View {
+        let isSelected = selectedUser?.id == user.id
+
+        return Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                if isSelected {
+                    selectedUser = nil
+                } else {
+                    selectedUser = user
+                    selectedContact = nil
+                }
+            }
+        } label: {
+            HStack(spacing: AppSpacing.md) {
+                AsyncImage(url: URL(string: user.avatarUrl ?? "")) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Circle().fill(AppColors.backgroundGray)
+                        .overlay(
+                            Text(String(user.fullName.prefix(1)))
+                                .font(AppTypography.bodyMedium)
+                                .foregroundStyle(AppColors.secondaryGray)
+                        )
+                }
+                .frame(width: 44, height: 44)
+                .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(user.fullName)
+                        .font(AppTypography.bodyMedium)
+                        .foregroundStyle(AppColors.primaryText)
+                    Text(user.email)
+                        .font(AppTypography.caption1)
+                        .foregroundStyle(AppColors.secondaryGray)
+                }
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "plus.circle")
+                    .font(.system(size: 22))
+                    .foregroundStyle(isSelected ? Color(hex: "34C759") : AppColors.secondaryGray)
             }
             .padding(AppSpacing.sm)
             .background(AppColors.white)
@@ -375,11 +477,30 @@ struct InviteCollaboratorView: View {
 
     private var sendButton: some View {
         Button {
-            let name = selectedContact?.name ?? (emailInput.isEmpty ? phoneInput : emailInput)
+            let name: String
+            let avatar: String?
+            let userId: UUID?
+
+            if let user = selectedUser {
+                name = user.fullName
+                avatar = user.avatarUrl
+                userId = user.id
+            } else if let contact = selectedContact {
+                name = contact.name
+                avatar = contact.avatar
+                userId = nil
+            } else {
+                name = emailInput.isEmpty ? phoneInput : emailInput
+                avatar = nil
+                userId = nil
+            }
+
             guard !name.isEmpty else { return }
+            
             let collaborator = Collaborator(
+                userId: userId,
                 name: name,
-                avatarURL: selectedContact?.avatar,
+                avatarURL: avatar,
                 role: role,
                 status: .pending,
                 invitedDate: .now,

@@ -26,6 +26,7 @@ final class FriendsViewModel {
 
     var friendEvents: [Event] = []
     var pendingInvites: [Event] = []
+    var eventProgresses: [UUID: Double] = [:]
     var isLoading = false
     var errorMessage: String?
     var searchText = ""
@@ -64,8 +65,43 @@ final class FriendsViewModel {
         defer { isLoading = false }
 
         do {
-            friendEvents = try await EventService.shared.fetchFriendEvents()
-            pendingInvites = try await EventService.shared.fetchPendingInvites()
+            let events = try await EventService.shared.fetchFriendEvents()
+            let invites = try await EventService.shared.fetchPendingInvites()
+            
+            // Calculate progress for each event in parallel
+            var progresses: [UUID: Double] = [:]
+            await withTaskGroup(of: (UUID, Double).self) { group in
+                for event in events {
+                    group.addTask {
+                        do {
+                            let items = try await EventService.shared.fetchRegistryItems(eventID: event.id)
+                            var totalTarget = 0.0
+                            var totalRaised = 0.0
+                            for item in items {
+                                totalTarget += item.price * Double(item.quantityNeeded ?? 1)
+                                if let funded = item.fundedAmount, funded > 0 {
+                                    totalRaised += funded
+                                } else {
+                                    totalRaised += item.price * Double(item.quantityPurchased ?? 0)
+                                }
+                            }
+                            let progress = totalTarget > 0 ? min(totalRaised / totalTarget, 1.0) : 0.0
+                            return (event.id, progress)
+                        } catch {
+                            print("⚠️ Failed to load progress for event \(event.id): \(error)")
+                            return (event.id, 0.0)
+                        }
+                    }
+                }
+                
+                for await (eventId, progress) in group {
+                    progresses[eventId] = progress
+                }
+            }
+            
+            self.friendEvents = events
+            self.pendingInvites = invites
+            self.eventProgresses = progresses
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -77,6 +113,21 @@ final class FriendsViewModel {
             // Move from pending to accepted
             pendingInvites.removeAll { $0.id == event.id }
             friendEvents.append(event)
+            
+            // Calculate progress for this new active event
+            let items = try await EventService.shared.fetchRegistryItems(eventID: event.id)
+            var totalTarget = 0.0
+            var totalRaised = 0.0
+            for item in items {
+                totalTarget += item.price * Double(item.quantityNeeded ?? 1)
+                if let funded = item.fundedAmount, funded > 0 {
+                    totalRaised += funded
+                } else {
+                    totalRaised += item.price * Double(item.quantityPurchased ?? 0)
+                }
+            }
+            let progress = totalTarget > 0 ? min(totalRaised / totalTarget, 1.0) : 0.0
+            eventProgresses[event.id] = progress
         } catch {
             print("Failed to accept invite: \(error)")
         }

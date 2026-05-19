@@ -12,6 +12,7 @@ struct RegistryItemDetailView: View {
     let product: Product
     let eventName: String
     let isGroupGifting: Bool
+    var isHostView: Bool = false
     var onContribute: (() -> Void)? = nil
     var onEnableGroupGifting: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
@@ -127,7 +128,8 @@ struct RegistryItemDetailView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                VStack(spacing: AppSpacing.sm) {
+                if !isHostView {
+                    VStack(spacing: AppSpacing.sm) {
                     if !isCompleted {
                         if isGroupGifting {
                             // Group Gifting: Only Contribute
@@ -233,15 +235,19 @@ struct RegistryItemDetailView: View {
                             .background(AppColors.white)
                             .clipShape(Capsule())
                     }
+                    }
+                    .padding(AppSpacing.lg)
+                    .background(.ultraThinMaterial)
                 }
-                .padding(AppSpacing.lg)
-                .background(.ultraThinMaterial)
             }
         }
     }
 
     private var imageURL: String {
         if let imageUrl = product.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
+        if let imageUrl = item.imageUrl, !imageUrl.isEmpty {
             return imageUrl
         }
         let seed = product.name.replacingOccurrences(of: " ", with: ",")

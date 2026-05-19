@@ -16,7 +16,7 @@ private struct ContributorNote: Identifiable, Equatable {
     let name: String
     let avatar: String
     let giftName: String
-    let giftImage: String
+    let giftImage: String?
     let amount: Int
     var noteText: String
     var isSent: Bool
@@ -27,14 +27,30 @@ private struct ContributorNote: Identifiable, Equatable {
 struct ThankYouNoteSheet: View {
 
     @Environment(\.dismiss) private var dismiss
-    @State private var notes: [ContributorNote] = [
-        ContributorNote(name: "Maya Chen",    avatar: "https://i.pravatar.cc/150?img=5",  giftName: "Espresso Machine",   giftImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300", amount: 50,  noteText: "", isSent: false),
-        ContributorNote(name: "Liam Carter",  avatar: "https://i.pravatar.cc/150?img=8",  giftName: "Dinner Set",         giftImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300", amount: 80,  noteText: "", isSent: false),
-        ContributorNote(name: "Sofia Rivera", avatar: "https://i.pravatar.cc/150?img=9",  giftName: "Kitchen Stand Mixer",giftImage: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300", amount: 120, noteText: "", isSent: false),
-        ContributorNote(name: "James Park",   avatar: "https://i.pravatar.cc/150?img=14", giftName: "Dutch Oven",         giftImage: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300", amount: 60,  noteText: "", isSent: false),
-    ]
+    @State private var notes: [ContributorNote]
     @State private var selectedIndex = 0
     @State private var allSent = false
+
+    init(thankYouNotes: [EventCommandCenterView.ThankYouNoteItem] = [], initialSelectedIndex: Int = 0) {
+        let mapped = thankYouNotes.map { note in
+            let firstName = note.guestName.split(separator: " ").first ?? "Friend"
+            let defaultText = "\(firstName) — your contribution to our \(note.itemName.lowercased()) means the world. With so much love, Olivia & James ☕️"
+            return ContributorNote(
+                name: note.guestName,
+                avatar: note.guestAvatar ?? "https://i.pravatar.cc/150?img=5",
+                giftName: note.itemName,
+                giftImage: note.itemImage,
+                amount: Int(note.amount),
+                noteText: defaultText,
+                isSent: false
+            )
+        }
+        self._notes = State(initialValue: mapped.isEmpty ? [
+            ContributorNote(name: "Maya Chen",    avatar: "https://i.pravatar.cc/150?img=5",  giftName: "Espresso Machine",   giftImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300", amount: 50,  noteText: "Maya — your contribution to our espresso machine means the world. With so much love, Olivia & James ☕️", isSent: false),
+            ContributorNote(name: "Liam Carter",  avatar: "https://i.pravatar.cc/150?img=8",  giftName: "Dinner Set",         giftImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300", amount: 80,  noteText: "Liam — your contribution to our dinner set means the world. With so much love, Olivia & James ☕️", isSent: false)
+        ] : mapped)
+        self._selectedIndex = State(initialValue: initialSelectedIndex)
+    }
 
     private var currentNote: ContributorNote { notes[selectedIndex] }
 
@@ -69,41 +85,6 @@ struct ThankYouNoteSheet: View {
     private var noteComposerView: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: AppSpacing.xl) {
-
-                // Progress chips
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: AppSpacing.sm) {
-                        ForEach(notes.indices, id: \.self) { i in
-                            Button {
-                                withAnimation(.spring(response: 0.3)) { selectedIndex = i }
-                            } label: {
-                                HStack(spacing: 5) {
-                                    if notes[i].isSent {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(Color(hex: "34C759"))
-                                    }
-                                    Text(String(notes[i].name.split(separator: " ").first ?? ""))
-                                        .font(AppTypography.caption1Medium)
-                                        .foregroundStyle(selectedIndex == i ? .white : AppColors.primaryText)
-                                }
-                                .padding(.horizontal, AppSpacing.sm)
-                                .padding(.vertical, 8)
-                                .background(
-                                    Capsule()
-                                        .fill(selectedIndex == i ? AppColors.primaryText : AppColors.white)
-                                )
-                                .overlay(
-                                    Capsule()
-                                        .stroke(selectedIndex == i ? Color.clear : Color.black.opacity(0.08), lineWidth: 1)
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
-                }
-                .padding(.horizontal, -AppSpacing.screenHorizontal)
 
                 // Avatar + header
                 VStack(spacing: AppSpacing.md) {
@@ -151,25 +132,17 @@ struct ThankYouNoteSheet: View {
                     }
 
                     // Editable note text
-                    ZStack(alignment: .topLeading) {
-                        if notes[selectedIndex].noteText.isEmpty {
-                            Text("\"\(currentNote.name.split(separator: " ").first ?? "") — your contribution to our \(currentNote.giftName.lowercased()) means the world. With so much love, Olivia & James ☕️\"")
-                                .font(.system(size: 16, weight: .regular, design: .serif))
-                                .foregroundStyle(AppColors.secondaryGray.opacity(0.6))
-                                .italic()
-                        }
-                        TextEditor(text: $notes[selectedIndex].noteText)
-                            .font(.system(size: 16, weight: .regular, design: .serif))
-                            .foregroundStyle(AppColors.primaryText)
-                            .scrollContentBackground(.hidden)
-                            .frame(minHeight: 80)
-                    }
+                    TextEditor(text: $notes[selectedIndex].noteText)
+                        .font(.system(size: 16, weight: .regular, design: .serif))
+                        .foregroundStyle(AppColors.primaryText)
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 80)
 
                     Divider()
 
                     // Gift row
                     HStack(spacing: AppSpacing.sm) {
-                        AsyncImage(url: URL(string: currentNote.giftImage)) { img in
+                        AsyncImage(url: URL(string: currentNote.giftImage ?? "")) { img in
                             img.resizable().aspectRatio(contentMode: .fill)
                         } placeholder: { Color(hex: "E8E2DC") }
                         .frame(width: 52, height: 52)
@@ -194,84 +167,37 @@ struct ThankYouNoteSheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
                 .softShadow()
 
-                // Delivery channel
-                VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    Text("SEND VIA")
-                        .font(AppTypography.caption1Medium)
-                        .tracking(1.5)
-                        .foregroundStyle(AppColors.secondaryGray)
-                    HStack(spacing: AppSpacing.sm) {
-                        channelChip(icon: "envelope.fill", label: "Email")
-                        channelChip(icon: "message.fill",  label: "iMessage")
-                        channelChip(icon: "square.and.arrow.up", label: "Share")
-                    }
-                }
-
-                Color.clear.frame(height: 100)
+                Color.clear.frame(height: 40)
             }
             .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.top, AppSpacing.md)
         }
         .appBackground()
         .safeAreaInset(edge: .bottom) {
-            HStack(spacing: AppSpacing.sm) {
-                Button {
-                    // Skip
+            Button {
+                withAnimation(.spring(response: 0.3)) {
+                    notes[selectedIndex].isSent = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                     advanceOrFinish()
-                } label: {
-                    Text("Skip")
-                        .font(AppTypography.buttonMedium)
-                        .foregroundStyle(AppColors.secondaryGray)
-                        .frame(height: 54)
-                        .frame(maxWidth: 90)
-                        .background(AppColors.white)
-                        .clipShape(Capsule())
-                        .softShadow()
                 }
-                .buttonStyle(.plain)
-
-                Button {
-                    withAnimation(.spring(response: 0.3)) {
-                        notes[selectedIndex].isSent = true
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                        advanceOrFinish()
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "paperplane.fill")
-                        Text("Send Note")
-                    }
-                    .font(AppTypography.buttonLarge)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
-                    .background(AppColors.accentRed)
-                    .clipShape(Capsule())
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "paperplane.fill")
+                    Text("Send Note")
                 }
-                .buttonStyle(.plain)
+                .font(AppTypography.buttonLarge)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .background(AppColors.accentRed)
+                .clipShape(Capsule())
             }
+            .buttonStyle(.plain)
             .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.vertical, AppSpacing.md)
             .background(AppColors.background.opacity(0.96))
         }
-    }
-
-    @State private var selectedChannel = "Email"
-    private func channelChip(icon: String, label: String) -> some View {
-        let isSelected = selectedChannel == label
-        return Button { selectedChannel = label } label: {
-            HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 13))
-                Text(label).font(AppTypography.caption1Medium)
-            }
-            .foregroundStyle(isSelected ? .white : AppColors.primaryText)
-            .padding(.horizontal, AppSpacing.sm)
-            .padding(.vertical, 10)
-            .background(Capsule().fill(isSelected ? AppColors.primaryText : AppColors.white))
-            .overlay(Capsule().stroke(isSelected ? Color.clear : Color.black.opacity(0.08), lineWidth: 1))
-        }
-        .buttonStyle(.plain)
     }
 
     private func advanceOrFinish() {

@@ -72,6 +72,7 @@ struct CollaboratorPermissions {
 
 struct Collaborator: Identifiable {
     let id = UUID()
+    var userId: UUID?
     var name: String
     var avatarURL: String?
     var role: CollaboratorRole

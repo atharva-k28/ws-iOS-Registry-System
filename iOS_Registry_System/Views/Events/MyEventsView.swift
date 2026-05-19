@@ -62,6 +62,35 @@ struct MyEventsView: View {
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
 
+                    // MARK: Pending Collaborator Invites
+                    if !viewModel.pendingCollaboratorInvites.isEmpty {
+                        VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
+                            Text("CO-HOST INVITATIONS")
+                                .font(AppTypography.caption1Medium)
+                                .tracking(1.5)
+                                .foregroundColor(AppColors.primaryText)
+                                .padding(.horizontal, AppSpacing.screenHorizontal)
+
+                            ForEach(viewModel.pendingCollaboratorInvites) { event in
+                                InviteCard(
+                                    event: event,
+                                    onAccept: {
+                                        Task {
+                                            await viewModel.acceptCollaboratorInvite(event)
+                                            selectedEvent = event
+                                        }
+                                    },
+                                    onDecline: {
+                                        Task {
+                                            await viewModel.declineCollaboratorInvite(event)
+                                        }
+                                    }
+                                )
+                                .padding(.horizontal, AppSpacing.screenHorizontal)
+                            }
+                        }
+                    }
+
                     // MARK: Event Switcher Slider
                     if viewModel.filteredEvents.count > 1 {
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -110,9 +139,10 @@ struct MyEventsView: View {
 
                         // MARK: Event Stats
                         HStack(spacing: AppSpacing.sm) {
-                            statCard(value: "68%", label: "Complete", icon: "arrow.up.right")
-                            statCard(value: "$4.2k", label: "Raised", icon: "wallet.pass")
-                            statCard(value: "24", label: "Guests", icon: "person.2")
+                            let stats = viewModel.eventStats[activeEvent.id] ?? EventsViewModel.EventDashboardStats()
+                            statCard(value: "\(stats.completePercentage)%", label: "Complete", icon: "arrow.up.right")
+                            statCard(value: "$\(Int(stats.raisedAmount))", label: "Raised", icon: "wallet.pass")
+                            statCard(value: "\(stats.guestsCount)", label: "Guests", icon: "person.2")
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
 
@@ -133,8 +163,16 @@ struct MyEventsView: View {
                                 .padding(.horizontal, AppSpacing.screenHorizontal)
 
                             VStack(spacing: AppSpacing.sm) {
-                                ForEach(PriorityGiftItem.mockContributors.prefix(3)) { contributor in
-                                    recentActivityRow(contributor: contributor)
+                                let recent = viewModel.eventStats[activeEvent.id]?.recentActivity ?? []
+                                if recent.isEmpty {
+                                    Text("No activity yet.")
+                                        .font(AppTypography.bodyMedium)
+                                        .foregroundStyle(AppColors.secondaryGray)
+                                        .padding(.vertical, AppSpacing.sm)
+                                } else {
+                                    ForEach(recent.prefix(3)) { contributor in
+                                        recentActivityRow(contributor: contributor)
+                                    }
                                 }
                             }
                             .padding(.horizontal, AppSpacing.screenHorizontal)
@@ -177,8 +215,16 @@ struct MyEventsView: View {
             }
             .task {
                 await viewModel.loadEvents()
-                if selectedEvent == nil {
+                if selectedEvent == nil || !viewModel.filteredEvents.contains(where: { $0.id == selectedEvent?.id }) {
                     selectedEvent = viewModel.filteredEvents.first
+                }
+                if let active = selectedEvent {
+                    await viewModel.loadStats(for: active)
+                }
+            }
+            .onChange(of: selectedEvent) { oldValue, newValue in
+                if let newEvent = newValue {
+                    Task { await viewModel.loadStats(for: newEvent) }
                 }
             }
         }
@@ -216,22 +262,36 @@ struct MyEventsView: View {
                 img.resizable().aspectRatio(contentMode: .fill)
             } placeholder: {
                 Circle().fill(AppColors.backgroundGray)
+                    .overlay(Text(contributor.name.prefix(1)).font(AppTypography.caption1Medium))
             }
             .frame(width: 40, height: 40)
             .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(contributor.name) contributed")
+                Text("\(contributor.name)")
                     .font(AppTypography.bodyMedium)
                     .foregroundStyle(AppColors.primaryText)
-                Text(contributor.timeAgo)
-                    .font(AppTypography.caption1)
-                    .foregroundStyle(AppColors.secondaryGray)
+                if let itemName = contributor.itemName {
+                    Text("contributed to \(itemName)")
+                        .font(AppTypography.caption1)
+                        .foregroundStyle(AppColors.secondaryGray)
+                        .lineLimit(1)
+                } else {
+                    Text("contributed")
+                        .font(AppTypography.caption1)
+                        .foregroundStyle(AppColors.secondaryGray)
+                        .lineLimit(1)
+                }
             }
             Spacer()
-            Text("+$\(Int(contributor.amount))")
-                .font(AppTypography.bodyMedium)
-                .foregroundStyle(AppColors.accentRed)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("+$\(Int(contributor.amount))")
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.accentRed)
+                Text(contributor.timeAgo)
+                    .font(AppTypography.caption2)
+                    .foregroundStyle(AppColors.secondaryGray)
+            }
         }
         .padding(AppSpacing.sm)
         .background(AppColors.white)

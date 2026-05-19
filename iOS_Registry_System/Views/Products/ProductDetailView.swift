@@ -17,6 +17,7 @@ struct ProductDetailView: View {
     @State private var showContributeSheet = false
     @State private var showARPreview = false
     @State private var relatedProducts: [Product] = []
+    @State private var isLoadingRelatedProducts = false
     @State private var selectedRelatedProduct: Product?
     
     var body: some View {
@@ -55,7 +56,7 @@ struct ProductDetailView: View {
                         }
                         
                         // MARK: Pairs With
-                        PairsWithRail(products: relatedProducts) { relatedProduct in
+                        PairsWithRail(products: relatedProducts, isLoading: isLoadingRelatedProducts) { relatedProduct in
                             selectedRelatedProduct = relatedProduct
                         }
                     }
@@ -105,11 +106,21 @@ struct ProductDetailView: View {
                 .presentationCornerRadius(28)
         }
         .task {
-            relatedProducts = await AIService.shared.fetchSimilarProducts(
+            isLoadingRelatedProducts = true
+
+            if let categoryProducts = try? await ProductService.shared.fetchProducts(category: product.category) {
+                relatedProducts = categoryProducts.filter { $0.id != product.id }
+            }
+
+            let similarProducts = await AIService.shared.fetchSimilarProducts(
                 targetProductId: product.id,
                 targetProductName: product.name,
                 targetCategory: product.category
             )
+            if !similarProducts.isEmpty {
+                relatedProducts = similarProducts
+            }
+            isLoadingRelatedProducts = false
         }
     }
     
@@ -226,7 +237,8 @@ struct ProductDetailView: View {
             Text(product.name)
                 .font(AppTypography.largeTitleSerif)
                 .foregroundColor(AppColors.primaryText)
-                .lineLimit(2)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
             
             HStack(spacing: AppSpacing.xxs) {
                 HStack(spacing: 2) {

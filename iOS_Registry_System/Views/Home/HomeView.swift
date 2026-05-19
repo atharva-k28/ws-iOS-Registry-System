@@ -13,6 +13,8 @@ struct HomeView: View {
 
     @State private var viewModel = HomeViewModel()
     @State private var activeModal: HomeModal?
+    @State private var showNotifications = false
+    @State private var searchTask: Task<Void, Never>?
 
     var body: some View {
         NavigationStack {
@@ -26,6 +28,9 @@ struct HomeView: View {
 
                         emptyTapShield(height: AppSpacing.sectionGap)
 
+                        if isSearchActive {
+                            searchResultsSection
+                        } else {
                         // MARK: Featured Events
                         if !viewModel.featuredEvents.isEmpty {
                             sectionHeader(title: "Upcoming Events", subtitle: "Registries you're part of")
@@ -124,6 +129,7 @@ struct HomeView: View {
                             .homeContentMargins()
                             .padding(.top, AppSpacing.sm)
                         }
+                        }
 
                         // Bottom spacer for tab bar
                         Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.xxl)
@@ -148,9 +154,108 @@ struct HomeView: View {
                         .presentationCornerRadius(28)
                 }
             }
+            .sheet(isPresented: $showNotifications) {
+                NotificationsSheet(viewModel: viewModel)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+            }
             .task {
                 await viewModel.loadHomeData()
             }
+            .onDisappear {
+                searchTask?.cancel()
+            }
+        }
+    }
+
+    private var isSearchActive: Bool {
+        !viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var searchResultsSection: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            if viewModel.isSearching {
+                InlineLoadingView()
+                    .homeContentMargins()
+            } else if viewModel.searchResults.isEmpty {
+                EmptyStateView(
+                    systemImageName: "shippingbox",
+                    title: "No Products Found",
+                    description: "Try another product name, brand, or category."
+                )
+                .homeContentMargins()
+            } else {
+                VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                    Text("Search Results")
+                        .font(AppTypography.title3)
+                        .foregroundStyle(AppColors.primaryText)
+
+                    ForEach(viewModel.searchResults) { product in
+                        Button {
+                            activeModal = .product(product)
+                        } label: {
+                            searchResultRow(product)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .homeContentMargins()
+            }
+        }
+    }
+
+    private func searchResultRow(_ product: Product) -> some View {
+        HStack(spacing: AppSpacing.md) {
+            AsyncImage(url: product.imageUrl.flatMap(URL.init(string:))) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                AppColors.backgroundGray
+            }
+            .frame(width: 72, height: 72)
+            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md, style: .continuous))
+
+            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                Text(product.name)
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.primaryText)
+                    .lineLimit(2)
+
+                Text(product.brand ?? product.category)
+                    .font(AppTypography.caption1)
+                    .foregroundStyle(AppColors.secondaryGray)
+
+                Text(CurrencyFormatter.format(product.price))
+                    .font(AppTypography.caption1Medium)
+                    .foregroundStyle(AppColors.primaryText)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(AppColors.secondaryGray)
+        }
+        .padding(AppSpacing.sm)
+        .background(AppColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md, style: .continuous))
+        .softShadow()
+    }
+
+    private func scheduleSearch() {
+        searchTask?.cancel()
+
+        guard isSearchActive else {
+            viewModel.searchResults = []
+            return
+        }
+
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
+            await viewModel.searchProducts()
         }
     }
 
@@ -177,14 +282,29 @@ struct HomeView: View {
                 
                 Spacer()
                 
-                Button(action: {}) {
-                    Image(systemName: "bell")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(AppColors.primaryDark)
-                        .frame(width: 44, height: 44)
-                        .background(AppColors.white)
-                        .clipShape(Circle())
-                        .softShadow()
+                Button {
+                    showNotifications = true
+                    Task {
+                        await viewModel.loadNotifications()
+                        await viewModel.markNotificationsRead()
+                    }
+                } label: {
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: "bell")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(AppColors.primaryDark)
+                            .frame(width: 44, height: 44)
+                            .background(AppColors.white)
+                            .clipShape(Circle())
+                            .softShadow()
+
+                        if viewModel.unreadNotificationCount > 0 {
+                            Circle()
+                                .fill(AppColors.accentRed)
+                                .frame(width: 10, height: 10)
+                                .offset(x: -3, y: 3)
+                        }
+                    }
                 }
             }
             .homeContentMargins()
@@ -207,9 +327,33 @@ struct HomeView: View {
                     .font(.system(size: 16))
                     .foregroundStyle(AppColors.secondaryGray)
 
-                TextField("Search products...", text: .constant(""))
+                TextField("Search products...", text: $viewModel.searchQuery)
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.primaryText)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.search)
+                    .onSubmit {
+                        searchTask?.cancel()
+                        Task {
+                            await viewModel.searchProducts()
+                        }
+                    }
+                    .onChange(of: viewModel.searchQuery) { _, _ in
+                        scheduleSearch()
+                    }
+
+                if !viewModel.searchQuery.isEmpty {
+                    Button {
+                        searchTask?.cancel()
+                        viewModel.searchQuery = ""
+                        viewModel.searchResults = []
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(AppColors.secondaryGray)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(AppSpacing.md)
             .background(AppColors.white)
@@ -279,6 +423,139 @@ private enum HomeModal: Identifiable {
         case .aiBundle(let products, _):
             return "ai-bundle-\(products.map(\.id.uuidString).joined(separator: "-"))"
         }
+    }
+}
+
+private struct NotificationsSheet: View {
+    @Bindable var viewModel: HomeViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            topBar
+                .padding(.horizontal, AppSpacing.screenHorizontal)
+                .padding(.top, AppSpacing.md)
+                .padding(.bottom, AppSpacing.sm)
+                .background(AppColors.backgroundGray)
+
+            notificationContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(AppColors.backgroundGray.ignoresSafeArea())
+    }
+
+    private var notificationContent: some View {
+        Group {
+            if viewModel.isLoadingNotifications {
+                LoadingView(message: "Loading notifications...")
+            } else if viewModel.notifications.isEmpty {
+                notificationEmptyState
+            } else {
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVStack(spacing: AppSpacing.sm) {
+                        ForEach(viewModel.notifications) { notification in
+                            notificationRow(notification)
+                        }
+                    }
+                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                    .padding(.vertical, AppSpacing.md)
+                }
+            }
+        }
+    }
+
+    private var notificationEmptyState: some View {
+        VStack(spacing: AppSpacing.md) {
+            Spacer(minLength: 0)
+
+            Image(systemName: "bell")
+                .font(.system(size: 34, weight: .light))
+                .foregroundStyle(AppColors.secondaryGray)
+                .frame(width: 84, height: 84)
+                .background(AppColors.white)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(AppColors.backgroundGray, lineWidth: 1))
+                .softShadow()
+
+            VStack(spacing: AppSpacing.xs) {
+                Text("No Notifications")
+                    .font(AppTypography.premiumTitle)
+                    .foregroundStyle(AppColors.primaryText)
+                    .multilineTextAlignment(.center)
+
+                Text("Registry updates and gift activity will appear here.")
+                    .font(AppTypography.subheadline)
+                    .foregroundStyle(AppColors.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, AppSpacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppColors.backgroundGray)
+    }
+
+    private var topBar: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(AppColors.primaryDark)
+                    .frame(width: 44, height: 44)
+                    .background(AppColors.white)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(AppColors.backgroundGray, lineWidth: 1))
+            }
+
+            Spacer()
+
+            Text("NOTIFICATIONS")
+                .font(AppTypography.caption1Medium)
+                .tracking(1.5)
+                .foregroundColor(AppColors.secondaryGray)
+
+            Spacer()
+
+            Color.clear.frame(width: 44, height: 44)
+        }
+    }
+
+    private func notificationRow(_ notification: Notification) -> some View {
+        HStack(alignment: .top, spacing: AppSpacing.sm) {
+            Circle()
+                .fill(notification.isRead == true ? AppColors.backgroundGray : AppColors.accentRed)
+                .frame(width: 10, height: 10)
+                .padding(.top, 7)
+
+            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                Text(notification.title ?? notification.type?.capitalized ?? "Notification")
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.primaryText)
+
+                if let body = notification.body, !body.isEmpty {
+                    Text(body)
+                        .font(AppTypography.subheadline)
+                        .foregroundStyle(AppColors.secondaryGray)
+                        .lineLimit(3)
+                }
+
+                if let createdAt = notification.createdAt {
+                    Text(createdAt.formatted(date: .abbreviated, time: .shortened))
+                        .font(AppTypography.caption1)
+                        .foregroundStyle(AppColors.secondaryGray)
+                }
+            }
+
+            Spacer()
+        }
+        .padding(AppSpacing.md)
+        .background(AppColors.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md, style: .continuous))
+        .softShadow()
     }
 }
 

@@ -51,11 +51,6 @@ struct EditProfileView: View {
                         toggleRow(label: "Email Updates", icon: "envelope.badge", isOn: $emailUpdates)
                     }
 
-                    // MARK: — Account
-                    sectionCard(title: "ACCOUNT") {
-                        destructiveRow(label: "Sign Out", icon: "rectangle.portrait.and.arrow.right")
-                    }
-
                     Color.clear.frame(height: 40)
                 }
                 .padding(.horizontal, AppSpacing.screenHorizontal)
@@ -226,23 +221,6 @@ struct EditProfileView: View {
         .padding(.vertical, AppSpacing.sm)
     }
 
-    private func destructiveRow(label: String, icon: String) -> some View {
-        Button(action: {}) {
-            HStack(spacing: AppSpacing.md) {
-                Image(systemName: icon)
-                    .font(.system(size: 14))
-                    .foregroundColor(AppColors.accentRed)
-                    .frame(width: 24)
-                Text(label)
-                    .font(AppTypography.bodyMedium)
-                    .foregroundColor(AppColors.accentRed)
-                Spacer()
-            }
-            .padding(.horizontal, AppSpacing.md)
-            .padding(.vertical, AppSpacing.md)
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 #Preview {

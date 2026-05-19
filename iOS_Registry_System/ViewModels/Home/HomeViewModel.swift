@@ -32,11 +32,16 @@ final class HomeViewModel {
 
     var featuredEvents: [Event] = []
     var recommendedProducts: [Product] = []
+    var notifications: [Notification] = []
+    var searchQuery = ""
+    var searchResults: [Product] = []
     var aiBundleProducts: [Product] = []
     var aiCuratedContextTitle: String?
     var aiCuratedContextDescription: String?
     var registryProgress: HomeRegistryProgress?
     var isLoading = false
+    var isLoadingNotifications = false
+    var isSearching = false
     var isLoadingAIBundle = false
     var errorMessage: String?
     var greeting: String = "Good Morning"
@@ -61,6 +66,10 @@ final class HomeViewModel {
         Array(recommendedProducts.dropFirst(4).prefix(4))
     }
 
+    var unreadNotificationCount: Int {
+        notifications.filter { $0.isRead != true }.count
+    }
+
     // MARK: - Actions
 
     func loadHomeData() async {
@@ -77,10 +86,12 @@ final class HomeViewModel {
             async let events = EventService.shared.fetchFriendEvents()
             async let products = fetchHomeProducts()
             async let progress = fetchActiveRegistryProgress()
+            async let notificationRows = fetchNotifications()
 
             featuredEvents = try await events
             recommendedProducts = try await products
             registryProgress = try await progress
+            notifications = try await notificationRows
 
             if aiContext != nil {
                 await refreshAICuratedBundle()
@@ -101,6 +112,57 @@ final class HomeViewModel {
         } catch {
             errorMessage = error.localizedDescription
             aiBundleProducts = []
+        }
+    }
+
+    func loadNotifications() async {
+        isLoadingNotifications = true
+        defer { isLoadingNotifications = false }
+
+        do {
+            notifications = try await fetchNotifications()
+        } catch {
+            errorMessage = error.localizedDescription
+            notifications = []
+        }
+    }
+
+    func markNotificationsRead() async {
+        guard let userId = AuthService.shared.currentUser?.id else { return }
+
+        do {
+            try await SupabaseManager.shared.client
+                .from("notifications")
+                .update(["is_read": true])
+                .eq("user_id", value: userId.uuidString)
+                .eq("is_read", value: false)
+                .execute()
+
+            notifications = notifications.map { notification in
+                var updated = notification
+                updated.isRead = true
+                return updated
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func searchProducts() async {
+        let trimmedQuery = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else {
+            searchResults = []
+            return
+        }
+
+        isSearching = true
+        defer { isSearching = false }
+
+        do {
+            searchResults = try await ProductService.shared.searchProducts(query: trimmedQuery)
+        } catch {
+            errorMessage = error.localizedDescription
+            searchResults = []
         }
     }
 
@@ -127,6 +189,22 @@ final class HomeViewModel {
         }
 
         return try await ProductService.shared.fetchAllProducts()
+    }
+
+    private func fetchNotifications() async throws -> [Notification] {
+        guard let userId = AuthService.shared.currentUser?.id else {
+            return []
+        }
+
+        let response = try await SupabaseManager.shared.client
+            .from("notifications")
+            .select()
+            .eq("user_id", value: userId.uuidString)
+            .order("created_at", ascending: false)
+            .limit(50)
+            .execute()
+
+        return try decoder.decode([Notification].self, from: response.data)
     }
 
     private func clearAICuratedContext() {

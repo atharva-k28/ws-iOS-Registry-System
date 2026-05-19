@@ -13,8 +13,6 @@ struct ProfileView: View {
 
     @State private var viewModel = ProfileViewModel()
     @State private var showEditProfile = false
-    @State private var showAddFunds = false
-    @State private var showRedeem = false
 
     var body: some View {
         NavigationStack {
@@ -27,9 +25,7 @@ struct ProfileView: View {
                     // MARK: Wallet
                     NavigationLink(destination: WalletCreditsView()) {
                         WalletCard(
-                            balance: 248.50,
-                            onAddFunds: { showAddFunds = true },
-                            onRedeem: { showRedeem = true }
+                            balance: viewModel.walletBalance
                         )
                     }
                     .buttonStyle(.plain)
@@ -50,27 +46,12 @@ struct ProfileView: View {
             .task {
                 await viewModel.loadProfile()
             }
-            .sheet(isPresented: $showEditProfile) {
-                EditProfileView()
-            }
-            .sheet(isPresented: $showAddFunds) {
-                VStack(spacing: AppSpacing.lg) {
-                    Text("Add Funds")
-                        .font(AppTypography.title2)
-                    Text("Simulate adding funds via Apple Pay or Credit Card here.")
-                        .font(AppTypography.body)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    Button("Done") { showAddFunds = false }
-                        .buttonStyle(.borderedProminent)
+            .sheet(isPresented: $showEditProfile, onDismiss: {
+                Task {
+                    await viewModel.loadProfile()
                 }
-                .presentationDetents([.medium])
-            }
-            .alert("Redeem Credits", isPresented: $showRedeem) {
-                Button("Redeem to Bank", role: .none) {}
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Transfer your available balance to your linked bank account.")
+            }) {
+                EditProfileView(user: viewModel.user, viewModel: viewModel)
             }
         }
     }
@@ -84,12 +65,22 @@ struct ProfileView: View {
                 .fill(AppColors.backgroundGray)
                 .frame(width: 100, height: 100)
                 .overlay {
-                    AsyncImage(url: URL(string: "https://i.pravatar.cc/300?img=5")) { image in
-                        image.resizable()
-                    } placeholder: {
-                        Color.gray.opacity(0.3)
+                    if let avatarUrl = viewModel.user?.avatarUrl,
+                       let url = URL(string: avatarUrl) {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        } placeholder: {
+                            AppColors.backgroundGray
+                        }
+                        .clipShape(Circle())
+                    } else {
+                        Text(viewModel.initials)
+                            .font(AppTypography.title2)
+                            .foregroundStyle(AppColors.primaryText)
+                            .clipShape(Circle())
                     }
-                    .clipShape(Circle())
                 }
                 .overlay(
                     Circle().strokeBorder(AppColors.white, lineWidth: 4)
@@ -97,39 +88,27 @@ struct ProfileView: View {
                 .softShadow()
 
             VStack(spacing: AppSpacing.xxxs) {
-                Text(viewModel.user?.fullName ?? "Olivia Bennett")
+                Text(viewModel.displayName)
                     .font(AppTypography.title2)
                     .foregroundStyle(AppColors.primaryText)
 
-                Text("@olivia · Joined Mar 2026")
-                    .font(AppTypography.footnote)
-                    .foregroundStyle(AppColors.secondaryGray)
+                if !viewModel.subtitle.isEmpty {
+                    Text(viewModel.subtitle)
+                        .font(AppTypography.footnote)
+                        .foregroundStyle(AppColors.secondaryGray)
+                        .multilineTextAlignment(.center)
+                }
             }
 
-            // Action Chips
-            HStack(spacing: AppSpacing.sm) {
-                HStack(spacing: 4) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 12))
-                    Text("Tastemaker")
-                }
-                .font(AppTypography.caption1Medium)
-                .padding(.horizontal, AppSpacing.sm)
-                .padding(.vertical, AppSpacing.xs)
-                .background(AppColors.backgroundGray)
-                .foregroundColor(AppColors.primaryDark)
-                .clipShape(Capsule())
-
-                Button("Edit Profile") {
-                    showEditProfile = true
-                }
-                .font(AppTypography.caption1Medium)
-                .padding(.horizontal, AppSpacing.sm)
-                .padding(.vertical, AppSpacing.xs)
-                .background(AppColors.primaryDark)
-                .foregroundColor(AppColors.white)
-                .clipShape(Capsule())
+            Button("Edit Profile") {
+                showEditProfile = true
             }
+            .font(AppTypography.caption1Medium)
+            .padding(.horizontal, AppSpacing.sm)
+            .padding(.vertical, AppSpacing.xs)
+            .background(AppColors.primaryDark)
+            .foregroundColor(AppColors.white)
+            .clipShape(Capsule())
         }
         .frame(maxWidth: .infinity)
         .padding(.top, AppSpacing.xxl)
@@ -139,9 +118,9 @@ struct ProfileView: View {
 
     private var statsRow: some View {
         HStack(spacing: AppSpacing.sm) {
-            statItem(value: "12", label: "Events")
-            statItem(value: "$1.8k", label: "Contributed")
-            statItem(value: "48", label: "Gifts")
+            statItem(value: viewModel.totalEventsText, label: "Events")
+            statItem(value: viewModel.contributedText, label: "Contributed")
+            statItem(value: viewModel.giftsText, label: "Gifts")
         }
         .padding(.horizontal, AppSpacing.screenHorizontal)
     }

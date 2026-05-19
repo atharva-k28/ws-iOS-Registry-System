@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import Supabase
 
-struct ActivityItem: Identifiable {
-    let id = UUID()
+private struct WalletActivityItem: Identifiable {
+    let id: UUID
     let title: String
     let subtitle: String
     let amount: String
@@ -17,31 +18,19 @@ struct ActivityItem: Identifiable {
 
 struct WalletCreditsView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var showAddFunds = false
-    @State private var showRedeem = false
-    
-    let activities = [
-        ActivityItem(title: "Maya contributed", subtitle: "Espresso machine • Today", amount: "+$50", isPositive: true),
-        ActivityItem(title: "Redeemed credit", subtitle: "Citron dinner set • Yesterday", amount: "-$48", isPositive: false),
-        ActivityItem(title: "Sofia contributed", subtitle: "Stainless set • May 14", amount: "+$100", isPositive: true),
-        ActivityItem(title: "Group refund", subtitle: "Leftover funds • May 10", amount: "+$30", isPositive: true)
-    ]
-    
+    @State private var activities: [WalletActivityItem] = []
+    @State private var availableBalance: Double = 0
+    @State private var receivedTotal: Double = 0
+    @State private var redeemedTotal: Double = 0
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: AppSpacing.lg) {
-                // MARK: - Dark Header Card
                 walletHeaderCard
-                
-                // MARK: - Arriving Soon
-                arrivingSoonBlock
-                
-                // MARK: - Stats
                 statsBlocks
-                
-                // MARK: - Recent Activity
                 recentActivityList
-                
                 Spacer(minLength: 40)
             }
             .padding(.horizontal, AppSpacing.screenHorizontal)
@@ -81,29 +70,11 @@ struct WalletCreditsView: View {
                     .padding(.bottom, AppSpacing.md)
             }
         )
-        .sheet(isPresented: $showAddFunds) {
-            VStack(spacing: AppSpacing.lg) {
-                Text("Add Funds")
-                    .font(AppTypography.title2)
-                Text("Simulate adding funds via Apple Pay or Credit Card here.")
-                    .font(AppTypography.body)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                Button("Done") { showAddFunds = false }
-                    .buttonStyle(.borderedProminent)
-            }
-            .presentationDetents([.medium])
-        }
-        .alert("Redeem Credits", isPresented: $showRedeem) {
-            Button("Redeem to Bank", role: .none) {}
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Transfer your available $248.50 balance to your linked bank account.")
+        .task {
+            await loadWalletCredits()
         }
     }
-    
-    // MARK: - Subviews
-    
+
     private var walletHeaderCard: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             Text("GIFT CONTINUATION")
@@ -111,45 +82,14 @@ struct WalletCreditsView: View {
                 .tracking(1.2)
                 .foregroundColor(AppColors.secondaryGray)
                 .padding(.bottom, 2)
-            
-            Text("$248.50")
+
+            Text(CurrencyFormatter.format(availableBalance))
                 .font(.system(size: 48, weight: .regular, design: .serif))
                 .foregroundColor(AppColors.white)
-            
+
             Text("From the generosity of friends")
                 .font(AppTypography.bodyMedium)
                 .foregroundColor(AppColors.secondaryGray)
-                .padding(.bottom, AppSpacing.md)
-            
-            HStack(spacing: AppSpacing.md) {
-                Button(action: { showAddFunds = true }) {
-                    HStack {
-                        Image(systemName: "plus")
-                            .font(.system(size: 14, weight: .bold))
-                        Text("Add funds")
-                    }
-                    .font(AppTypography.buttonMedium)
-                    .foregroundColor(AppColors.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(Color.white.opacity(0.15))
-                    .clipShape(Capsule())
-                }
-                
-                Button(action: { showRedeem = true }) {
-                    HStack {
-                        Image(systemName: "gift")
-                            .font(.system(size: 14, weight: .bold))
-                        Text("Redeem")
-                    }
-                    .font(AppTypography.buttonMedium)
-                    .foregroundColor(AppColors.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(AppColors.accentRed)
-                    .clipShape(Capsule())
-                }
-            }
         }
         .padding(AppSpacing.xl)
         .background(
@@ -162,43 +102,15 @@ struct WalletCreditsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
         .darkCardShadow()
     }
-    
-    private var arrivingSoonBlock: some View {
-        HStack(spacing: AppSpacing.md) {
-            Circle()
-                .fill(AppColors.backgroundGray)
-                .frame(width: 44, height: 44)
-                .overlay {
-                    Image(systemName: "arrow.down.left")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(AppColors.primaryDark)
-                }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("$80 arriving soon")
-                    .font(AppTypography.bodyMedium)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppColors.primaryText)
-                Text("A group gift completes in 2 days")
-                    .font(AppTypography.footnote)
-                    .foregroundColor(AppColors.secondaryGray)
-            }
-            Spacer()
-        }
-        .padding(AppSpacing.md)
-        .background(AppColors.white)
-        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
-        .softShadow()
-    }
-    
+
     private var statsBlocks: some View {
         HStack(spacing: AppSpacing.sm) {
-            statItem(value: "$1,820", label: "Received")
-            statItem(value: "$1,572", label: "Spent")
-            statItem(value: "$248", label: "Available")
+            statItem(value: compactCurrency(receivedTotal), label: "Received")
+            statItem(value: compactCurrency(redeemedTotal), label: "Redeemed")
+            statItem(value: compactCurrency(availableBalance), label: "Available")
         }
     }
-    
+
     private func statItem(value: String, label: String) -> some View {
         VStack(spacing: AppSpacing.xxs) {
             Text(value)
@@ -215,7 +127,7 @@ struct WalletCreditsView: View {
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
         .softShadow()
     }
-    
+
     private var recentActivityList: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             Text("RECENT ACTIVITY")
@@ -224,49 +136,180 @@ struct WalletCreditsView: View {
                 .foregroundColor(AppColors.primaryText)
                 .padding(.top, AppSpacing.sm)
                 .padding(.bottom, AppSpacing.xs)
-            
-            VStack(spacing: 0) {
-                ForEach(activities.indices, id: \.self) { index in
-                    let activity = activities[index]
-                    HStack(spacing: AppSpacing.md) {
-                        Circle()
-                            .fill(AppColors.backgroundGray)
-                            .frame(width: 44, height: 44)
-                            .overlay {
-                                Image(systemName: activity.isPositive ? "arrow.down.left" : "arrow.up.right")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(AppColors.primaryDark)
+
+            if isLoading {
+                InlineLoadingView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, AppSpacing.xl)
+                    .background(AppColors.white)
+                    .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
+                    .softShadow()
+            } else if activities.isEmpty {
+                EmptyStateView(
+                    systemImageName: "wallet.pass",
+                    title: "No Wallet Activity",
+                    description: errorMessage ?? "Credits from registry activity will appear here."
+                )
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(activities.indices, id: \.self) { index in
+                        let activity = activities[index]
+                        HStack(spacing: AppSpacing.md) {
+                            Circle()
+                                .fill(AppColors.backgroundGray)
+                                .frame(width: 44, height: 44)
+                                .overlay {
+                                    Image(systemName: activity.isPositive ? "arrow.down.left" : "arrow.up.right")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(AppColors.primaryDark)
+                                }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(activity.title)
+                                    .font(AppTypography.bodyMedium)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(AppColors.primaryText)
+                                Text(activity.subtitle)
+                                    .font(AppTypography.footnote)
+                                    .foregroundColor(AppColors.secondaryGray)
                             }
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(activity.title)
+
+                            Spacer()
+
+                            Text(activity.amount)
                                 .font(AppTypography.bodyMedium)
-                                .fontWeight(.semibold)
+                                .fontWeight(.bold)
                                 .foregroundColor(AppColors.primaryText)
-                            Text(activity.subtitle)
-                                .font(AppTypography.footnote)
-                                .foregroundColor(AppColors.secondaryGray)
                         }
-                        
-                        Spacer()
-                        
-                        Text(activity.amount)
-                            .font(AppTypography.bodyMedium)
-                            .fontWeight(.bold)
-                            .foregroundColor(AppColors.primaryText)
-                    }
-                    .padding(.vertical, AppSpacing.md)
-                    
-                    if index < activities.count - 1 {
-                        Divider().padding(.leading, 60)
+                        .padding(.vertical, AppSpacing.md)
+
+                        if index < activities.count - 1 {
+                            Divider().padding(.leading, 60)
+                        }
                     }
                 }
+                .padding(.horizontal, AppSpacing.md)
+                .background(AppColors.white)
+                .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
+                .softShadow()
             }
-            .padding(.horizontal, AppSpacing.md)
-            .background(AppColors.white)
-            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
-            .softShadow()
         }
+    }
+
+    private func loadWalletCredits() async {
+        guard let userId = AuthService.shared.currentUser?.id else { return }
+
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let eventResponse = try await SupabaseManager.shared.client
+                .from("events")
+                .select("id")
+                .eq("owner_user_id", value: userId.uuidString)
+                .execute()
+
+            struct EventRow: Decodable { let id: UUID }
+            let eventIds = try JSONDecoder().decode([EventRow].self, from: eventResponse.data).map(\.id)
+            guard !eventIds.isEmpty else {
+                resetWallet()
+                return
+            }
+
+            let registryResponse = try await SupabaseManager.shared.client
+                .from("registries")
+                .select("id")
+                .in("event_id", values: eventIds.map(\.uuidString))
+                .execute()
+
+            struct RegistryRow: Decodable { let id: UUID }
+            let registryIds = try JSONDecoder().decode([RegistryRow].self, from: registryResponse.data).map(\.id)
+            guard !registryIds.isEmpty else {
+                resetWallet()
+                return
+            }
+
+            let creditsResponse = try await SupabaseManager.shared.client
+                .from("wallet_credits")
+                .select("id,amount,status,created_at,redeemed_at")
+                .in("registry_id", values: registryIds.map(\.uuidString))
+                .execute()
+
+            struct CreditRow: Decodable {
+                let id: UUID
+                let amount: Double
+                let status: String?
+                let createdAt: Date?
+                let redeemedAt: Date?
+
+                enum CodingKeys: String, CodingKey {
+                    case id
+                    case amount
+                    case status
+                    case createdAt = "created_at"
+                    case redeemedAt = "redeemed_at"
+                }
+            }
+
+            let credits = try dateDecoder.decode([CreditRow].self, from: creditsResponse.data)
+            receivedTotal = credits.reduce(0) { $0 + $1.amount }
+            redeemedTotal = credits.filter { $0.status == "redeemed" }.reduce(0) { $0 + $1.amount }
+            availableBalance = credits.filter { $0.status != "redeemed" }.reduce(0) { $0 + $1.amount }
+            activities = credits
+                .sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+                .map { credit in
+                    let isRedeemed = credit.status == "redeemed"
+                    let date = (isRedeemed ? credit.redeemedAt : credit.createdAt)?
+                        .formatted(date: .abbreviated, time: .omitted) ?? "Date unavailable"
+                    return WalletActivityItem(
+                        id: credit.id,
+                        title: isRedeemed ? "Redeemed credit" : "Wallet credit",
+                        subtitle: date,
+                        amount: "\(isRedeemed ? "-" : "+")\(CurrencyFormatter.format(credit.amount))",
+                        isPositive: !isRedeemed
+                    )
+                }
+        } catch {
+            resetWallet()
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func resetWallet() {
+        availableBalance = 0
+        receivedTotal = 0
+        redeemedTotal = 0
+        activities = []
+    }
+
+    private var dateDecoder: JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateStr = try container.decode(String.self)
+
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = isoFormatter.date(from: dateStr) {
+                return date
+            }
+
+            isoFormatter.formatOptions = [.withInternetDateTime]
+            if let date = isoFormatter.date(from: dateStr) {
+                return date
+            }
+
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: \(dateStr)")
+        }
+        return decoder
+    }
+
+    private func compactCurrency(_ amount: Double) -> String {
+        if amount >= 1_000 {
+            return String(format: "$%.1fk", amount / 1_000)
+        }
+        return CurrencyFormatter.format(amount)
     }
 }
 

@@ -9,8 +9,8 @@ import SwiftUI
 
 struct WalletCard: View {
     let balance: Double
-    var onAddFunds: () -> Void = {}
-    var onRedeem: () -> Void = {}
+    var onAddFunds: (() -> Void)?
+    var onRedeem: (() -> Void)?
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
@@ -40,25 +40,31 @@ struct WalletCard: View {
             }
             .padding(.bottom, 4)
             
-            HStack(spacing: AppSpacing.md) {
-                Button(action: onAddFunds) {
-                    Text("Add funds")
-                        .font(AppTypography.buttonMedium)
-                        .foregroundColor(AppColors.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(Color.white.opacity(0.1))
-                        .clipShape(Capsule())
-                }
-                
-                Button(action: onRedeem) {
-                    Text("Redeem")
-                        .font(AppTypography.buttonMedium)
-                        .foregroundColor(AppColors.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(AppColors.accentRed)
-                        .clipShape(Capsule())
+            if onAddFunds != nil || onRedeem != nil {
+                HStack(spacing: AppSpacing.md) {
+                    if let onAddFunds {
+                        Button(action: onAddFunds) {
+                            Text("Add funds")
+                                .font(AppTypography.buttonMedium)
+                                .foregroundColor(AppColors.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 44)
+                                .background(Color.white.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                    }
+
+                    if let onRedeem {
+                        Button(action: onRedeem) {
+                            Text("Redeem")
+                                .font(AppTypography.buttonMedium)
+                                .foregroundColor(AppColors.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 44)
+                                .background(AppColors.accentRed)
+                                .clipShape(Capsule())
+                        }
+                    }
                 }
             }
         }

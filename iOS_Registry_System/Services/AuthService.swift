@@ -143,6 +143,13 @@ final class AuthService {
             try await checkMFAState()
         } catch {
             print("Failed to fetch current user profile: \(error)")
+            // If the session is missing, ensure we don't stay in a zombie logged-in state
+            if String(describing: error).contains("sessionMissing") {
+                currentUser = nil
+                Task { @MainActor in
+                    await AppState.shared.signOut()
+                }
+            }
         }
     }
 

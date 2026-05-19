@@ -6,35 +6,13 @@
 //
 
 import SwiftUI
-import Combine
-
-struct WishlistItem: Identifiable {
-    let id = UUID()
-    let title: String
-    let subtitle: String
-    let price: Int
-    let imageUrl: String
-}
-
-// Persistent store so items removed survive back navigation
-class WishlistStore: ObservableObject {
-    static let shared = WishlistStore()
-
-    @Published var savedItems: [WishlistItem] = [
-        WishlistItem(title: "Smeg Kettle",   subtitle: "Matte Black", price: 190, imageUrl: "https://images.unsplash.com/photo-1590432314545-2b4a1b0b5c1c?w=600&q=80"),
-        WishlistItem(title: "Vitamix Blender", subtitle: "Pro Series", price: 450, imageUrl: "https://images.unsplash.com/photo-1596541603953-29a59b5896a2?w=600&q=80"),
-        WishlistItem(title: "Linen Apron",   subtitle: "Chef's Cut",  price: 45,  imageUrl: "https://images.unsplash.com/photo-1588698715873-41bb6239bc7a?w=600&q=80"),
-        WishlistItem(title: "Wine Glasses",  subtitle: "Set of 6",    price: 85,  imageUrl: "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=600&q=80")
-    ]
-
-    func remove(_ item: WishlistItem) {
-        savedItems.removeAll { $0.id == item.id }
-    }
-}
+import Supabase
 
 struct SavedWishlistView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var store = WishlistStore.shared
+    @State private var savedProducts: [Product] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     let columns = [GridItem(.flexible(), spacing: AppSpacing.md), GridItem(.flexible(), spacing: AppSpacing.md)]
 
@@ -48,7 +26,11 @@ struct SavedWishlistView: View {
                     .lineSpacing(3)
                     .padding(.top, AppSpacing.sm)
 
-                if store.savedItems.isEmpty {
+                if isLoading {
+                    InlineLoadingView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 60)
+                } else if savedProducts.isEmpty {
                     VStack(spacing: AppSpacing.md) {
                         Image(systemName: "heart.slash")
                             .font(.system(size: 48))
@@ -59,10 +41,16 @@ struct SavedWishlistView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.top, 60)
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(AppTypography.footnote)
+                            .foregroundColor(AppColors.secondaryGray)
+                            .multilineTextAlignment(.center)
+                    }
                 } else {
                     LazyVGrid(columns: columns, spacing: AppSpacing.md) {
-                        ForEach(store.savedItems) { item in
-                            wishlistCard(item: item)
+                        ForEach(savedProducts) { product in
+                            wishlistCard(product: product)
                         }
                     }
                 }
@@ -96,23 +84,25 @@ struct SavedWishlistView: View {
                     .foregroundColor(AppColors.secondaryGray)
             }
         }
+        .task {
+            await loadWishlist()
+        }
     }
 
-    private func wishlistCard(item: WishlistItem) -> some View {
+    private func wishlistCard(product: Product) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topTrailing) {
-                AsyncImage(url: URL(string: item.imageUrl)) { img in
+                AsyncImage(url: product.imageUrl.flatMap(URL.init(string:))) { img in
                     img.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: {
-                    Color(hex: "EDE8E3")
+                    AppColors.backgroundGray
                 }
                 .frame(height: 160)
                 .clipped()
 
-                // Heart button — removes item from saved
                 Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        store.remove(item)
+                    Task {
+                        await remove(product)
                     }
                 }) {
                     Image(systemName: "heart.fill")
@@ -127,16 +117,16 @@ struct SavedWishlistView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.title)
+                Text(product.name)
                     .font(AppTypography.bodyMedium)
                     .foregroundStyle(AppColors.primaryText)
                     .lineLimit(1)
 
-                Text(item.subtitle)
+                Text(product.brand ?? product.category)
                     .font(AppTypography.caption1)
                     .foregroundStyle(AppColors.secondaryGray)
 
-                Text("$\(item.price)")
+                Text(CurrencyFormatter.format(product.price))
                     .font(AppTypography.bodyMedium)
                     .foregroundStyle(AppColors.primaryText)
                     .padding(.top, 4)
@@ -146,6 +136,58 @@ struct SavedWishlistView: View {
         .background(AppColors.white)
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
         .softShadow()
+    }
+
+    private func loadWishlist() async {
+        guard let userId = AuthService.shared.currentUser?.id else {
+            savedProducts = []
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let response = try await SupabaseManager.shared.client
+                .from("product_wishlists")
+                .select("product_id")
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+
+            struct Row: Decodable {
+                let productId: UUID
+
+                enum CodingKeys: String, CodingKey {
+                    case productId = "product_id"
+                }
+            }
+
+            let rows = try JSONDecoder().decode([Row].self, from: response.data)
+            savedProducts = try await ProductService.shared.fetchProducts(ids: rows.map(\.productId))
+        } catch {
+            savedProducts = []
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func remove(_ product: Product) async {
+        guard let userId = AuthService.shared.currentUser?.id else { return }
+
+        do {
+            try await SupabaseManager.shared.client
+                .from("product_wishlists")
+                .delete()
+                .eq("user_id", value: userId.uuidString)
+                .eq("product_id", value: product.id.uuidString)
+                .execute()
+
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                savedProducts.removeAll { $0.id == product.id }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 

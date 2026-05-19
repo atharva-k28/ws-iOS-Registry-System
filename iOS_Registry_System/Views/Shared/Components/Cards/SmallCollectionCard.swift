@@ -9,19 +9,20 @@ import SwiftUI
 
 struct SmallCollectionCard: View {
     let title: String
-    let imageSeed: String
+    let imageUrl: String?
     var onTap: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Image
-            AsyncImage(url: URL(string: SmallCollectionCard.imageUrl(for: imageSeed))) { image in
+            AsyncImage(url: imageUrl.flatMap(URL.init(string:))) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             } placeholder: {
                 Color.gray.opacity(0.2)
             }
+            .frame(maxWidth: .infinity)
             .frame(height: 140)
             .clipped()
 
@@ -49,17 +50,7 @@ struct SmallCollectionCard: View {
             onTap?()
         }
         .accessibilityAddTraits(.isButton)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .softShadow()
     }
-    
-    static func imageUrl(for seed: String) -> String {
-        return "https://loremflickr.com/300/300/cookware,tableware,plates?lock=\(abs(seed.hashValue % 100))"
-    }
-}
-
-#Preview {
-    SmallCollectionCard(title: "Coffee HQ", imageSeed: "coffee")
-        .frame(width: 160)
-        .padding()
-        .background(AppColors.background)
 }

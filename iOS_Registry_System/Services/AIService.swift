@@ -207,7 +207,7 @@ final class AIService {
                 id: product.id.uuidString.lowercased(),
                 title: product.name,
                 price: product.price,
-                category: product.category ?? "Gifts"
+                category: product.category
             )
         }
         
@@ -246,7 +246,7 @@ final class AIService {
                 bestProduct = cheapItems.first!
                 reason = "Based on your budget, I highly recommend the \(bestProduct.name) for \(CurrencyFormatter.formatCompact(bestProduct.price)). It is a thoughtful, useful item that fits your price preference perfectly!"
             } else if promptLower.contains("kitchen") || promptLower.contains("cook") || promptLower.contains("chef") {
-                if let kitchen = availableProducts.first(where: { ($0.category ?? "").lowercased().contains("kitchen") || ($0.category ?? "").lowercased().contains("cook") }) {
+                if let kitchen = availableProducts.first(where: { $0.category.lowercased().contains("kitchen") || $0.category.lowercased().contains("cook") }) {
                     bestProduct = kitchen
                     reason = "For someone who loves spending time in the kitchen, the \(bestProduct.name) is an incredible choice! It's one of their featured culinary items."
                 }
@@ -256,7 +256,7 @@ final class AIService {
                     reason = "Since they enjoy great coffee, the \(bestProduct.name) is a premium addition to their morning routine that they will cherish every day."
                 }
             } else if promptLower.contains("outdoor") || promptLower.contains("barbecue") || promptLower.contains("bbq") || promptLower.contains("summer") {
-                if let outdoor = availableProducts.first(where: { ($0.category ?? "").lowercased().contains("outdoor") }) {
+                if let outdoor = availableProducts.first(where: { $0.category.lowercased().contains("outdoor") }) {
                     bestProduct = outdoor
                     reason = "If they enjoy hosting outdoors, the \(bestProduct.name) will be an absolute hit! It is perfect for summer barbecues."
                 }

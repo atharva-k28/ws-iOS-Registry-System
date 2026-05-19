@@ -21,38 +21,41 @@ struct PairsWithRail: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AppSpacing.md) {
                     ForEach(products.prefix(4)) { product in
-                        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                            ZStack {
-                                AppColors.backgroundGray
-                                    .overlay {
-                                        let urlString = product.imageUrl ?? "https://loremflickr.com/200/200/\(product.name.replacingOccurrences(of: " ", with: ",")),kitchen?lock=\(abs(product.id.hashValue % 100))"
-                                        AsyncImage(url: URL(string: urlString)) { image in
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                        } placeholder: {
-                                            Image(systemName: "fork.knife")
-                                                .font(.system(size: 24))
-                                                .foregroundColor(AppColors.secondaryGray.opacity(0.3))
-                                        }
-                                    }
-                            }
-                            .frame(width: 120, height: 120)
-                            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.sm, style: .continuous))
-                            
-                            Text(product.name)
-                                .font(AppTypography.caption1)
-                                .foregroundColor(AppColors.primaryText)
-                                .lineLimit(2)
-                                .frame(width: 120, alignment: .leading)
-                            
-                            Text(CurrencyFormatter.format(product.price))
-                                .font(AppTypography.caption1Medium)
-                                .foregroundColor(AppColors.primaryText)
-                        }
-                        .onTapGesture {
+                        Button {
                             onSelect(product)
+                        } label: {
+                            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                                ZStack {
+                                    AppColors.backgroundGray
+                                        .overlay {
+                                            let urlString = product.imageUrl ?? "https://loremflickr.com/200/200/\(product.name.replacingOccurrences(of: " ", with: ",")),kitchen?lock=\(abs(product.id.hashValue % 100))"
+                                            AsyncImage(url: URL(string: urlString)) { image in
+                                                image
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                            } placeholder: {
+                                                Image(systemName: "fork.knife")
+                                                    .font(.system(size: 24))
+                                                    .foregroundColor(AppColors.secondaryGray.opacity(0.3))
+                                            }
+                                        }
+                                }
+                                .frame(width: 120, height: 120)
+                                .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.sm, style: .continuous))
+
+                                Text(product.name)
+                                    .font(AppTypography.caption1)
+                                    .foregroundColor(AppColors.primaryText)
+                                    .lineLimit(2)
+                                    .frame(width: 120, alignment: .leading)
+
+                                Text(CurrencyFormatter.format(product.price))
+                                    .font(AppTypography.caption1Medium)
+                                    .foregroundColor(AppColors.primaryText)
+                            }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }

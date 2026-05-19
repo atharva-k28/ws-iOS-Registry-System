@@ -16,185 +16,123 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
+            GeometryReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
 
-                    // MARK: Header
+                        // MARK: Header
 
-                    headerSection
+                        headerSection
 
-                    emptyTapShield(height: AppSpacing.sectionGap)
+                        emptyTapShield(height: AppSpacing.sectionGap)
 
-                    // MARK: Featured Events
+                        // MARK: Featured Events
+                        if !viewModel.featuredEvents.isEmpty {
+                            sectionHeader(title: "Upcoming Events", subtitle: "Registries you're part of")
 
-                    sectionHeader(title: "Upcoming Events", subtitle: "Registries you're part of")
+                            emptyTapShield(height: AppSpacing.sectionHeaderGap)
 
-                    emptyTapShield(height: AppSpacing.sectionHeaderGap)
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: AppSpacing.cardGap) {
-                            ForEach(viewModel.featuredEvents) { event in
-                                EventCard(event: event)
-                                    .frame(width: 300)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: AppSpacing.cardGap) {
+                                    ForEach(viewModel.featuredEvents) { event in
+                                        EventCard(event: event)
+                                            .frame(width: 300)
+                                    }
+                                }
+                                .padding(.horizontal, AppSpacing.screenHorizontal)
                             }
+
+                            emptyTapShield(height: AppSpacing.sectionGap)
                         }
-                        .padding(.horizontal, AppSpacing.screenHorizontal)
-                    }
 
-                    emptyTapShield(height: AppSpacing.sectionGap)
-
-                    // MARK: Curated Hero
-                    QuietlyCuratedCard(
-                        title: "A few essentials to\ncomplete your kitchen",
-                        description: "",
-                        actionTitle: ""
-                    )
-                    .contentShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
-                    .onTapGesture {
-                        activeModal = .packagingReveal
-                    }
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
-
-                    emptyTapShield(height: AppSpacing.sectionGap)
-                    
-                    // MARK: Collections List
-                    VStack(spacing: 0) {
-                        CollectionCard(
-                            title: "Mix bright, bar-worthy cocktails",
-                            category: "Margarita Season",
-                            actionText: "Shop Bar",
-                            imageSeed: "margarita",
-                            onTap: {
-                                activeModal = .product(Product(
-                                    id: UUID(),
-                                    name: "Mix bright, bar-worthy cocktails",
-                                    description: "Everything you need to craft the perfect margarita at home.",
-                                    brand: "Williams Sonoma",
-                                    category: "Margarita Season",
-                                    price: 150.0,
-                                    imageUrl: CollectionCard.imageUrl(for: "margarita")
-                                ))
+                        // MARK: Curated Hero
+                        if viewModel.shouldShowAICuratedCard {
+                            QuietlyCuratedCard(
+                                title: viewModel.aiBundleTitle,
+                                description: viewModel.aiBundleDescription,
+                                actionTitle: ""
+                            )
+                            .contentShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
+                            .onTapGesture {
+                                activeModal = .aiBundle(
+                                    products: viewModel.aiBundleProducts,
+                                    title: viewModel.aiBundleTitle
+                                )
                             }
-                        )
+                            .homeContentMargins()
 
-                        emptyTapShield(height: AppSpacing.lg)
-
-                        CollectionCard(
-                            title: "Cook al fresco all summer",
-                            category: "The Outdoor Kitchen",
-                            actionText: "Shop Outdoor",
-                            imageSeed: "grill",
-                            onTap: {
-                                activeModal = .product(Product(
-                                    id: UUID(),
-                                    name: "Cook al fresco all summer",
-                                    description: "Premium outdoor grilling equipment for the perfect summer barbecue.",
-                                    brand: "Williams Sonoma",
-                                    category: "The Outdoor Kitchen",
-                                    price: 850.0,
-                                    imageUrl: CollectionCard.imageUrl(for: "grill")
-                                ))
-                            }
-                        )
-
-                        emptyTapShield(height: AppSpacing.lg)
-
-                        CollectionCard(
-                            title: "Heritage cast iron & stainless",
-                            category: "Made in Cookware®",
-                            actionText: "Shop Made In",
-                            imageSeed: "pans",
-                            onTap: {
-                                activeModal = .product(Product(
-                                    id: UUID(),
-                                    name: "Heritage cast iron & stainless",
-                                    description: "Heirloom-quality skillets, pre-seasoned and ready for everyday luxury. Tri-ply construction, lifetime guarantee.",
-                                    brand: "Williams Sonoma",
-                                    category: "Made in Cookware®",
-                                    price: 320.0,
-                                    imageUrl: CollectionCard.imageUrl(for: "pans")
-                                ))
-                            }
-                        )
-
-                        emptyTapShield(height: AppSpacing.lg)
-
-                        CollectionCard(
-                            title: "Chef-prepared gourmet meals",
-                            category: "Ready To Serve",
-                            actionText: "Shop Gourmet",
-                            imageSeed: "food",
-                            onTap: {
-                                activeModal = .product(Product(
-                                    id: UUID(),
-                                    name: "Chef-prepared gourmet meals",
-                                    description: "Ready-to-serve gourmet meals crafted by world-renowned chefs.",
-                                    brand: "Williams Sonoma",
-                                    category: "Ready To Serve",
-                                    price: 120.0,
-                                    imageUrl: CollectionCard.imageUrl(for: "food")
-                                ))
-                            }
-                        )
-                    }
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
-
-                    emptyTapShield(height: AppSpacing.sectionGap)
-                    
-                    // MARK: More to explore
-                    VStack(alignment: .leading, spacing: AppSpacing.md) {
-                        Text("More to explore")
-                            .font(AppTypography.title3)
-                            .foregroundStyle(AppColors.primaryText)
-                            .padding(.horizontal, AppSpacing.screenHorizontal)
-                            
-                        HStack(spacing: 0) {
-                            SmallCollectionCard(title: "Coffee HQ", imageSeed: "coffee", onTap: {
-                                activeModal = .product(Product(
-                                    id: UUID(),
-                                    name: "Coffee HQ",
-                                    description: "The finest espresso machines and accessories.",
-                                    brand: "Williams Sonoma",
-                                    category: "Morning Routine",
-                                    price: 450.0,
-                                    imageUrl: SmallCollectionCard.imageUrl(for: "coffee")
-                                ))
-                            })
-
-                            emptyTapShield(width: AppSpacing.sm)
-
-                            SmallCollectionCard(title: "Red White & Blue", imageSeed: "blue", onTap: {
-                                activeModal = .product(Product(
-                                    id: UUID(),
-                                    name: "Red White & Blue",
-                                    description: "Patriotic tableware for your next holiday gathering.",
-                                    brand: "Williams Sonoma",
-                                    category: "Holiday Collection",
-                                    price: 85.0,
-                                    imageUrl: SmallCollectionCard.imageUrl(for: "blue")
-                                ))
-                            })
+                            emptyTapShield(height: AppSpacing.sectionGap)
                         }
-                        .padding(.horizontal, AppSpacing.screenHorizontal)
+
+                        // MARK: Collections List
+                        if !viewModel.collectionProducts.isEmpty {
+                            VStack(spacing: 0) {
+                                ForEach(Array(viewModel.collectionProducts.enumerated()), id: \.element.id) { index, product in
+                                    CollectionCard(
+                                        title: product.name,
+                                        category: product.subcategory ?? product.category,
+                                        actionText: product.category,
+                                        imageUrl: product.imageUrl,
+                                        onTap: {
+                                            activeModal = .product(product)
+                                        }
+                                    )
+
+                                    if index < viewModel.collectionProducts.count - 1 {
+                                        emptyTapShield(height: AppSpacing.lg)
+                                    }
+                                }
+                            }
+                            .homeContentMargins()
+
+                            emptyTapShield(height: AppSpacing.sectionGap)
+                        }
+
+                        // MARK: More to explore
+                        if !viewModel.moreToExploreProducts.isEmpty {
+                            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                                Text("More to explore")
+                                    .font(AppTypography.title3)
+                                    .foregroundStyle(AppColors.primaryText)
+                                    .homeContentMargins()
+
+                                HStack(spacing: 0) {
+                                    ForEach(Array(viewModel.moreToExploreProducts.enumerated()), id: \.element.id) { index, product in
+                                        SmallCollectionCard(title: product.name, imageUrl: product.imageUrl, onTap: {
+                                            activeModal = .product(product)
+                                        })
+
+                                        if index < viewModel.moreToExploreProducts.count - 1 {
+                                            emptyTapShield(width: AppSpacing.sm)
+                                        }
+                                    }
+                                }
+                                .homeContentMargins()
+                            }
+
+                            emptyTapShield(height: AppSpacing.sectionGap)
+                        }
+
+                        // MARK: Registry Progress
+                        if let progress = viewModel.registryProgress {
+                            RegistryProgressCard(
+                                eventTitle: progress.eventTitle,
+                                eventType: progress.eventType,
+                                progress: progress.progress,
+                                itemsClaimed: progress.itemsClaimed,
+                                totalItems: progress.totalItems,
+                                contributors: progress.contributors
+                            )
+                            .homeContentMargins()
+                            .padding(.top, AppSpacing.sm)
+                        }
+
+                        // Bottom spacer for tab bar
+                        Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.xxl)
                     }
-
-                    emptyTapShield(height: AppSpacing.sectionGap)
-                    
-                    // MARK: Registry Progress
-                    RegistryProgressCard(
-                        eventTitle: "Olivia & James",
-                        progress: 0.68,
-                        itemsClaimed: 42,
-                        totalItems: 62,
-                        contributors: 24
-                    )
-                    .padding(.horizontal, AppSpacing.screenHorizontal)
-                    .padding(.top, AppSpacing.sm)
-
-                    // Bottom spacer for tab bar
-                    Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.xxl)
+                    .frame(width: proxy.size.width, alignment: .leading)
+                    .padding(.top, AppSpacing.md)
                 }
-                .padding(.top, AppSpacing.md)
             }
             .appBackground()
             .transparentNavigationBar()
@@ -205,8 +143,8 @@ struct HomeView: View {
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
                         .presentationCornerRadius(28)
-                case .packagingReveal:
-                    PackagingRevealView()
+                case .aiBundle(let products, let title):
+                    PackagingRevealView(bundleTitle: title, products: products)
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
                         .presentationCornerRadius(28)
@@ -225,15 +163,8 @@ struct HomeView: View {
             
             // Top Nav Bar
             HStack {
-                Button(action: {}) {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(AppColors.primaryDark)
-                        .frame(width: 44, height: 44)
-                        .background(AppColors.white)
-                        .clipShape(Circle())
-                        .softShadow()
-                }
+                Color.clear
+                    .frame(width: 44, height: 44)
                 
                 Spacer()
                 
@@ -258,7 +189,7 @@ struct HomeView: View {
                         .softShadow()
                 }
             }
-            .padding(.horizontal, AppSpacing.screenHorizontal)
+            .homeContentMargins()
             
             // Greeting & Title
             VStack(alignment: .leading, spacing: AppSpacing.xxs) {
@@ -270,7 +201,7 @@ struct HomeView: View {
                     .font(AppTypography.largeTitleSerif)
                     .foregroundStyle(AppColors.primaryText)
             }
-            .padding(.horizontal, AppSpacing.screenHorizontal)
+            .homeContentMargins()
             
             // Search Bar
             HStack(spacing: AppSpacing.xs) {
@@ -286,7 +217,7 @@ struct HomeView: View {
             .background(AppColors.white)
             .clipShape(Capsule())
             .softShadow()
-            .padding(.horizontal, AppSpacing.screenHorizontal)
+            .homeContentMargins()
         }
     }
 
@@ -318,7 +249,7 @@ struct HomeView: View {
                     .foregroundStyle(AppColors.secondaryGray)
             }
         }
-        .padding(.horizontal, AppSpacing.screenHorizontal)
+        .homeContentMargins()
     }
 
     private func emptyTapShield(height: CGFloat) -> some View {
@@ -341,14 +272,14 @@ struct HomeView: View {
 
 private enum HomeModal: Identifiable {
     case product(Product)
-    case packagingReveal
+    case aiBundle(products: [Product], title: String)
 
     var id: String {
         switch self {
         case .product(let product):
             return "product-\(product.id.uuidString)"
-        case .packagingReveal:
-            return "packaging-reveal"
+        case .aiBundle(let products, _):
+            return "ai-bundle-\(products.map(\.id.uuidString).joined(separator: "-"))"
         }
     }
 }
@@ -357,4 +288,14 @@ private enum HomeModal: Identifiable {
 
 #Preview("Home") {
     HomeView()
+}
+
+private extension View {
+    func homeContentMargins() -> some View {
+        HStack(spacing: 0) {
+            self
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, AppSpacing.screenHorizontal)
+    }
 }

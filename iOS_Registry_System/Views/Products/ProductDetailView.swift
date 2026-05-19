@@ -17,6 +17,7 @@ struct ProductDetailView: View {
     @State private var showContributeSheet = false
     @State private var showARPreview = false
     @State private var relatedProducts: [Product] = []
+    @State private var selectedRelatedProduct: Product?
     
     var body: some View {
         NavigationStack {
@@ -55,7 +56,7 @@ struct ProductDetailView: View {
                         
                         // MARK: Pairs With
                         PairsWithRail(products: relatedProducts) { relatedProduct in
-                            print("Reveal packaging for: \(relatedProduct.id)")
+                            selectedRelatedProduct = relatedProduct
                         }
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
@@ -97,11 +98,17 @@ struct ProductDetailView: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
         }
+        .sheet(item: $selectedRelatedProduct) { relatedProduct in
+            ProductDetailView(product: relatedProduct)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+        }
         .task {
             relatedProducts = await AIService.shared.fetchSimilarProducts(
                 targetProductId: product.id,
                 targetProductName: product.name,
-                targetCategory: product.category ?? "Cookware"
+                targetCategory: product.category
             )
         }
     }
@@ -124,7 +131,7 @@ struct ProductDetailView: View {
             
             Spacer()
             
-            Text((product.category ?? "COOKWARE").uppercased())
+            Text(product.category.uppercased())
                 .font(AppTypography.caption1Medium)
                 .tracking(1.5)
                 .foregroundColor(AppColors.secondaryGray)
@@ -211,7 +218,7 @@ struct ProductDetailView: View {
     
     private var titleBlock: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text((product.brand ?? product.category ?? "WILLIAMS SONOMA").uppercased())
+            Text((product.brand ?? product.category).uppercased())
                 .font(AppTypography.caption2)
                 .tracking(1.5)
                 .foregroundColor(AppColors.secondaryGray)

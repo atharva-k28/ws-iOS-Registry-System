@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RegistryProgressCard: View {
     let eventTitle: String
+    let eventType: String
     let progress: Double // 0 to 1
     let itemsClaimed: Int
     let totalItems: Int
@@ -16,7 +17,7 @@ struct RegistryProgressCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            Text("YOUR WEDDING REGISTRY")
+            Text("\(eventTypeDisplayName.uppercased()) REGISTRY")
                 .font(AppTypography.caption1Medium)
                 .tracking(1.5)
                 .foregroundColor(AppColors.secondaryGray)
@@ -47,16 +48,10 @@ struct RegistryProgressCard: View {
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
         .softShadow()
     }
-}
 
-#Preview {
-    RegistryProgressCard(
-        eventTitle: "Olivia & James",
-        progress: 0.68,
-        itemsClaimed: 42,
-        totalItems: 62,
-        contributors: 24
-    )
-    .padding()
-    .background(AppColors.background)
+    private var eventTypeDisplayName: String {
+        eventType
+            .replacingOccurrences(of: "_", with: " ")
+            .capitalized
+    }
 }

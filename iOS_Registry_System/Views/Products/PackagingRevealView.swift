@@ -12,14 +12,20 @@ struct PackagingRevealView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var revealNamespace
 
+    let bundleTitle: String
+    let products: [Product]
+
     @State private var isRevealed = false
     @State private var pressProgress: CGFloat = 0
     @State private var isPressing = false
     @State private var didPlayHalfHaptic = false
     @State private var visibleItemIDs: Set<UUID> = []
     @State private var showToast = false
+    @State private var isAddingBundle = false
 
-    private let bundleItems = BundleItem.samples
+    private var bundleItems: [BundleItem] {
+        products.map(BundleItem.init(product:))
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -77,7 +83,7 @@ struct PackagingRevealView: View {
 
             Spacer()
 
-            Text("PACKAGING REVEAL")
+            Text("AI CURATED")
                 .font(AppTypography.caption1Medium)
                 .tracking(1.8)
                 .foregroundColor(AppColors.secondaryGray)
@@ -150,13 +156,13 @@ struct PackagingRevealView: View {
                         .clipShape(Capsule())
                         .overlay(Capsule().stroke(AppColors.white.opacity(0.86), lineWidth: 1))
 
-                    Text("Unwrap a table\nmade for hosting.")
+                    Text(bundleTitle)
                         .font(.system(size: 32, weight: .bold, design: .serif))
                         .multilineTextAlignment(.center)
                         .foregroundColor(AppColors.primaryDark)
                         .lineSpacing(2)
 
-                    Text("Four pieces, chosen to feel effortless together.")
+                    Text(bundleSummary)
                         .font(AppTypography.subheadline)
                         .foregroundColor(AppColors.secondaryGray)
                         .multilineTextAlignment(.center)
@@ -250,20 +256,8 @@ struct PackagingRevealView: View {
                 .fill(espressoRibbon)
                 .frame(width: 176, height: 34)
 
-//            VStack(spacing: AppSpacing.xxs) {
-//                Text("Williams Sonoma")
-//                    .font(.system(size: 18, weight: .semibold, design: .serif))
-//                Text("EST. 1956")
-//                    .font(AppTypography.caption2)
-//                    .tracking(1.6)
-//            }
-//            .foregroundColor(AppColors.white)
-//            .padding(.horizontal, AppSpacing.md)
-//            .padding(.vertical, AppSpacing.sm)
-//            .background(Color.black.opacity(0.24))
-//            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.sm, style: .continuous))
         }
-        .accessibilityLabel("Williams Sonoma curated gift box. Press and hold to unwrap.")
+        .accessibilityLabel("\(bundleTitle). Press and hold to unwrap.")
     }
 
     private var revealedCards: some View {
@@ -282,7 +276,7 @@ struct PackagingRevealView: View {
 
     private func revealCard(_ item: BundleItem, index: Int) -> some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            AsyncImage(url: URL(string: item.imageURL)) { image in
+            AsyncImage(url: item.imageURL.flatMap(URL.init(string:))) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -362,9 +356,11 @@ struct PackagingRevealView: View {
             }
 
             Button {
-                addBundleToRegistry()
+                Task {
+                    await addBundleToRegistry()
+                }
             } label: {
-                Text("Add to registry")
+                Text(isAddingBundle ? "Adding..." : "Add to registry")
                     .font(AppTypography.buttonMedium)
                     .foregroundColor(AppColors.white)
                     .frame(maxWidth: .infinity)
@@ -373,6 +369,7 @@ struct PackagingRevealView: View {
                     .clipShape(Capsule())
                     .shadow(color: AppColors.accentRed.opacity(0.28), radius: 14, y: 6)
             }
+            .disabled(isAddingBundle || products.isEmpty)
         }
         .padding(AppSpacing.sm)
         .background(AppColors.white.opacity(0.94))
@@ -469,16 +466,48 @@ struct PackagingRevealView: View {
         }
     }
 
-    private func addBundleToRegistry() {
+    private func addBundleToRegistry() async {
+        guard !products.isEmpty, !isAddingBundle else { return }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 
-        withAnimation {
-            showToast = true
-        }
+        isAddingBundle = true
+        defer { isAddingBundle = false }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            dismiss()
+        do {
+            guard let event = try await activeUserEvent() else {
+                withAnimation {
+                    showToast = true
+                }
+                return
+            }
+
+            for product in products {
+                try await EventService.shared.addProductToRegistry(eventId: event.id, product: product)
+            }
+
+            withAnimation {
+                showToast = true
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                dismiss()
+            }
+        } catch {
+            print("❌ Failed to add AI bundle to registry: \(error)")
         }
+    }
+
+    private func activeUserEvent() async throws -> Event? {
+        let events = try await EventService.shared.fetchMyEvents()
+        return events.sorted(by: { lhs, rhs in
+            (lhs.eventDate ?? lhs.startDate ?? lhs.createdAt ?? .distantFuture) <
+            (rhs.eventDate ?? rhs.startDate ?? rhs.createdAt ?? .distantFuture)
+        }).first
+    }
+
+    private var bundleSummary: String {
+        let categories = Array(Set(products.map(\.category))).sorted()
+        return categories.prefix(3).joined(separator: " · ")
     }
 
     private func rotation(for index: Int) -> Double {
@@ -496,42 +525,39 @@ struct PackagingRevealView: View {
 }
 
 private struct BundleItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let price: String
-    let imageURL: String
+    let imageURL: String?
     let symbol: String
 
-    static let samples = [
-        BundleItem(
-            name: "Cast Iron Skillet",
-            price: "$189.95",
-            imageURL: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=500",
-            symbol: "frying.pan"
-        ),
-        BundleItem(
-            name: "Linen Napkin Set",
-            price: "$48",
-            imageURL: "https://images.unsplash.com/photo-1615873968403-89e068629265?w=500",
-            symbol: "square.stack.3d.up"
-        ),
-        BundleItem(
-            name: "Stoneware Plates",
-            price: "$72",
-            imageURL: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=500",
-            symbol: "circle.grid.cross"
-        ),
-        BundleItem(
-            name: "Olive Wood Board",
-            price: "$65",
-            imageURL: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=500",
-            symbol: "rectangle.roundedtop"
-        )
-    ]
-}
+    init(product: Product) {
+        id = product.id
+        name = product.name
+        price = CurrencyFormatter.formatCompact(product.price)
+        imageURL = product.imageUrl
+        symbol = BundleItem.symbol(for: product)
+    }
 
-#Preview {
-    NavigationStack {
-        PackagingRevealView()
+    private static func symbol(for product: Product) -> String {
+        let searchableText = "\(product.name) \(product.category) \(product.subcategory ?? "")".lowercased()
+
+        if searchableText.contains("coffee") || searchableText.contains("espresso") {
+            return "cup.and.saucer"
+        }
+
+        if searchableText.contains("pan") || searchableText.contains("cook") || searchableText.contains("skillet") {
+            return "frying.pan"
+        }
+
+        if searchableText.contains("plate") || searchableText.contains("dish") || searchableText.contains("dinnerware") {
+            return "circle.grid.cross"
+        }
+
+        if searchableText.contains("linen") || searchableText.contains("towel") || searchableText.contains("napkin") {
+            return "square.stack.3d.up"
+        }
+
+        return "gift"
     }
 }

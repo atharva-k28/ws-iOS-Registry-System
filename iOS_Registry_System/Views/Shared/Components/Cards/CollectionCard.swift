@@ -11,19 +11,20 @@ struct CollectionCard: View {
     let title: String
     let category: String
     let actionText: String
-    let imageSeed: String
+    let imageUrl: String?
     var onTap: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Image Header
-            AsyncImage(url: URL(string: CollectionCard.imageUrl(for: imageSeed))) { image in
+            AsyncImage(url: imageUrl.flatMap(URL.init(string:))) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             } placeholder: {
                 Color.gray.opacity(0.2)
             }
+            .frame(maxWidth: .infinity)
             .frame(height: 240)
             .clipped()
 
@@ -61,26 +62,7 @@ struct CollectionCard: View {
             onTap?()
         }
         .accessibilityAddTraits(.isButton)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .softShadow()
     }
-
-    static func imageUrl(for seed: String) -> String {
-        let normalized = seed.lowercased()
-        if normalized.contains("margarita") { return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800" }
-        if normalized.contains("outdoor") { return "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800" }
-        if normalized.contains("grill") { return "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800" }
-        if normalized.contains("kitchen") { return "https://images.unsplash.com/photo-1556911220-e15024029581?w=800" }
-        return "https://loremflickr.com/400/300/tableware,cookware?lock=\(abs(seed.hashValue % 100))"
-    }
-}
-
-#Preview {
-    CollectionCard(
-        title: "Mix bright, bar-worthy cocktails",
-        category: "Margarita Season",
-        actionText: "Shop Bar",
-        imageSeed: "margarita"
-    )
-    .padding()
-    .background(AppColors.background)
 }

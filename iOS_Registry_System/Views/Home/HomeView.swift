@@ -96,18 +96,16 @@ struct HomeView: View {
                                     .foregroundStyle(AppColors.primaryText)
                                     .homeContentMargins()
 
-                                HStack(spacing: 0) {
-                                    ForEach(Array(viewModel.moreToExploreProducts.enumerated()), id: \.element.id) { index, product in
-                                        SmallCollectionCard(title: product.name, imageUrl: product.imageUrl, onTap: {
-                                            activeModal = .product(product)
-                                        })
-
-                                        if index < viewModel.moreToExploreProducts.count - 1 {
-                                            emptyTapShield(width: AppSpacing.sm)
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: AppSpacing.md) {
+                                        ForEach(viewModel.moreToExploreProducts) { product in
+                                            SmallCollectionCard(title: product.name, imageUrl: product.imageUrl, onTap: {
+                                                activeModal = .product(product)
+                                            })
                                         }
                                     }
+                                    .padding(.horizontal, AppSpacing.screenHorizontal)
                                 }
-                                .homeContentMargins()
                             }
 
                             emptyTapShield(height: AppSpacing.sectionGap)

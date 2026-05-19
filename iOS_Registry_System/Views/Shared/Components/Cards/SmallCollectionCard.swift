@@ -11,6 +11,7 @@ struct SmallCollectionCard: View {
     let title: String
     let imageUrl: String?
     var onTap: (() -> Void)?
+    private let cardWidth: CGFloat = 160
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -22,8 +23,7 @@ struct SmallCollectionCard: View {
             } placeholder: {
                 Color.gray.opacity(0.2)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 140)
+            .frame(width: cardWidth, height: 140)
             .clipped()
 
             // Footer
@@ -50,7 +50,7 @@ struct SmallCollectionCard: View {
             onTap?()
         }
         .accessibilityAddTraits(.isButton)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(width: cardWidth, alignment: .leading)
         .softShadow()
     }
 }

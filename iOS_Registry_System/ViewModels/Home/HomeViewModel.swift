@@ -58,7 +58,7 @@ final class HomeViewModel {
     }
 
     var moreToExploreProducts: [Product] {
-        Array(recommendedProducts.dropFirst(4).prefix(2))
+        Array(recommendedProducts.dropFirst(4).prefix(4))
     }
 
     // MARK: - Actions

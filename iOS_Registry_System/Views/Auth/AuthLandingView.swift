@@ -27,7 +27,13 @@ struct AuthLandingView: View {
                         .font(.system(size: 56))
                         .foregroundStyle(AppColors.accentRed)
                     
-                    VStack(spacing: AppSpacing.xxs) {
+                    VStack(spacing: AppSpacing.xs) {
+                        // Williams Sonoma branding
+                        Text("WILLIAMS SONOMA")
+                            .font(.system(size: 12, weight: .medium))
+                            .kerning(3)
+                            .foregroundStyle(AppColors.secondaryGray)
+                        
                         Text(AppConstants.appName)
                             .font(AppTypography.largeTitle)
                             .foregroundStyle(AppColors.primaryText)
@@ -50,11 +56,6 @@ struct AuthLandingView: View {
                     PrimaryButton(title: "I Already Have an Account", style: .outline) {
                         showSignIn = true
                     }
-                    
-                    // Apple sign in placeholder
-                    PrimaryButton(title: "Continue with Apple", icon: "apple.logo", style: .dark) {
-                        // TODO: Implement Sign in with Apple
-                    }
                 }
                 .padding(.horizontal, AppSpacing.screenHorizontal)
                 
@@ -69,10 +70,20 @@ struct AuthLandingView: View {
             }
             .appBackground()
             .navigationDestination(isPresented: $showSignIn) {
-                SignInView()
+                SignInView(onSwitchToSignUp: {
+                    showSignIn = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        showSignUp = true
+                    }
+                })
             }
             .navigationDestination(isPresented: $showSignUp) {
-                SignUpView()
+                SignUpView(onSwitchToSignIn: {
+                    showSignUp = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        showSignIn = true
+                    }
+                })
             }
         }
     }

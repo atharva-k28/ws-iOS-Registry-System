@@ -97,7 +97,7 @@ struct HomeView: View {
                                     .homeContentMargins()
 
                                 ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: AppSpacing.md) {
+                                    HStack(alignment: .top, spacing: AppSpacing.md) {
                                         ForEach(viewModel.moreToExploreProducts) { product in
                                             SmallCollectionCard(title: product.name, imageUrl: product.imageUrl, onTap: {
                                                 activeModal = .product(product)

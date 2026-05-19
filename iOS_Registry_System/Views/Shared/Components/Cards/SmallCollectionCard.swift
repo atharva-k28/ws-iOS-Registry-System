@@ -12,6 +12,8 @@ struct SmallCollectionCard: View {
     let imageUrl: String?
     var onTap: (() -> Void)?
     private let cardWidth: CGFloat = 160
+    private let imageHeight: CGFloat = 140
+    private let footerHeight: CGFloat = 92
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -23,7 +25,7 @@ struct SmallCollectionCard: View {
             } placeholder: {
                 Color.gray.opacity(0.2)
             }
-            .frame(width: cardWidth, height: 140)
+            .frame(width: cardWidth, height: imageHeight)
             .clipped()
 
             // Footer
@@ -31,6 +33,8 @@ struct SmallCollectionCard: View {
                 Text(title)
                     .font(AppTypography.bodyMedium)
                     .foregroundColor(AppColors.primaryText)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, minHeight: 42, alignment: .topLeading)
 
                 HStack(spacing: 4) {
                     Text("Shop now")
@@ -41,7 +45,7 @@ struct SmallCollectionCard: View {
                 .foregroundColor(AppColors.secondaryGray)
             }
             .padding(AppSpacing.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(width: cardWidth, height: footerHeight, alignment: .topLeading)
             .background(AppColors.white)
         }
         .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
@@ -50,7 +54,7 @@ struct SmallCollectionCard: View {
             onTap?()
         }
         .accessibilityAddTraits(.isButton)
-        .frame(width: cardWidth, alignment: .leading)
+        .frame(width: cardWidth, height: imageHeight + footerHeight, alignment: .leading)
         .softShadow()
     }
 }

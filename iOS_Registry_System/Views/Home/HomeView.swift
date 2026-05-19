@@ -221,7 +221,8 @@ struct HomeView: View {
                 Text(product.name)
                     .font(AppTypography.bodyMedium)
                     .foregroundStyle(AppColors.primaryText)
-                    .lineLimit(2)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(product.brand ?? product.category)
                     .font(AppTypography.caption1)

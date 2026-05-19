@@ -23,17 +23,56 @@ enum EventCenterTab: String, CaseIterable, Identifiable {
 
 struct EventCommandCenterView: View {
 
+    struct ThankYouNoteItem: Identifiable, Hashable {
+        let id: UUID
+        let guestName: String
+        let guestAvatar: String?
+        let amount: Double
+        let itemName: String
+        let itemImage: String?
+        let timeAgo: String
+    }
+
     let event: Event
+    @State private var registryViewModel: FriendRegistryDetailViewModel
+    
     @State private var selectedTab: EventCenterTab = .overview
     @State private var showInviteSheet = false
     @State private var showSettings = false
     @State private var selectedGuestFilter = "All"
+    
+    struct GuestDisplayItem: Identifiable, Hashable {
+        let id: UUID
+        let name: String
+        let email: String?
+        let avatarUrl: String?
+        let status: String  // "pending", "accepted", "declined"
+        let joinedAt: Date?
+    }
+
+    @State private var thankYouNotes: [ThankYouNoteItem] = []
+    @State private var selectedNoteIndex = 0
+    @State private var isLoadingNotes = false
+    @State private var guests: [GuestDisplayItem] = []
+    @State private var isLoadingGuests = false
+    
+    // Co-hosts and owner state
+    @State private var ownerUser: User? = nil
+    @State private var coHosts: [(member: EventMember, user: User?)] = []
+    @State private var isLoadingCoHosts = false
+
     // Task sheet state
     @State private var showRSVPReminder    = false
     @State private var showShippingAddress = false
     @State private var showThankYouNotes   = false
     @State private var showHealthAnalyzer   = false
+    @State private var showModifyRegistry   = false
     @Environment(\.dismiss) private var dismiss
+
+    init(event: Event) {
+        self.event = event
+        self._registryViewModel = State(initialValue: FriendRegistryDetailViewModel(event: event))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -54,6 +93,12 @@ struct EventCommandCenterView: View {
             .animation(.easeInOut(duration: 0.25), value: selectedTab)
         }
         .appBackground()
+        .task {
+            await registryViewModel.loadRegistryData()
+            await fetchThankYouNotes()
+            await fetchInvitations()
+            await fetchCoHostsAndOwner()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
@@ -75,19 +120,6 @@ struct EventCommandCenterView: View {
                 HStack(spacing: 10) {
                     Button { showInviteSheet = true } label: {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(AppColors.primaryText)
-                            .frame(width: 36, height: 36)
-                            .background(
-                                Circle()
-                                    .fill(.regularMaterial)
-                                    .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 0.5))
-                            )
-                    }
-                    .buttonStyle(.plain)
-
-                    Button { showSettings = true } label: {
-                        Image(systemName: "gearshape")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(AppColors.primaryText)
                             .frame(width: 36, height: 36)
@@ -126,7 +158,7 @@ struct EventCommandCenterView: View {
                 .presentationCornerRadius(32)
         }
         .sheet(isPresented: $showThankYouNotes) {
-            ThankYouNoteSheet()
+            ThankYouNoteSheet(thankYouNotes: thankYouNotes, initialSelectedIndex: selectedNoteIndex)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
@@ -136,6 +168,21 @@ struct EventCommandCenterView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showModifyRegistry) {
+            NavigationStack {
+                AddRegistryItemsView(event: event) {
+                    showModifyRegistry = false
+                }
+            }
+            .interactiveDismissDisabled()
+        }
+        .onChange(of: showModifyRegistry) { _, newValue in
+            if !newValue {
+                Task {
+                    await registryViewModel.loadRegistryData()
+                }
+            }
         }
     }
 
@@ -225,13 +272,10 @@ struct EventCommandCenterView: View {
                 // Countdown + Quick Stats
                 countdownCard
 
-                // Contribution Milestones
-                milestonesStrip
+                // Hosts & Collaborators (Co-hosts)
+                hostsSection
 
-                // Upcoming Tasks
-                upcomingTasksSection
-
-                // Recent Activity
+                // Thank You Notes (Actual Activity)
                 recentActivitySection
 
                 Color.clear.frame(height: AppSpacing.tabBarHeight + AppSpacing.xxl)
@@ -239,6 +283,137 @@ struct EventCommandCenterView: View {
             .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.top, AppSpacing.lg)
         }
+    }
+
+    private var hostsSection: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
+            Text("HOSTS & COLLABORATORS")
+                .font(AppTypography.caption1Medium)
+                .tracking(1.5)
+                .foregroundStyle(AppColors.secondaryGray)
+
+            VStack(spacing: 0) {
+                // 1. Owner/Creator
+                if let owner = ownerUser {
+                    HStack(spacing: AppSpacing.md) {
+                        AsyncImage(url: URL(string: owner.avatarUrl ?? "")) { img in
+                            img.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Circle().fill(AppColors.backgroundGray)
+                                .overlay(
+                                    Text(String(owner.fullName.prefix(1)))
+                                        .font(AppTypography.bodyMedium)
+                                        .foregroundStyle(AppColors.secondaryGray)
+                                )
+                        }
+                        .frame(width: 40, height: 40)
+                        .clipShape(Circle())
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(owner.fullName)
+                                .font(AppTypography.bodyMedium)
+                                .foregroundStyle(AppColors.primaryText)
+                            Text("Host / Creator")
+                                .font(AppTypography.caption1)
+                                .foregroundStyle(AppColors.secondaryGray)
+                        }
+                        Spacer()
+                    }
+                    .padding(AppSpacing.md)
+                } else {
+                    // Fallback using event creator info if profile is still loading
+                    HStack(spacing: AppSpacing.md) {
+                        Circle().fill(AppColors.backgroundGray)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            )
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Loading Host...")
+                                .font(AppTypography.bodyMedium)
+                                .foregroundStyle(AppColors.primaryText)
+                        }
+                        Spacer()
+                    }
+                    .padding(AppSpacing.md)
+                }
+
+                // 2. Collaborators/Co-hosts
+                ForEach(coHosts, id: \.member.id) { pair in
+                    Divider().padding(.horizontal, AppSpacing.md)
+                    
+                    HStack(spacing: AppSpacing.md) {
+                        if let user = pair.user {
+                            AsyncImage(url: URL(string: user.avatarUrl ?? "")) { img in
+                                img.resizable().aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Circle().fill(AppColors.backgroundGray)
+                                    .overlay(
+                                        Text(String(user.fullName.prefix(1)))
+                                            .font(AppTypography.bodyMedium)
+                                            .foregroundStyle(AppColors.secondaryGray)
+                                    )
+                            }
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(user.fullName)
+                                    .font(AppTypography.bodyMedium)
+                                    .foregroundStyle(AppColors.primaryText)
+                                Text("Co-Host")
+                                    .font(AppTypography.caption1)
+                                    .foregroundStyle(AppColors.secondaryGray)
+                            }
+                        } else {
+                            Circle().fill(AppColors.backgroundGray)
+                                .frame(width: 40, height: 40)
+                            Text("Invited Collaborator")
+                                .font(AppTypography.bodyMedium)
+                                .foregroundStyle(AppColors.primaryText)
+                        }
+
+                        Spacer()
+
+                        let isPending = pair.member.status?.lowercased() == "pending"
+                        Text(isPending ? "Pending" : "Active")
+                            .font(.system(size: 11, weight: .bold))
+                            .tracking(0.5)
+                            .foregroundStyle(isPending ? AppColors.accentRed : Color(hex: "34C759"))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(isPending ? AppColors.accentRed.opacity(0.1) : Color(hex: "34C759").opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                    .padding(AppSpacing.md)
+                }
+            }
+            .background(AppColors.white)
+            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
+            .softShadow()
+        }
+    }
+
+    private var totalTargetAmount: Double {
+        registryViewModel.registryItems.reduce(0.0) { result, item in
+            result + (item.price * Double(item.quantityNeeded ?? 1))
+        }
+    }
+    
+    private var totalRaisedAmount: Double {
+        registryViewModel.registryItems.reduce(0.0) { result, item in
+            if let funded = item.fundedAmount, funded > 0 {
+                return result + funded
+            } else {
+                return result + (item.price * Double(item.quantityPurchased ?? 0))
+            }
+        }
+    }
+    
+    private var registryProgressPercentage: Double {
+        guard totalTargetAmount > 0 else { return 0 }
+        return min(totalRaisedAmount / totalTargetAmount, 1.0)
     }
 
     private var registryProgressCard: some View {
@@ -249,11 +424,11 @@ struct EventCommandCenterView: View {
                     .stroke(AppColors.backgroundGray, lineWidth: 7)
                     .frame(width: 76, height: 76)
                 Circle()
-                    .trim(from: 0, to: 0.68)
+                    .trim(from: 0, to: registryProgressPercentage)
                     .stroke(AppColors.accentRed, style: StrokeStyle(lineWidth: 7, lineCap: .round))
                     .frame(width: 76, height: 76)
                     .rotationEffect(.degrees(-90))
-                Text("68%")
+                Text("\(Int(registryProgressPercentage * 100))%")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppColors.primaryText)
             }
@@ -263,10 +438,12 @@ struct EventCommandCenterView: View {
                     .font(AppTypography.caption1Medium)
                     .tracking(1.5)
                     .foregroundStyle(AppColors.secondaryGray)
-                Text("$4,820 raised of\n$7,100")
+                Text("$\(Int(totalRaisedAmount)) raised of\n$\(Int(totalTargetAmount))")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundStyle(AppColors.primaryText)
-                Text("24 contributors · 58 gifts")
+                
+                // For now, show item count instead of contributor count if contributor count is not yet fetched
+                Text("\(registryViewModel.registryItems.count) gifts added")
                     .font(AppTypography.footnote)
                     .foregroundStyle(AppColors.secondaryGray)
             }
@@ -345,119 +522,244 @@ struct EventCommandCenterView: View {
         )
     }
 
-    // MARK: - Upcoming Tasks
-
-    private var upcomingTasksSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            Text("TO DO")
-                .font(AppTypography.caption1Medium)
-                .tracking(1.5)
-                .foregroundStyle(AppColors.secondaryGray)
-
-            Button { showRSVPReminder    = true } label: { taskRow(icon: "envelope",            title: "Send RSVP reminders",  subtitle: "3 guests pending",    priority: .medium) }.buttonStyle(.plain)
-            Button { showShippingAddress = true } label: { taskRow(icon: "shippingbox",          title: "Set shipping address",   subtitle: "Required before event", priority: .high) }.buttonStyle(.plain)
-            Button { showThankYouNotes   = true } label: { taskRow(icon: "heart.text.clipboard", title: "Write thank-you notes",  subtitle: "After event day",      priority: .low) }.buttonStyle(.plain)
-        }
-    }
-
-    private enum TaskPriority { case high, medium, low }
-
-    private func taskRow(icon: String, title: String, subtitle: String, priority: TaskPriority) -> some View {
-        HStack(spacing: AppSpacing.sm) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundStyle(priority == .high ? AppColors.accentRed : AppColors.secondaryGray)
-                .frame(width: 36, height: 36)
-                .background(
-                    Circle()
-                        .fill(priority == .high ? AppColors.accentRed.opacity(0.1) : AppColors.backgroundGray)
-                )
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(AppTypography.bodyMedium)
-                    .foregroundStyle(AppColors.primaryText)
-                Text(subtitle)
-                    .font(AppTypography.caption1)
-                    .foregroundStyle(AppColors.secondaryGray)
-            }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12))
-                .foregroundStyle(AppColors.secondaryGray)
-        }
-        .padding(AppSpacing.sm)
-        .background(AppColors.white)
-        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
-        .softShadow()
-    }
-
     private var recentActivitySection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            Text("RECENT ACTIVITY")
+            Text("THANK YOU NOTES")
                 .font(AppTypography.caption1Medium)
                 .tracking(1.5)
                 .foregroundStyle(AppColors.secondaryGray)
 
-            ForEach(PriorityGiftItem.mockContributors.prefix(3)) { contributor in
-                HStack(spacing: AppSpacing.sm) {
-                    AsyncImage(url: URL(string: contributor.avatarURL ?? "")) { img in
-                        img.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Circle().fill(AppColors.backgroundGray)
-                    }
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("\(contributor.name) contributed")
-                            .font(AppTypography.bodyMedium)
-                            .foregroundStyle(AppColors.primaryText)
-                        Text(contributor.timeAgo)
-                            .font(AppTypography.caption1)
-                            .foregroundStyle(AppColors.secondaryGray)
-                    }
-                    Spacer()
-                    Text("+$\(Int(contributor.amount))")
-                        .font(AppTypography.bodyMedium)
-                        .foregroundStyle(AppColors.accentRed)
+            if isLoadingNotes {
+                ProgressView().padding(.vertical, AppSpacing.md)
+            } else if thankYouNotes.isEmpty {
+                VStack(spacing: AppSpacing.sm) {
+                    Image(systemName: "gift.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(AppColors.backgroundGray)
+                    Text("No contributions yet.")
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColors.secondaryGray)
+                        .multilineTextAlignment(.center)
                 }
-                .padding(AppSpacing.sm)
-                .background(AppColors.white)
-                .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
-                .softShadow()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppSpacing.xl)
+            } else {
+                ForEach(thankYouNotes) { note in
+                    Button {
+                        if let index = thankYouNotes.firstIndex(where: { $0.id == note.id }) {
+                            selectedNoteIndex = index
+                            showThankYouNotes = true
+                        }
+                    } label: {
+                        HStack(spacing: AppSpacing.sm) {
+                            AsyncImage(url: URL(string: note.guestAvatar ?? "")) { img in
+                                img.resizable().aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Circle().fill(AppColors.backgroundGray)
+                                    .overlay(Text(note.guestName.prefix(1)).font(AppTypography.caption1Medium))
+                            }
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("\(note.guestName)")
+                                    .font(AppTypography.bodyMedium)
+                                    .foregroundStyle(AppColors.primaryText)
+                                Text("contributed to \(note.itemName)")
+                                    .font(AppTypography.caption1)
+                                    .foregroundStyle(AppColors.secondaryGray)
+                                    .lineLimit(1)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("+$\(Int(note.amount))")
+                                    .font(AppTypography.bodyMedium)
+                                    .foregroundStyle(AppColors.accentRed)
+                                Text(note.timeAgo)
+                                    .font(AppTypography.caption2)
+                                    .foregroundStyle(AppColors.secondaryGray)
+                            }
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(AppColors.secondaryGray)
+                                .padding(.leading, 4)
+                        }
+                        .padding(AppSpacing.sm)
+                        .background(AppColors.white)
+                        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
+                        .softShadow()
+                    }
+                    .buttonStyle(.plain)
+                }
             }
+        }
+    }
+    
+    private func fetchThankYouNotes() async {
+        isLoadingNotes = true
+        defer { isLoadingNotes = false }
+        
+        do {
+            let itemIds = registryViewModel.registryItems.map { $0.id }
+            guard !itemIds.isEmpty else { return }
+            
+            // Fetch event guests (for guest count context only)
+            let membersWithUsers = try await EventService.shared.fetchEventMembersWithUsers(eventId: event.id)
+            
+            // 1. Fetch All Reservations
+            let allReservations = try await EventService.shared.fetchAllReservationsForRegistryItems(itemIds: itemIds)
+            
+            // 2. Fetch Contributions
+            let contributions = try await EventService.shared.fetchContributionsForRegistryItems(itemIds: itemIds)
+            
+            let contributionResIds = Set(contributions.map { $0.reservationId })
+            let purchases = allReservations.filter { $0.isPurchased == true && !contributionResIds.contains($0.id) }
+            
+            var userIds: [UUID] = []
+            purchases.forEach { if let u = $0.reservedBy { userIds.append(u) } }
+            contributions.forEach { if let u = $0.contributorBy { userIds.append(u) } }
+            
+            // 3. Fetch Users
+            let users = try await EventService.shared.fetchUsers(ids: userIds)
+            let userMap = Dictionary(uniqueKeysWithValues: users.map { ($0.id, $0) })
+            
+            var notes: [ThankYouNoteItem] = []
+            let itemMap = Dictionary(uniqueKeysWithValues: registryViewModel.registryItems.map { ($0.id, $0) })
+            
+            // Map purchases
+            for purchase in purchases {
+                guard let userId = purchase.reservedBy, let user = userMap[userId] else { continue }
+                guard let item = itemMap[purchase.registryItemId] else { continue }
+                
+                let amount = item.price * Double(purchase.quantity ?? 1)
+                notes.append(ThankYouNoteItem(
+                    id: purchase.id,
+                    guestName: user.fullName,
+                    guestAvatar: user.avatarUrl,
+                    amount: amount,
+                    itemName: item.itemName,
+                    itemImage: item.imageUrl,
+                    timeAgo: purchase.createdAt?.daysUntil ?? "Recently"
+                ))
+            }
+            
+            // Map reservationId to registryItemId
+            let reservationToItemMap = Dictionary(uniqueKeysWithValues: allReservations.map { ($0.id, $0.registryItemId) })
+            
+            // Map contributions
+            for contribution in contributions {
+                guard let userId = contribution.contributorBy, let user = userMap[userId] else { continue }
+                var resolvedItemName = "Group Gift"
+                var resolvedItemImage: String? = nil
+                if let itemId = reservationToItemMap[contribution.reservationId], let item = itemMap[itemId] {
+                    resolvedItemName = item.itemName
+                    resolvedItemImage = item.imageUrl
+                }
+                notes.append(ThankYouNoteItem(
+                    id: contribution.id,
+                    guestName: user.fullName,
+                    guestAvatar: user.avatarUrl,
+                    amount: contribution.amount,
+                    itemName: resolvedItemName,
+                    itemImage: resolvedItemImage,
+                    timeAgo: contribution.createdAt?.daysUntil ?? "Recently"
+                ))
+            }
+            
+            await MainActor.run {
+                self.thankYouNotes = notes
+            }
+        } catch {
+            print("❌ Failed to fetch thank you notes: \(error)")
         }
     }
 
     // MARK: - Registry Tab
 
+    private let gridColumns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
     private var registryTab: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: AppSpacing.xl) {
-                // Registry categories
-                registryCategoriesSection
+                
+                let isEventOver = (event.endDate ?? event.startDate ?? Date.distantFuture) < Date()
+                if !isEventOver {
+                    Button {
+                        showModifyRegistry = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Modify Registry")
+                                .font(AppTypography.buttonMedium)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(AppColors.secondaryGray)
+                        }
+                        .foregroundStyle(AppColors.primaryDark)
+                        .padding()
+                        .background(AppColors.white)
+                        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg))
+                        .softShadow()
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                // Dynamic Categories Filter
+                if !registryViewModel.categories.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: AppSpacing.xs) {
+                            StatusChip(
+                                title: "All",
+                                isSelected: registryViewModel.selectedCategory == nil
+                            ) {
+                                registryViewModel.selectedCategory = nil
+                            }
+                            
+                            ForEach(registryViewModel.categories, id: \.self) { category in
+                                StatusChip(
+                                    title: category,
+                                    isSelected: registryViewModel.selectedCategory == category
+                                ) {
+                                    registryViewModel.selectedCategory = category
+                                }
+                            }
+                        }
+                    }
+                }
 
                 // AI Registry Health Card
                 registryHealthAnalyzerCard
 
-                // Priority Gifts
-                VStack(alignment: .leading, spacing: AppSpacing.sectionHeaderGap) {
-                    HStack {
-                        Text("PRIORITY GIFTS")
-                            .font(AppTypography.caption1Medium)
-                            .tracking(1.5)
-                            .foregroundStyle(AppColors.primaryText)
-                        Spacer()
-                        NavigationLink(destination: PriorityGiftsListView()) {
-                            Text("See all")
-                                .font(AppTypography.subheadline)
-                                .foregroundStyle(AppColors.secondaryGray)
+                // Dynamic Registry Items Grid
+                if registryViewModel.isLoading {
+                    ProgressView().padding(.vertical, AppSpacing.xl)
+                } else if registryViewModel.filteredItems.isEmpty {
+                    Text("No items added yet.")
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColors.secondaryGray)
+                        .padding(.vertical, AppSpacing.xl)
+                } else {
+                    LazyVGrid(columns: gridColumns, spacing: 12) {
+                        ForEach(registryViewModel.filteredItems) { item in
+                            if let product = registryViewModel.product(for: item) {
+                                RegistryItemCard(
+                                    product: product,
+                                    registryItem: item,
+                                    isGroupGifting: registryViewModel.isGroupGifting(for: item),
+                                    isHostView: true,
+                                    isEventOver: (event.endDate ?? event.startDate ?? Date.distantFuture) < Date(),
+                                    onTap: {
+                                        registryViewModel.selectedItem = item
+                                    }
+                                )
+                            }
                         }
-                    }
-
-                    ForEach(PriorityGiftItem.allMock) { gift in
-                        PriorityGiftCard(gift: gift)
                     }
                 }
 
@@ -465,6 +767,17 @@ struct EventCommandCenterView: View {
             }
             .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.top, AppSpacing.lg)
+        }
+        .sheet(item: $registryViewModel.selectedItem) { item in
+            if let product = registryViewModel.product(for: item) {
+                RegistryItemDetailView(
+                    item: item,
+                    product: product,
+                    eventName: event.title,
+                    isGroupGifting: registryViewModel.isGroupGifting(for: item),
+                    isHostView: true
+                )
+            }
         }
     }
 
@@ -566,11 +879,26 @@ struct EventCommandCenterView: View {
 
     // MARK: - Guests Tab
 
-    private let guestFilters = ["All", "Attending", "RSVP'd", "Invited", "No Response", "Declined"]
+    private let guestFilters = ["All", "Accepted", "Pending", "Declined"]
 
-    private var filteredGuests: [(name: String, role: String, avatar: String, status: String, invitedDate: String)] {
-        if selectedGuestFilter == "All" { return guestMockData }
-        return guestMockData.filter { $0.status == selectedGuestFilter }
+    private var filteredGuests: [GuestDisplayItem] {
+        if selectedGuestFilter == "All" { return guests }
+        let statusKey = selectedGuestFilter.lowercased()
+        return guests.filter { $0.status == statusKey }
+    }
+
+    private func guestCount(for filter: String) -> Int {
+        if filter == "All" { return guests.count }
+        let key = filter.lowercased()
+        return guests.filter { $0.status == key }.count
+    }
+
+    private func displayStatus(for guest: GuestDisplayItem) -> String {
+        switch guest.status {
+        case "accepted": return "Accepted"
+        case "declined": return "Declined"
+        default: return "Pending"
+        }
     }
 
     private var guestsTab: some View {
@@ -578,16 +906,16 @@ struct EventCommandCenterView: View {
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
                 // Stats row
                 HStack(spacing: AppSpacing.sm) {
-                    guestStatCard(value: "\(guestMockData.count)", label: "Total", icon: "person.2", color: AppColors.primaryText)
-                    guestStatCard(value: "\(guestMockData.filter { $0.status == "Attending" }.count)", label: "Attending", icon: "checkmark.circle", color: Color(hex: "34C759"))
-                    guestStatCard(value: "\(guestMockData.filter { $0.status == "No Response" || $0.status == "Invited" }.count)", label: "Pending", icon: "clock", color: Color(hex: "FF9500"))
+                    guestStatCard(value: "\(guests.count)", label: "Total", icon: "person.2", color: AppColors.primaryText)
+                    guestStatCard(value: "\(guestCount(for: "Accepted"))", label: "Accepted", icon: "checkmark.circle", color: Color(hex: "34C759"))
+                    guestStatCard(value: "\(guestCount(for: "Pending"))", label: "Pending", icon: "clock", color: Color(hex: "FF9500"))
                 }
 
                 // Filter chips
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: AppSpacing.xs) {
                         ForEach(guestFilters, id: \.self) { filter in
-                            let count = filter == "All" ? guestMockData.count : guestMockData.filter { $0.status == filter }.count
+                            let count = guestCount(for: filter)
                             Button {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     selectedGuestFilter = filter
@@ -630,7 +958,9 @@ struct EventCommandCenterView: View {
                             .foregroundStyle(AppColors.secondaryGray)
                     }
 
-                    if filteredGuests.isEmpty {
+                    if isLoadingGuests {
+                        ProgressView().padding(.vertical, AppSpacing.xl)
+                    } else if filteredGuests.isEmpty {
                         VStack(spacing: AppSpacing.sm) {
                             Image(systemName: "person.slash")
                                 .font(.system(size: 32))
@@ -642,7 +972,7 @@ struct EventCommandCenterView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, AppSpacing.xxl)
                     } else {
-                        ForEach(filteredGuests, id: \.name) { guest in
+                        ForEach(filteredGuests) { guest in
                             guestRow(guest: guest)
                         }
                     }
@@ -655,33 +985,48 @@ struct EventCommandCenterView: View {
         }
     }
 
-    private func guestRow(guest: (name: String, role: String, avatar: String, status: String, invitedDate: String)) -> some View {
+    private func guestRow(guest: GuestDisplayItem) -> some View {
         HStack(spacing: AppSpacing.md) {
-            AsyncImage(url: URL(string: guest.avatar)) { img in
-                img.resizable().aspectRatio(contentMode: .fill)
-            } placeholder: {
+            if let avatarUrl = guest.avatarUrl, !avatarUrl.isEmpty {
+                AsyncImage(url: URL(string: avatarUrl)) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Circle().fill(AppColors.backgroundGray)
+                }
+                .frame(width: 44, height: 44)
+                .clipShape(Circle())
+            } else {
                 Circle().fill(AppColors.backgroundGray)
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Text(guest.name.prefix(1).uppercased())
+                            .font(AppTypography.bodyMedium)
+                            .foregroundStyle(AppColors.secondaryGray)
+                    )
             }
-            .frame(width: 44, height: 44)
-            .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(guest.name)
                     .font(AppTypography.bodyMedium)
                     .foregroundStyle(AppColors.primaryText)
                 HStack(spacing: 6) {
-                    Text(guest.role)
-                        .font(AppTypography.caption1)
-                        .foregroundStyle(AppColors.secondaryGray)
-                    Text("·")
-                        .foregroundStyle(AppColors.secondaryGray)
-                    Text(guest.invitedDate)
-                        .font(AppTypography.caption1)
-                        .foregroundStyle(AppColors.secondaryGray)
+                    if let email = guest.email {
+                        Text(email)
+                            .font(AppTypography.caption1)
+                            .foregroundStyle(AppColors.secondaryGray)
+                            .lineLimit(1)
+                    }
+                    if let joinedAt = guest.joinedAt {
+                        Text("·")
+                            .foregroundStyle(AppColors.secondaryGray)
+                        Text(joinedAt.formatted(.dateTime.month(.abbreviated).day()))
+                            .font(AppTypography.caption1)
+                            .foregroundStyle(AppColors.secondaryGray)
+                    }
                 }
             }
             Spacer()
-            rsvpBadge(status: guest.status)
+            rsvpBadge(status: displayStatus(for: guest))
         }
         .padding(AppSpacing.md)
         .background(AppColors.white)
@@ -711,10 +1056,8 @@ struct EventCommandCenterView: View {
     private func rsvpBadge(status: String) -> some View {
         let config: (Color, Color) = {
             switch status {
-            case "Attending": return (Color(hex: "34C759"), Color(hex: "34C759").opacity(0.1))
-            case "RSVP'd":    return (Color(hex: "007AFF"), Color(hex: "007AFF").opacity(0.1))
-            case "Invited":   return (Color(hex: "FF9500"), Color(hex: "FF9500").opacity(0.1))
-            case "No Response": return (AppColors.secondaryGray, AppColors.backgroundGray)
+            case "Accepted":  return (Color(hex: "34C759"), Color(hex: "34C759").opacity(0.1))
+            case "Pending":   return (Color(hex: "FF9500"), Color(hex: "FF9500").opacity(0.1))
             case "Declined":  return (AppColors.accentRed, AppColors.accentRed.opacity(0.1))
             default:          return (AppColors.secondaryGray, AppColors.backgroundGray)
             }
@@ -732,7 +1075,7 @@ struct EventCommandCenterView: View {
 
     private var currentStepIndex: Int {
         // Find the first incomplete step — that's "current"
-        timelineMockData.firstIndex(where: { !$0.isComplete }) ?? timelineMockData.count - 1
+        timelineData.firstIndex(where: { !$0.isComplete }) ?? timelineData.count - 1
     }
 
     private var timelineTab: some View {
@@ -744,7 +1087,7 @@ struct EventCommandCenterView: View {
 
                 // Journey steps
                 VStack(alignment: .leading, spacing: 0) {
-                    ForEach(timelineMockData.indices, id: \.self) { index in
+                    ForEach(timelineData.indices, id: \.self) { index in
                         journeyStep(index: index)
                     }
                 }
@@ -766,7 +1109,7 @@ struct EventCommandCenterView: View {
                         .font(AppTypography.caption1Medium)
                         .tracking(1.5)
                         .foregroundStyle(AppColors.secondaryGray)
-                    Text("Step \(currentStepIndex + 1) of \(timelineMockData.count)")
+                    Text("Step \(currentStepIndex + 1) of \(timelineData.count)")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
                 }
@@ -777,11 +1120,11 @@ struct EventCommandCenterView: View {
                         .stroke(AppColors.backgroundGray, lineWidth: 5)
                         .frame(width: 52, height: 52)
                     Circle()
-                        .trim(from: 0, to: Double(timelineMockData.filter { $0.isComplete }.count) / Double(timelineMockData.count))
+                        .trim(from: 0, to: Double(timelineData.filter { $0.isComplete }.count) / Double(timelineData.count))
                         .stroke(AppColors.accentRed, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .frame(width: 52, height: 52)
                         .rotationEffect(.degrees(-90))
-                    Text("\(Int(Double(timelineMockData.filter { $0.isComplete }.count) / Double(timelineMockData.count) * 100))%")
+                    Text("\(Int(Double(timelineData.filter { $0.isComplete }.count) / Double(timelineData.count) * 100))%")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
                 }
@@ -795,7 +1138,7 @@ struct EventCommandCenterView: View {
                         .frame(height: 6)
                     Capsule()
                         .fill(AppColors.accentGradient)
-                        .frame(width: geo.size.width * Double(timelineMockData.filter { $0.isComplete }.count) / Double(timelineMockData.count), height: 6)
+                        .frame(width: geo.size.width * Double(timelineData.filter { $0.isComplete }.count) / Double(timelineData.count), height: 6)
                 }
             }
             .frame(height: 6)
@@ -809,9 +1152,9 @@ struct EventCommandCenterView: View {
     // MARK: Journey Step
 
     private func journeyStep(index: Int) -> some View {
-        let step = timelineMockData[index]
+        let step = timelineData[index]
         let isCurrent = index == currentStepIndex
-        let isLast = index == timelineMockData.count - 1
+        let isLast = index == timelineData.count - 1
 
         return HStack(alignment: .top, spacing: AppSpacing.md) {
 
@@ -894,14 +1237,15 @@ struct EventCommandCenterView: View {
                 }
 
                 if isCurrent {
-                    Text("IN PROGRESS")
+                    let isUpcoming = step.title == "Event Day"
+                    Text(isUpcoming ? "UPCOMING" : "IN PROGRESS")
                         .font(.system(size: 10, weight: .bold))
                         .tracking(1.5)
-                        .foregroundStyle(AppColors.accentRed)
+                        .foregroundStyle(isUpcoming ? AppColors.secondaryGray : AppColors.accentRed)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(
-                            Capsule().fill(AppColors.accentRed.opacity(0.1))
+                            Capsule().fill(isUpcoming ? AppColors.backgroundGray : AppColors.accentRed.opacity(0.1))
                         )
                         .padding(.top, 2)
                 }
@@ -923,16 +1267,26 @@ struct EventCommandCenterView: View {
 
     // MARK: - Timeline Mock Data
 
-    private var timelineMockData: [(date: String, title: String, subtitle: String?, icon: String, isComplete: Bool)] {
-        [
-            ("May 1", "Registry Created", "58 items curated", "sparkles", true),
-            ("May 8", "Save the Date", "24 guests notified via email", "envelope.fill", true),
-            ("May 15", "First Contribution", "Maya contributed $50 🎉", "gift.fill", true),
-            ("Jun 1", "RSVP Deadline", "18 of 24 responded", "calendar.badge.clock", false),
-            ("Jun 10", "Shipping Begins", "Items ship to your address", "shippingbox.fill", false),
-            ("Jun 14", "Event Day", "Sarah & James's Wedding 💍", "heart.fill", false),
-            ("Jun 21", "Thank-You Notes", "Send gratitude to contributors", "heart.text.square.fill", false),
-        ]
+    private var timelineData: [(date: String, title: String, subtitle: String?, icon: String, isComplete: Bool)] {
+        var steps: [(date: String, title: String, subtitle: String?, icon: String, isComplete: Bool)] = []
+
+        // 1. Registry Created
+        let createdDate = event.createdAt?.formatted(.dateTime.month(.abbreviated).day()) ?? "—"
+        steps.append((createdDate, "Registry Created", "\(registryViewModel.registryItems.count) items curated", "sparkles", true))
+
+        // 2. First Contribution / Purchase
+        if let firstNote = thankYouNotes.first {
+            steps.append((firstNote.timeAgo, "First Contribution", "\(firstNote.guestName) contributed to \(firstNote.itemName) 🎉", "gift.fill", true))
+        } else {
+            steps.append(("—", "First Contribution", "No contributions yet", "gift.fill", false))
+        }
+
+        // 3. Event Day
+        let eventDate = event.startDate?.formatted(.dateTime.month(.abbreviated).day()) ?? "TBD"
+        let eventPassed = (event.startDate ?? Date.distantFuture) < Date()
+        steps.append((eventDate, "Event Day", "\(event.title) 🎉", "heart.fill", eventPassed))
+
+        return steps
     }
 
     private var eventSettingsSheet: some View {
@@ -991,21 +1345,44 @@ struct EventCommandCenterView: View {
         return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800"
     }
 
-    // MARK: - Mock Data
+    private func fetchInvitations() async {
+        isLoadingGuests = true
+        defer { isLoadingGuests = false }
+        do {
+            let membersWithUsers = try await EventService.shared.fetchEventMembersWithUsers(eventId: event.id)
+            let guestMembers = membersWithUsers.filter { $0.member.membershipType == "guest" }
+            let items = guestMembers.map { pair in
+                GuestDisplayItem(
+                    id: pair.member.id,
+                    name: pair.user?.fullName ?? "Unknown Guest",
+                    email: pair.user?.email,
+                    avatarUrl: pair.user?.avatarUrl,
+                    status: (pair.member.status ?? "pending").lowercased(),
+                    joinedAt: pair.member.joinedAt
+                )
+            }
+            await MainActor.run {
+                self.guests = items
+            }
+        } catch {
+            print("❌ Failed to fetch guests: \(error)")
+        }
+    }
 
-    private var guestMockData: [(name: String, role: String, avatar: String, status: String, invitedDate: String)] {
-        [
-            ("Maya Chen", "Co-host", "https://i.pravatar.cc/150?img=5", "Attending", "May 2"),
-            ("Liam Carter", "Guest", "https://i.pravatar.cc/150?img=8", "Attending", "May 3"),
-            ("Sofia Rivera", "Family", "https://i.pravatar.cc/150?img=9", "Attending", "May 2"),
-            ("James Park", "Friend", "https://i.pravatar.cc/150?img=14", "RSVP'd", "May 5"),
-            ("Olivia Turner", "Family", "https://i.pravatar.cc/150?img=20", "RSVP'd", "May 4"),
-            ("Ethan Brooks", "Guest", "https://i.pravatar.cc/150?img=11", "Invited", "May 8"),
-            ("Ava Martinez", "Guest", "https://i.pravatar.cc/150?img=16", "Invited", "May 10"),
-            ("Mia Johnson", "Friend", "https://i.pravatar.cc/150?img=23", "No Response", "May 6"),
-            ("Lucas Kim", "Colleague", "https://i.pravatar.cc/150?img=33", "No Response", "May 7"),
-            ("Noah Wilson", "Guest", "https://i.pravatar.cc/150?img=12", "Declined", "May 3"),
-        ]
+    private func fetchCoHostsAndOwner() async {
+        isLoadingCoHosts = true
+        defer { isLoadingCoHosts = false }
+        do {
+            let fetchedOwner = try await EventService.shared.fetchUsers(ids: [event.ownerUserId]).first
+            let fetchedCoHosts = try await EventService.shared.fetchCollaboratorsWithUsers(eventId: event.id)
+            
+            await MainActor.run {
+                self.ownerUser = fetchedOwner
+                self.coHosts = fetchedCoHosts
+            }
+        } catch {
+            print("❌ Failed to fetch co-hosts and owner: \(error)")
+        }
     }
 
 }

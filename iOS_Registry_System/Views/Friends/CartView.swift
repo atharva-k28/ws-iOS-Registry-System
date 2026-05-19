@@ -248,6 +248,12 @@ struct CartItemRow: View {
     }
     
     private var imageURL: String {
+        if let imageUrl = item.product?.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
+        if let imageUrl = item.registryItem?.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
         let name = item.product?.name ?? "Product"
         let seed = name.replacingOccurrences(of: " ", with: ",")
         let id = item.product?.id ?? UUID()

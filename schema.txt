@@ -1,0 +1,24 @@
+<USER_REQUEST>
+what products are being added to registry_item where is it being fetched from? is it not from products table?
+
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.ai_planner_sessions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  registry_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  event_context text,
+  suggested_items jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ai_planner_sessions_pkey PRIMARY KEY (id),
+  CONSTRAINT ai_planner_sessions_registry_id_fkey FOREIGN KEY (registry_id) REFERENCES public.registries(id),
+  CONSTRAINT ai_planner_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.cart_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  product_id uuid NOT NULL,
+  quantity integer NOT NULL DEFAULT 1 CHECK (quantity >= 1),
+  is_saved_for_later boolean DEFAULT false,
+<truncated 14970 bytes>

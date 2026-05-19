@@ -14,6 +14,8 @@ struct RegistryItemCard: View {
     let product: Product
     let registryItem: RegistryItem
     var isGroupGifting: Bool = false
+    var isHostView: Bool = false
+    var isEventOver: Bool = false
     var onPurchase: (() -> Void)?
     var onContribute: (() -> Void)?
     var onShare: (() -> Void)?
@@ -46,13 +48,17 @@ struct RegistryItemCard: View {
             // MARK: Image Area
 
             ZStack(alignment: .top) {
-                // Product Image
                 AsyncImage(url: URL(string: imageURL)) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .frame(height: 180)
+                        .clipped()
                 } placeholder: {
                     Color.gray.opacity(0.1)
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .frame(height: 180)
                         .overlay {
                             Image(systemName: "gift.fill")
                                 .font(.system(size: 32))
@@ -60,6 +66,7 @@ struct RegistryItemCard: View {
                         }
                 }
                 .frame(height: 180)
+                .frame(maxWidth: .infinity)
                 .clipped()
 
                 // Top Overlays
@@ -160,8 +167,15 @@ struct RegistryItemCard: View {
 
                 // Action buttons (only for active items)
                 if !isCompleted {
-                    actionButtons
-                        .padding(.top, AppSpacing.xs)
+                    if isHostView {
+                        if isEventOver {
+                            hostActionButtons
+                                .padding(.top, AppSpacing.xs)
+                        }
+                    } else {
+                        actionButtons
+                            .padding(.top, AppSpacing.xs)
+                    }
                 }
             }
             .padding(.horizontal, AppSpacing.sm)
@@ -179,6 +193,31 @@ struct RegistryItemCard: View {
     }
 
     // MARK: - Action Buttons
+    
+    @ViewBuilder
+    private var hostActionButtons: some View {
+        Button {
+            cartQuantity = 1
+            onPurchase?()
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "cart.badge.plus")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("Buy Item")
+                    .font(AppTypography.buttonSmall)
+            }
+            .foregroundStyle(AppColors.primaryDark)
+            .frame(maxWidth: .infinity)
+            .frame(height: 40)
+            .background(AppColors.white)
+            .clipShape(Capsule())
+            .overlay {
+                Capsule()
+                    .strokeBorder(AppColors.primaryDark.opacity(0.2), lineWidth: 1.5)
+            }
+        }
+        .buttonStyle(.plain)
+    }
 
     @ViewBuilder
     private var actionButtons: some View {
@@ -293,6 +332,9 @@ struct RegistryItemCard: View {
 
     private var imageURL: String {
         if let imageUrl = product.imageUrl, !imageUrl.isEmpty {
+            return imageUrl
+        }
+        if let imageUrl = registryItem.imageUrl, !imageUrl.isEmpty {
             return imageUrl
         }
         let seed = product.name.replacingOccurrences(of: " ", with: ",")

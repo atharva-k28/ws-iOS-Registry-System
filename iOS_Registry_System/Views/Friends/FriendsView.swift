@@ -134,7 +134,10 @@ struct FriendsView: View {
 
                             LazyVStack(spacing: AppSpacing.cardGap) {
                                 ForEach(viewModel.filteredFriendEvents) { event in
-                                    FriendEventCard(event: event) {
+                                    FriendEventCard(
+                                        event: event,
+                                        progress: viewModel.eventProgresses[event.id] ?? 0.0
+                                    ) {
                                         selectedEvent = event
                                     }
                                 }

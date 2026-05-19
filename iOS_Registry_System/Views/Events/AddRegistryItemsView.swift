@@ -16,12 +16,22 @@ import SwiftUI
 
 struct AddRegistryItemsView: View {
     let event: Event
+    let isNewEvent: Bool
+    let collaborators: [Collaborator]
     let onFinish: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+
+    init(event: Event, isNewEvent: Bool = false, collaborators: [Collaborator] = [], onFinish: @escaping () -> Void) {
+        self.event = event
+        self.isNewEvent = isNewEvent
+        self.collaborators = collaborators
+        self.onFinish = onFinish
+    }
     
     // State variables
     @State private var products: [Product] = []
+    @State private var registryItems: [RegistryItem] = []
     @State private var addedProductIds: Set<UUID> = []
     @State private var selectedCategory: String? = nil
     @State private var isLoading = false
@@ -30,77 +40,10 @@ struct AddRegistryItemsView: View {
     
     // Alert state variables for database troubleshooting
     @State private var showErrorAlert = false
+    @State private var alertTitle = "Error"
     @State private var alertMessage = ""
     
-    // Premium catalog high-fidelity fallbacks in case of empty table / RLS blocks
-    private let fallbackProducts: [Product] = [
-        Product(
-            id: UUID(uuidString: "0e45e80c-2f1b-4358-9a78-0e876e13b199")!,
-            sku: "ALLCLAD-D5-EP4",
-            name: "All-Clad D5 Stainless-Steel Essential Pan, 4-Qt.",
-            description: "Five-ply bonded essential pan. Oven- and broiler-safe to 600F.",
-            brand: "All-Clad",
-            category: "cookware",
-            subcategory: "Saute Pans",
-            price: 299.95,
-            imageUrl: "https://groxfqvymzoildwbrzvd.supabase.co/storage/v1/object/sign/product-images/All-Clad%20D5%20Stainless-Steel%20Essential%20Pan%2C%204-Qt..jpg"
-        ),
-        Product(
-            id: UUID(uuidString: "1a45e80c-2f1b-4358-9a78-0e876e13b200")!,
-            sku: "KITCHENAID-MIXER-5",
-            name: "KitchenAid Artisan Series 5-Quart Stand Mixer",
-            description: "Legendary performance. 10 speeds to thoroughly mix, knead and whip ingredients.",
-            brand: "KitchenAid",
-            category: "appliances",
-            subcategory: "Mixers",
-            price: 449.95,
-            imageUrl: "https://groxfqvymzoildwbrzvd.supabase.co/storage/v1/object/sign/product-images/KitchenAid%20Artisan%20Series%205-Quart%20Stand%20Mixer.jpg"
-        ),
-        Product(
-            id: UUID(uuidString: "2b45e80c-2f1b-4358-9a78-0e876e13b201")!,
-            sku: "LECREUSET-DUTCH-5",
-            name: "Le Creuset Signature Enameled Cast Iron Round Dutch Oven, 5.5-Qt.",
-            description: "Exceptional heat distribution and retention. Easy-to-clean enameled surface.",
-            brand: "Le Creuset",
-            category: "cookware",
-            subcategory: "Dutch Ovens",
-            price: 419.95,
-            imageUrl: "https://groxfqvymzoildwbrzvd.supabase.co/storage/v1/object/sign/product-images/Le%20Creuset%20Signature%20Enameled%20Cast%20Iron%20Round%20Dutch%20Oven%2C%205.5-Qt..jpg"
-        ),
-        Product(
-            id: UUID(uuidString: "3c45e80c-2f1b-4358-9a78-0e876e13b202")!,
-            sku: "WILLIAMS-SONOMA-GL-6",
-            name: "Williams Sonoma Reserve Cabernet Wine Glasses, Set of 6",
-            description: "Exquisite brilliance and clarity. Designed to reveal the full bouquet of fine red wines.",
-            brand: "Williams Sonoma",
-            category: "table",
-            subcategory: "Glassware",
-            price: 120.00,
-            imageUrl: "https://groxfqvymzoildwbrzvd.supabase.co/storage/v1/object/sign/product-images/Williams%20Sonoma%20Reserve%20Cabernet%20Wine%20Glasses.jpg"
-        ),
-        Product(
-            id: UUID(uuidString: "4d45e80c-2f1b-4358-9a78-0e876e13b203")!,
-            sku: "SHUN-CLASSIC-8",
-            name: "Shun Classic 8\" Chef's Knife",
-            description: "Proprietary VG-MAX cutting core clad with 34 layers each side of stainless Damascus.",
-            brand: "Shun",
-            category: "cutlery",
-            subcategory: "Chef's Knives",
-            price: 189.95,
-            imageUrl: "https://groxfqvymzoildwbrzvd.supabase.co/storage/v1/object/sign/product-images/Shun%20Classic%208%22%20Chef's%20Knife.jpg"
-        ),
-        Product(
-            id: UUID(uuidString: "5e45e80c-2f1b-4358-9a78-0e876e13b204")!,
-            sku: "BREVILLE-BARISTA-PRO",
-            name: "Breville Barista Pro Espresso Machine",
-            description: "Intuitive interface with grinding, dosing and tamping automation for Third Wave specialty coffee.",
-            brand: "Breville",
-            category: "appliances",
-            subcategory: "Espresso",
-            price: 849.95,
-            imageUrl: "https://groxfqvymzoildwbrzvd.supabase.co/storage/v1/object/sign/product-images/Breville%20Barista%20Pro%20Espresso%20Machine.jpg"
-        )
-    ]
+
     
     // Dynamically computed categories to always adapt to whatever is loaded in the catalog
     var dynamicCategories: [String] {
@@ -191,29 +134,47 @@ struct AddRegistryItemsView: View {
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    handleFinish()
-                } label: {
-                    if isFinishing {
-                        ProgressView()
-                            .tint(AppColors.accentRed)
-                    } else {
-                        Text("Finish")
+                if isNewEvent {
+                    Button {
+                        handleSkip()
+                    } label: {
+                        Text("Skip")
                             .font(AppTypography.footnoteSemibold)
-                            .foregroundStyle(AppColors.accentRed)
+                            .foregroundStyle(AppColors.secondaryGray)
                             .padding(.horizontal, AppSpacing.md)
                             .padding(.vertical, 6)
                             .background(
                                 Capsule()
-                                    .fill(AppColors.accentRed.opacity(0.12))
+                                    .fill(AppColors.backgroundGray.opacity(0.6))
                             )
                     }
+                    .buttonStyle(.plain)
+                    .disabled(isFinishing)
+                } else {
+                    Button {
+                        handleFinish()
+                    } label: {
+                        if isFinishing {
+                            ProgressView()
+                                .tint(AppColors.accentRed)
+                        } else {
+                            Text("Finish")
+                                .font(AppTypography.footnoteSemibold)
+                                .foregroundStyle(AppColors.accentRed)
+                                .padding(.horizontal, AppSpacing.md)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(AppColors.accentRed.opacity(0.12))
+                                )
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isFinishing)
                 }
-                .buttonStyle(.plain)
-                .disabled(isFinishing)
             }
         }
-        .alert("Database Error", isPresented: $showErrorAlert) {
+        .alert(alertTitle, isPresented: $showErrorAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(alertMessage)
@@ -330,27 +291,16 @@ struct AddRegistryItemsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
+    private let gridColumns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+    
     private func productGrid(for items: [Product]) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            // Left Column
-            VStack(spacing: 8) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    if index % 2 == 0 {
-                        catalogCard(product: item)
-                    }
-                }
+        LazyVGrid(columns: gridColumns, spacing: 12) {
+            ForEach(items) { item in
+                catalogCard(product: item)
             }
-            .frame(maxWidth: .infinity)
-            
-            // Right Column
-            VStack(spacing: 8) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    if index % 2 != 0 {
-                        catalogCard(product: item)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity)
         }
     }
     
@@ -365,8 +315,13 @@ struct AddRegistryItemsView: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .frame(height: 140)
+                        .clipped()
                 } placeholder: {
                     Color.gray.opacity(0.1)
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .frame(height: 140)
                         .overlay {
                             Image(systemName: "gift.fill")
                                 .font(.system(size: 24))
@@ -374,6 +329,7 @@ struct AddRegistryItemsView: View {
                         }
                 }
                 .frame(height: 140)
+                .frame(maxWidth: .infinity)
                 .clipped()
                 
                 // Top corner badges
@@ -474,22 +430,21 @@ struct AddRegistryItemsView: View {
         do {
             // 1. Fetch catalog products
             let fetchedProducts = try await ProductService.shared.fetchAllProducts()
-            if fetchedProducts.isEmpty {
-                // Self-healing database fallback to ensure gorgeous UI catalog rendering 100% of the time
-                print("⚠️ Products list is empty from DB (RLS active or blank table). Fetching premium fallback products.")
-                self.products = fallbackProducts
-            } else {
-                self.products = fetchedProducts
-            }
+            self.products = fetchedProducts
             
-            // 2. Fetch existing registry items for event to match states
-            let existingItems = try await EventService.shared.fetchRegistryItems(eventID: event.id)
-            let existingProductIds = existingItems.compactMap { $0.productId }
-            self.addedProductIds = Set(existingProductIds)
+            if !isNewEvent {
+                // 2. Fetch existing registry items for event to match states
+                let existingItems = try await EventService.shared.fetchRegistryItems(eventID: event.id)
+                self.registryItems = existingItems
+                let existingProductIds = existingItems.compactMap { $0.productId }
+                self.addedProductIds = Set(existingProductIds)
+            } else {
+                self.registryItems = []
+                self.addedProductIds = []
+            }
         } catch {
             print("❌ Failed to load registry setup data: \(error)")
-            // Graceful self-healing fallback also triggers on db query fail
-            self.products = fallbackProducts
+            self.errorMessage = error.localizedDescription
         }
         
         isLoading = false
@@ -500,6 +455,21 @@ struct AddRegistryItemsView: View {
         
         let isAdded = addedProductIds.contains(product.id)
         
+        if !isNewEvent {
+            if isAdded {
+                if let existingItem = registryItems.first(where: { $0.productId == product.id }) {
+                    let purchased = existingItem.quantityPurchased ?? 0
+                    let funded = existingItem.fundedAmount ?? 0.0
+                    if purchased > 0 || funded > 0.0 {
+                        self.alertTitle = "Cannot Remove Item"
+                        self.alertMessage = "This item has already been purchased or has contributions, and cannot be removed."
+                        self.showErrorAlert = true
+                        return
+                    }
+                }
+            }
+        }
+        
         // 1. Optimistic Update for instantaneous premium UI feedback
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
             if isAdded {
@@ -507,6 +477,10 @@ struct AddRegistryItemsView: View {
             } else {
                 addedProductIds.insert(product.id)
             }
+        }
+        
+        if isNewEvent {
+            return
         }
         
         Task {
@@ -532,6 +506,7 @@ struct AddRegistryItemsView: View {
                     }
                     
                     // 3. Show native user-friendly popup listing exact database/RLS error
+                    self.alertTitle = "Database Error"
                     self.alertMessage = error.localizedDescription
                     self.showErrorAlert = true
                 }
@@ -545,18 +520,71 @@ struct AddRegistryItemsView: View {
         
         Task {
             do {
-                // Pre-emptively ensure that the registry record is successfully created in Supabase
-                _ = try await EventService.shared.getOrCreateRegistryID(for: event.id)
+                if isNewEvent {
+                    // 1. Create the event in the database
+                    _ = try await EventService.shared.createEvent(event)
+                    
+                    // 2. Create the collaborators in the database
+                    for collaborator in collaborators {
+                        if let uId = collaborator.userId {
+                            try await EventService.shared.addCollaborator(eventId: event.id, userId: uId)
+                        }
+                    }
+                    
+                    // 3. Add all selected products to the registry
+                    for productId in addedProductIds {
+                        if let product = products.first(where: { $0.id == productId }) {
+                            try await EventService.shared.addProductToRegistry(eventId: event.id, product: product)
+                        }
+                    }
+                } else {
+                    // Pre-emptively ensure that the registry record is successfully created in Supabase
+                    _ = try await EventService.shared.getOrCreateRegistryID(for: event.id)
+                }
+                
                 await MainActor.run {
                     isFinishing = false
                     onFinish()
                 }
             } catch {
-                print("⚠️ Ensuring registry failed: \(error)")
+                print("⚠️ Finished setup/registry failed: \(error)")
                 await MainActor.run {
                     isFinishing = false
-                    // Proceed anyway so the user is not stuck, but print warning
+                    self.alertTitle = "Error Creating Event"
+                    self.alertMessage = error.localizedDescription
+                    self.showErrorAlert = true
+                }
+            }
+        }
+    }
+    
+    private func handleSkip() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        isFinishing = true
+        
+        Task {
+            do {
+                // 1. Create the event in the database
+                _ = try await EventService.shared.createEvent(event)
+                
+                // 2. Create the collaborators in the database
+                for collaborator in collaborators {
+                    if let uId = collaborator.userId {
+                        try await EventService.shared.addCollaborator(eventId: event.id, userId: uId)
+                    }
+                }
+                
+                await MainActor.run {
+                    isFinishing = false
                     onFinish()
+                }
+            } catch {
+                print("⚠️ Skipping registry setup failed: \(error)")
+                await MainActor.run {
+                    isFinishing = false
+                    self.alertTitle = "Error Creating Event"
+                    self.alertMessage = error.localizedDescription
+                    self.showErrorAlert = true
                 }
             }
         }

@@ -209,7 +209,7 @@ struct CreateEventView: View {
         }
         .navigationDestination(isPresented: $showAddRegistryItems) {
             if let event = createdEvent {
-                AddRegistryItemsView(event: event) {
+                AddRegistryItemsView(event: event, isNewEvent: true, collaborators: collaborators) {
                     showAddRegistryItems = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         dismiss()
@@ -392,14 +392,11 @@ struct CreateEventView: View {
 
     // MARK: - Actions
 
-    private func createEvent() async {
+    private func prepareEventDraft() {
         guard let userId = AuthService.shared.currentUser?.id else {
             errorMessage = "User not logged in"
             return
         }
-        
-        isLoading = true
-        errorMessage = nil
         
         let title = eventTitle.isEmpty ? "My \((selectedType?.rawValue ?? "event").capitalized)" : eventTitle
         
@@ -417,15 +414,8 @@ struct CreateEventView: View {
             eventDate: eventDate
         )
         
-        do {
-            let event = try await EventService.shared.createEvent(newEvent)
-            createdEvent = event
-            showAddRegistryItems = true
-        } catch {
-            print("❌ Failed to create event: \(error)")
-            errorMessage = error.localizedDescription
-        }
-        isLoading = false
+        createdEvent = newEvent
+        showAddRegistryItems = true
     }
 
     // MARK: - Continue Button
@@ -442,18 +432,11 @@ struct CreateEventView: View {
             .allowsHitTesting(false)
 
             Button {
-                Task {
-                    await createEvent()
-                }
+                prepareEventDraft()
             } label: {
                 HStack {
-                    if isLoading {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text("Continue")
-                            .font(AppTypography.buttonLarge)
-                    }
+                    Text("Continue")
+                        .font(AppTypography.buttonLarge)
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -462,7 +445,6 @@ struct CreateEventView: View {
                 .clipShape(Capsule())
                 .shadow(color: AppColors.accentRed.opacity(0.35), radius: 16, y: 6)
             }
-            .disabled(isLoading)
             .buttonStyle(.plain)
             .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.bottom, AppSpacing.lg + 80) // Push above custom tab bar

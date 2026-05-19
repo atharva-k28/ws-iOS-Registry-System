@@ -59,6 +59,14 @@ final class FriendRegistryDetailViewModel {
             return true
         }
 
+        if item.isCashFund == true {
+            return true
+        }
+
+        if let funded = item.fundedAmount, funded > 0 {
+            return true
+        }
+
         guard let product = product(for: item) else {
             return false
         }

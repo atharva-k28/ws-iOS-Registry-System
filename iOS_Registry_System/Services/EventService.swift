@@ -77,17 +77,43 @@ final class EventService {
 
     // MARK: - Events
 
-    /// Fetch all events for the current user
+    /// Fetch all events for the current user (owned or accepted collaborator)
     func fetchMyEvents() async throws -> [Event] {
         guard let userId = AuthService.shared.currentUser?.id else {
             return []
         }
-        let response = try await SupabaseManager.shared.client
+        
+        // 1. Fetch events owned by the user
+        let ownedResponse = try await SupabaseManager.shared.client
             .from("events")
             .select()
             .eq("owner_user_id", value: userId.uuidString)
             .execute()
-        return try decoder.decode([Event].self, from: response.data)
+        let ownedEvents = try decoder.decode([Event].self, from: ownedResponse.data)
+        
+        // 2. Fetch events where user is collaborator (status accepted)
+        let memberResponse = try await SupabaseManager.shared.client
+            .from("event_members")
+            .select("events(*)")
+            .eq("user_id", value: userId.uuidString)
+            .eq("membership_type", value: "collaborator")
+            .eq("status", value: "accepted")
+            .execute()
+            
+        struct EventMemberJoin: Codable {
+            let events: Event?
+        }
+        let joined = try decoder.decode([EventMemberJoin].self, from: memberResponse.data)
+        let collabEvents = joined.compactMap { $0.events }
+        
+        // Combine them (unique by id)
+        var allEvents = ownedEvents
+        for event in collabEvents {
+            if !allEvents.contains(where: { $0.id == event.id }) {
+                allEvents.append(event)
+            }
+        }
+        return allEvents
     }
 
     /// Fetch a single event by ID
@@ -135,6 +161,7 @@ final class EventService {
     /// Fetch registry items for an event
     func fetchRegistryItems(eventID: UUID) async throws -> [RegistryItem] {
         // First get the registry for the event
+        let registryId: String
         do {
             let registryResponse = try await SupabaseManager.shared.client
                 .from("registries")
@@ -144,11 +171,17 @@ final class EventService {
                 .execute()
                 
             let registryIdMap = try JSONSerialization.jsonObject(with: registryResponse.data) as? [String: Any]
-            guard let registryId = registryIdMap?["id"] as? String else {
+            guard let id = registryIdMap?["id"] as? String else {
                 print("⚠️ Registry ID was empty or missing 'id' key for event \(eventID)")
                 return []
             }
+            registryId = id
+        } catch {
+            print("⚠️ Registry does not exist yet for event \(eventID): \(error)")
+            return []
+        }
 
+        do {
             let response = try await SupabaseManager.shared.client
                 .from("registry_items")
                 .select()
@@ -162,7 +195,98 @@ final class EventService {
         }
     }
 
-    /// Fetch events the user is contributing to (accepted only)
+    /// Fetch completed purchases/reservations for a list of registry items
+    func fetchPurchasesForRegistryItems(itemIds: [UUID]) async throws -> [GiftReservation] {
+        guard !itemIds.isEmpty else { return [] }
+        let idStrings = itemIds.map { $0.uuidString }
+        let response = try await SupabaseManager.shared.client
+            .from("gift_reservations")
+            .select()
+            .in("registry_item_id", values: idStrings)
+            .eq("is_purchased", value: true)
+            .execute()
+        return try decoder.decode([GiftReservation].self, from: response.data)
+    }
+
+    /// Fetch all reservations (both active and completed) for a list of registry items
+    func fetchAllReservationsForRegistryItems(itemIds: [UUID]) async throws -> [GiftReservation] {
+        guard !itemIds.isEmpty else { return [] }
+        let idStrings = itemIds.map { $0.uuidString }
+        let response = try await SupabaseManager.shared.client
+            .from("gift_reservations")
+            .select()
+            .in("registry_item_id", values: idStrings)
+            .execute()
+        return try decoder.decode([GiftReservation].self, from: response.data)
+    }
+
+    /// Fetch contributions for a list of registry items (requires fetching reservations first)
+    func fetchContributionsForRegistryItems(itemIds: [UUID]) async throws -> [Contribution] {
+        guard !itemIds.isEmpty else { return [] }
+        let idStrings = itemIds.map { $0.uuidString }
+        let resResponse = try await SupabaseManager.shared.client
+            .from("gift_reservations")
+            .select("id")
+            .in("registry_item_id", values: idStrings)
+            .execute()
+        
+        struct ResID: Codable { let id: UUID }
+        let resIds = try decoder.decode([ResID].self, from: resResponse.data).map { $0.id.uuidString }
+        
+        guard !resIds.isEmpty else { return [] }
+        
+        let response = try await SupabaseManager.shared.client
+            .from("contributions")
+            .select()
+            .in("reservation_id", values: resIds)
+            .execute()
+        return try decoder.decode([Contribution].self, from: response.data)
+    }
+
+    /// Fetch users by IDs
+    func fetchUsers(ids: [UUID]) async throws -> [User] {
+        guard !ids.isEmpty else { return [] }
+        let uniqueIds = Array(Set(ids.map { $0.uuidString }))
+        let response = try await SupabaseManager.shared.client
+            .from("users")
+            .select()
+            .in("id", values: uniqueIds)
+            .execute()
+        return try decoder.decode([User].self, from: response.data)
+    }
+
+    /// Fetch invitations for an event
+    func fetchInvitations(eventId: UUID) async throws -> [Invitation] {
+        let response = try await SupabaseManager.shared.client
+            .from("invitations")
+            .select()
+            .eq("event_id", value: eventId.uuidString)
+            .execute()
+        return try decoder.decode([Invitation].self, from: response.data)
+    }
+
+    /// Fetch event members with joined user data
+    func fetchEventMembersWithUsers(eventId: UUID) async throws -> [(member: EventMember, user: User?)] {
+        // 1. Fetch all event members
+        let memberResponse = try await SupabaseManager.shared.client
+            .from("event_members")
+            .select()
+            .eq("event_id", value: eventId.uuidString)
+            .execute()
+        let members = try decoder.decode([EventMember].self, from: memberResponse.data)
+        
+        // 2. Fetch associated users
+        let userIds = members.compactMap { $0.userId }
+        let users = try await fetchUsers(ids: userIds)
+        let userMap = Dictionary(uniqueKeysWithValues: users.map { ($0.id, $0) })
+        
+        // 3. Pair them
+        return members.map { member in
+            (member: member, user: member.userId.flatMap { userMap[$0] })
+        }
+    }
+
+    /// Fetch events the user is contributing to (accepted guests only)
     func fetchFriendEvents() async throws -> [Event] {
         guard let userId = AuthService.shared.currentUser?.id else {
             return []
@@ -171,6 +295,7 @@ final class EventService {
             .from("event_members")
             .select("events(*)")
             .eq("user_id", value: userId.uuidString)
+            .eq("membership_type", value: "guest")
             .eq("status", value: "accepted")
             .execute()
             
@@ -182,7 +307,7 @@ final class EventService {
         return members.compactMap { $0.events }
     }
 
-    /// Fetch pending invites for the current user
+    /// Fetch pending invites for the current user (guests only)
     func fetchPendingInvites() async throws -> [Event] {
         guard let userId = AuthService.shared.currentUser?.id else {
             return []
@@ -191,6 +316,28 @@ final class EventService {
             .from("event_members")
             .select("events(*)")
             .eq("user_id", value: userId.uuidString)
+            .eq("membership_type", value: "guest")
+            .eq("status", value: "pending")
+            .execute()
+            
+        struct EventMemberJoin: Codable {
+            let events: Event?
+        }
+        
+        let members = try decoder.decode([EventMemberJoin].self, from: memberResponse.data)
+        return members.compactMap { $0.events }
+    }
+
+    /// Fetch pending collaborator invites for the current user
+    func fetchPendingCollaboratorInvites() async throws -> [Event] {
+        guard let userId = AuthService.shared.currentUser?.id else {
+            return []
+        }
+        let memberResponse = try await SupabaseManager.shared.client
+            .from("event_members")
+            .select("events(*)")
+            .eq("user_id", value: userId.uuidString)
+            .eq("membership_type", value: "collaborator")
             .eq("status", value: "pending")
             .execute()
             
@@ -245,6 +392,48 @@ final class EventService {
             .from("event_members")
             .insert(insert)
             .execute()
+    }
+
+    /// Add a guest (user) to an event
+    func addGuest(eventId: UUID, userId: UUID) async throws {
+        struct EventMemberInsert: Codable {
+            let id: UUID
+            let event_id: UUID
+            let user_id: UUID
+            let membership_type: String
+            let status: String
+        }
+        
+        let insert = EventMemberInsert(
+            id: UUID(),
+            event_id: eventId,
+            user_id: userId,
+            membership_type: "guest",
+            status: "pending"
+        )
+        let _ = try await SupabaseManager.shared.client
+            .from("event_members")
+            .insert(insert)
+            .execute()
+    }
+
+    /// Fetch active collaborators (co-hosts) with user details for an event
+    func fetchCollaboratorsWithUsers(eventId: UUID) async throws -> [(member: EventMember, user: User?)] {
+        let memberResponse = try await SupabaseManager.shared.client
+            .from("event_members")
+            .select()
+            .eq("event_id", value: eventId.uuidString)
+            .eq("membership_type", value: "collaborator")
+            .execute()
+        let members = try decoder.decode([EventMember].self, from: memberResponse.data)
+        
+        let userIds = members.compactMap { $0.userId }
+        let users = try await fetchUsers(ids: userIds)
+        let userMap = Dictionary(uniqueKeysWithValues: users.map { ($0.id, $0) })
+        
+        return members.map { member in
+            (member: member, user: member.userId.flatMap { userMap[$0] })
+        }
     }
 
     /// Fetch user IDs already invited to an event
@@ -405,6 +594,59 @@ final class EventService {
                 .update(updateObj)
                 .eq("id", value: id.uuidString)
                 .execute()
+                
+            // Record cash fund contribution in gift_reservations and contributions
+            let currentUserId = AuthService.shared.currentUser?.id
+            let reservationId = UUID()
+            let dateStr = ISO8601DateFormatter().string(from: Date())
+            
+            struct GiftReservationInsert: Encodable {
+                let id: String
+                let registry_item_id: String
+                let reserved_by: String?
+                let quantity: Int
+                let reservation_status: String
+                let is_purchased: Bool
+                let purchased_at: String
+            }
+            
+            let reservationInsert = GiftReservationInsert(
+                id: reservationId.uuidString,
+                registry_item_id: id.uuidString,
+                reserved_by: currentUserId?.uuidString,
+                quantity: quantityPurchasedDelta,
+                reservation_status: "completed",
+                is_purchased: true,
+                purchased_at: dateStr
+            )
+            
+            let _ = try await SupabaseManager.shared.client
+                .from("gift_reservations")
+                .insert(reservationInsert)
+                .execute()
+                
+            struct ContributionInsert: Encodable {
+                let id: String
+                let reservation_id: String
+                let contributor_by: String?
+                let amount: Double
+                let contribution_type: String
+                let payment_status: String
+            }
+            
+            let contributionInsert = ContributionInsert(
+                id: UUID().uuidString,
+                reservation_id: reservationId.uuidString,
+                contributor_by: currentUserId?.uuidString,
+                amount: totalAmount,
+                contribution_type: "cash_fund",
+                payment_status: "completed"
+            )
+            
+            let _ = try await SupabaseManager.shared.client
+                .from("contributions")
+                .insert(contributionInsert)
+                .execute()
         } else {
             struct PhysicalUpdate: Encodable {
                 let quantity_purchased: Int
@@ -414,6 +656,36 @@ final class EventService {
                 .from("registry_items")
                 .update(updateObj)
                 .eq("id", value: id.uuidString)
+                .execute()
+                
+            // Record physical purchase in gift_reservations
+            let currentUserId = AuthService.shared.currentUser?.id
+            let reservationId = UUID()
+            let dateStr = ISO8601DateFormatter().string(from: Date())
+            
+            struct GiftReservationInsert: Encodable {
+                let id: String
+                let registry_item_id: String
+                let reserved_by: String?
+                let quantity: Int
+                let reservation_status: String
+                let is_purchased: Bool
+                let purchased_at: String
+            }
+            
+            let reservationInsert = GiftReservationInsert(
+                id: reservationId.uuidString,
+                registry_item_id: id.uuidString,
+                reserved_by: currentUserId?.uuidString,
+                quantity: quantityPurchasedDelta,
+                reservation_status: "completed",
+                is_purchased: true,
+                purchased_at: dateStr
+            )
+            
+            let _ = try await SupabaseManager.shared.client
+                .from("gift_reservations")
+                .insert(reservationInsert)
                 .execute()
         }
     }
@@ -451,6 +723,59 @@ final class EventService {
             .from("registry_items")
             .update(updateObj)
             .eq("id", value: id.uuidString)
+            .execute()
+            
+        // Record contribution in gift_reservations and contributions
+        let currentUserId = AuthService.shared.currentUser?.id
+        let reservationId = UUID()
+        let dateStr = ISO8601DateFormatter().string(from: Date())
+        
+        struct GiftReservationInsert: Encodable {
+            let id: String
+            let registry_item_id: String
+            let reserved_by: String?
+            let quantity: Int
+            let reservation_status: String
+            let is_purchased: Bool
+            let purchased_at: String
+        }
+        
+        let reservationInsert = GiftReservationInsert(
+            id: reservationId.uuidString,
+            registry_item_id: id.uuidString,
+            reserved_by: currentUserId?.uuidString,
+            quantity: 1,
+            reservation_status: "completed",
+            is_purchased: true,
+            purchased_at: dateStr
+        )
+        
+        let _ = try await SupabaseManager.shared.client
+            .from("gift_reservations")
+            .insert(reservationInsert)
+            .execute()
+            
+        struct ContributionInsert: Encodable {
+            let id: String
+            let reservation_id: String
+            let contributor_by: String?
+            let amount: Double
+            let contribution_type: String
+            let payment_status: String
+        }
+        
+        let contributionInsert = ContributionInsert(
+            id: UUID().uuidString,
+            reservation_id: reservationId.uuidString,
+            contributor_by: currentUserId?.uuidString,
+            amount: amount,
+            contribution_type: "group_gift",
+            payment_status: "completed"
+        )
+        
+        let _ = try await SupabaseManager.shared.client
+            .from("contributions")
+            .insert(contributionInsert)
             .execute()
     }
 }

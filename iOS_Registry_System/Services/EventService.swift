@@ -581,6 +581,46 @@ final class EventService {
             .execute()
     }
 
+    private func fetchHostIdForRegistryItem(itemId: UUID) async throws -> UUID {
+        struct RegistryItemOwnerLookup: Decodable {
+            let registry_id: UUID
+        }
+
+        struct RegistryOwnerLookup: Decodable {
+            let event_id: UUID
+        }
+
+        struct EventOwnerLookup: Decodable {
+            let owner_user_id: UUID
+        }
+
+        let itemResponse = try await SupabaseManager.shared.client
+            .from("registry_items")
+            .select("registry_id")
+            .eq("id", value: itemId.uuidString)
+            .single()
+            .execute()
+        let item = try decoder.decode(RegistryItemOwnerLookup.self, from: itemResponse.data)
+
+        let registryResponse = try await SupabaseManager.shared.client
+            .from("registries")
+            .select("event_id")
+            .eq("id", value: item.registry_id.uuidString)
+            .single()
+            .execute()
+        let registry = try decoder.decode(RegistryOwnerLookup.self, from: registryResponse.data)
+
+        let eventResponse = try await SupabaseManager.shared.client
+            .from("events")
+            .select("owner_user_id")
+            .eq("id", value: registry.event_id.uuidString)
+            .single()
+            .execute()
+        let event = try decoder.decode(EventOwnerLookup.self, from: eventResponse.data)
+
+        return event.owner_user_id
+    }
+
     /// Purchase a registry item by updating its quantity_purchased and funded_amount
     func purchaseRegistryItem(id: UUID, quantityPurchasedDelta: Int, totalAmount: Double, isCashFund: Bool) async throws {
         // 1. Fetch current details

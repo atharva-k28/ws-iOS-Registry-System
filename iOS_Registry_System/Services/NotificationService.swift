@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import PostgREST
 import Supabase
 
 final class NotificationService {

@@ -17,12 +17,11 @@ struct FriendsView: View {
     @State private var eventToDecline: Event?
 
     var body: some View {
-        NavigationStack {
+        Group {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
 
-                    // MARK: Header
-
+                    // MARK: Header Section
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Discover")
                             .font(AppTypography.subheadline)
@@ -33,6 +32,7 @@ struct FriendsView: View {
                             .foregroundStyle(AppColors.primaryText)
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
+                    .padding(.top, 8)
 
                     // MARK: Search Bar & Filters
 

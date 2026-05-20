@@ -18,14 +18,16 @@ struct AddRegistryItemsView: View {
     let event: Event
     let isNewEvent: Bool
     let collaborators: [Collaborator]
+    let mood: String?
     let onFinish: () -> Void
 
     @Environment(\.dismiss) private var dismiss
 
-    init(event: Event, isNewEvent: Bool = false, collaborators: [Collaborator] = [], onFinish: @escaping () -> Void) {
+    init(event: Event, isNewEvent: Bool = false, collaborators: [Collaborator] = [], mood: String? = nil, onFinish: @escaping () -> Void) {
         self.event = event
         self.isNewEvent = isNewEvent
         self.collaborators = collaborators
+        self.mood = mood
         self.onFinish = onFinish
     }
     
@@ -37,6 +39,7 @@ struct AddRegistryItemsView: View {
     @State private var isLoading = false
     @State private var errorMessage: String? = nil
     @State private var isFinishing = false
+    @State private var recommendations: [AIService.AIRecommendation] = []
     
     // Alert state variables for database troubleshooting
     @State private var showErrorAlert = false
@@ -90,17 +93,30 @@ struct AddRegistryItemsView: View {
                 } else {
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: AppSpacing.sectionGap) {
+                            if selectedCategory == nil && !recommendations.isEmpty {
+                                recommendationsSection
+                            }
+                            
                             productGrid(for: filteredProducts)
-                            
-                            // Appended CTA bar inside the ScrollView so it is 100% accessible via scrolling
-                            bottomCTABar
-                                .padding(.top, AppSpacing.lg)
-                            
-                            // Generous spacing at the bottom so it can easily scroll above any potential tab bars
-                            Color.clear.frame(height: 140)
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
                         .padding(.top, AppSpacing.xs)
+                    }
+                    .safeAreaInset(edge: .bottom) {
+                        bottomCTABar
+                            .padding(.top, AppSpacing.md)
+                            .padding(.bottom, AppSpacing.tabBarHeight + AppSpacing.sm)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        AppColors.background.opacity(0.0),
+                                        AppColors.background.opacity(0.8),
+                                        AppColors.background
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
                     }
                 }
             }
@@ -158,8 +174,8 @@ struct AddRegistryItemsView: View {
                             ProgressView()
                                 .tint(AppColors.accentRed)
                         } else {
-                            Text("Finish")
-                                .font(AppTypography.footnoteSemibold)
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(AppColors.accentRed)
                                 .padding(.horizontal, AppSpacing.md)
                                 .padding(.vertical, 6)
@@ -304,6 +320,102 @@ struct AddRegistryItemsView: View {
         }
     }
     
+    private var recommendationsSection: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            HStack(spacing: AppSpacing.xs) {
+                Text("✨ AI Suggested for You")
+                    .font(AppTypography.premiumTitle)
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+            }
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: AppSpacing.md) {
+                    ForEach(recommendations) { rec in
+                        if let product = products.first(where: { $0.id.uuidString.lowercased() == rec.product_id.lowercased() }) {
+                            aiRecommendationCard(product: product, reason: rec.reason, matchScore: rec.match_score)
+                        }
+                    }
+                }
+                .padding(.horizontal, AppSpacing.screenHorizontal)
+                .padding(.vertical, 8)
+            }
+            .padding(.horizontal, -AppSpacing.screenHorizontal)
+        }
+    }
+    
+    private func aiRecommendationCard(product: Product, reason: String, matchScore: Int) -> some View {
+        let isAdded = addedProductIds.contains(product.id)
+        
+        return VStack(alignment: .leading, spacing: 0) {
+            // Image Area
+            ZStack(alignment: .topTrailing) {
+                let urlString = product.imageUrl ?? "https://loremflickr.com/300/300/\(product.name.replacingOccurrences(of: " ", with: ",")),cookware?lock=\(abs(product.id.hashValue % 100))"
+                AsyncImage(url: URL(string: urlString)) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .frame(height: 120)
+                        .clipped()
+                } placeholder: {
+                    Color.gray.opacity(0.1)
+                        .frame(height: 120)
+                }
+                
+                // Match score badge
+                Text("\(matchScore)% Match")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AppColors.accentRed)
+                    .clipShape(Capsule())
+                    .padding(8)
+            }
+            
+            // Details
+            VStack(alignment: .leading, spacing: 6) {
+                Text(product.name)
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.primaryText)
+                    .lineLimit(1)
+                
+                Text(reason)
+                    .font(AppTypography.caption1)
+                    .foregroundStyle(AppColors.secondaryGray)
+                    .lineLimit(2)
+                    .frame(height: 32, alignment: .topLeading)
+                
+                HStack {
+                    Text(CurrencyFormatter.format(product.price))
+                        .font(AppTypography.priceSmall)
+                        .foregroundStyle(AppColors.primaryDark)
+                    Spacer()
+                    
+                    Button {
+                        toggleProduct(product)
+                    } label: {
+                        Text(isAdded ? "Added" : "+ Add")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(isAdded ? .white : AppColors.primaryText)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule().fill(isAdded ? AnyShapeStyle(AppColors.accentRed) : AnyShapeStyle(AppColors.backgroundGray.opacity(0.6)))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(AppSpacing.sm)
+        }
+        .frame(width: 240)
+        .background(AppColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.lg, style: .continuous))
+        .softShadow()
+    }
+    
     private func catalogCard(product: Product) -> some View {
         let isAdded = addedProductIds.contains(product.id)
         
@@ -431,6 +543,19 @@ struct AddRegistryItemsView: View {
             // 1. Fetch catalog products
             let fetchedProducts = try await ProductService.shared.fetchAllProducts()
             self.products = fetchedProducts
+            
+            // Fetch recommendations asynchronously so it doesn't block UI
+            Task {
+                let occasion = mood != nil ? "\(event.title) with a \(mood!) vibe" : event.title
+                do {
+                    let recs = try await AIService.shared.getRecommendations(occasion: occasion)
+                    await MainActor.run {
+                        self.recommendations = recs
+                    }
+                } catch {
+                    print("⚠️ Failed to load AI recommendations: \(error)")
+                }
+            }
             
             if !isNewEvent {
                 // 2. Fetch existing registry items for event to match states

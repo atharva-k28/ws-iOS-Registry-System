@@ -21,11 +21,37 @@ final class AIService {
 
     // MARK: - Gift Recommendations
 
+    struct AIRecommendation: Codable, Identifiable {
+        var id: String { product_id }
+        let product_id: String
+        let product_name: String
+        let reason: String
+        let match_score: Int
+    }
+    
+    struct AIRecommendationResponse: Codable {
+        let recommendations: [AIRecommendation]
+    }
+
     /// Get AI-powered gift recommendations for an event
-    func getRecommendations(for eventType: String, budget: Double? = nil) async throws -> [Product] {
-        // TODO: Implement AI recommendation engine (OpenAI / custom ML)
-        print("🤖 AIService: getRecommendations — not yet implemented")
-        return []
+    func getRecommendations(occasion: String, budget: Double = 10000) async throws -> [AIRecommendation] {
+        struct RequestBody: Encodable {
+            let occasion: String
+            let budget: Double
+        }
+        
+        do {
+            let responseData: AIRecommendationResponse = try await SupabaseManager.shared.client.functions.invoke(
+                "recommend-products",
+                options: FunctionInvokeOptions(
+                    body: RequestBody(occasion: occasion, budget: budget)
+                )
+            )
+            return responseData.recommendations
+        } catch {
+            print("⚠️ AIService: getRecommendations failed: \(error)")
+            return []
+        }
     }
 
     /// Get personalized recommendations based on user preferences
@@ -100,6 +126,29 @@ final class AIService {
         }
     }
 
+    // MARK: - Thank You Note Drafter
+    
+    struct ThankYouNoteResponse: Codable {
+        let note: String
+    }
+    
+    func draftThankYouNote(guestName: String, productName: String, occasion: String, tone: String = "warm and grateful") async throws -> String {
+        struct RequestBody: Encodable {
+            let guestName: String
+            let productName: String
+            let occasion: String
+            let tone: String
+        }
+        
+        let responseData: ThankYouNoteResponse = try await SupabaseManager.shared.client.functions.invoke(
+            "thank-you-note-drafter",
+            options: FunctionInvokeOptions(
+                body: RequestBody(guestName: guestName, productName: productName, occasion: occasion, tone: tone)
+            )
+        )
+        return responseData.note
+    }
+
     // MARK: - Registry Health Analyzer
     
     struct RegistryHealthResult: Codable, Identifiable {
@@ -124,7 +173,7 @@ final class AIService {
         
         do {
             let result: RegistryHealthResult = try await SupabaseManager.shared.client.functions.invoke(
-                "registry-health-analyzer",
+                "registry-health-analyser",
                 options: FunctionInvokeOptions(
                     body: RequestBody(registryItems: payloads)
                 )

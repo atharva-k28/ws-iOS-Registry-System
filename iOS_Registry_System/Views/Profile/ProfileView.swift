@@ -15,12 +15,13 @@ struct ProfileView: View {
     @State private var showEditProfile = false
 
     var body: some View {
-        NavigationStack {
+        Group {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: AppSpacing.sectionGap) {
 
                     // MARK: Profile Header
                     profileHeader
+                        .padding(.top, 8)
 
                     // MARK: Wallet
                     NavigationLink(destination: WalletCreditsView()) {

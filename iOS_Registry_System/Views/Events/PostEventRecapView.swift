@@ -25,31 +25,29 @@ struct PostEventRecapView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showThankYouSheet = false
     
-    let categories = [
-        CategoryItem(name: "Cookware", amount: "$2,140", progress: 0.9),
-        CategoryItem(name: "Tabletop", amount: "$1,560", progress: 0.7),
-        CategoryItem(name: "Coffee & Bar", amount: "$1,280", progress: 0.5)
-    ]
-    
-    let contributors = [
-        ContributorItem(name: "Maya", amount: "$320", avatarUrl: "https://i.pravatar.cc/150?img=1"),
-        ContributorItem(name: "Sofia", amount: "$240", avatarUrl: "https://i.pravatar.cc/150?img=5"),
-        ContributorItem(name: "Liam", amount: "$180", avatarUrl: "https://i.pravatar.cc/150?img=8")
-    ]
+    @State private var viewModel = PostEventRecapViewModel()
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
                 // Header Texts
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("JUNE 14, 2026 • WEDDING")
-                        .font(AppTypography.caption1Medium)
-                        .tracking(1.5)
-                        .foregroundColor(AppColors.secondaryGray)
-                    
-                    Text("Olivia & James")
-                        .font(.system(size: 32, weight: .regular, design: .serif))
-                        .foregroundColor(AppColors.primaryText)
+                    if let event = viewModel.event {
+                        let dateStr = event.eventDate?.formatted(date: .long, time: .omitted).uppercased() ?? "NO DATE"
+                        Text("\(dateStr) • \(event.eventType.uppercased())")
+                            .font(AppTypography.caption1Medium)
+                            .tracking(1.5)
+                            .foregroundColor(AppColors.secondaryGray)
+                        
+                        Text(event.title)
+                            .font(.system(size: 32, weight: .regular, design: .serif))
+                            .foregroundColor(AppColors.primaryText)
+                    } else {
+                        Text("LOADING...")
+                            .font(AppTypography.caption1Medium)
+                            .tracking(1.5)
+                            .foregroundColor(AppColors.secondaryGray)
+                    }
                 }
                 .padding(.horizontal, AppSpacing.screenHorizontal)
                 .padding(.top, AppSpacing.sm)
@@ -80,6 +78,9 @@ struct PostEventRecapView: View {
         }
         .appBackground()
         .navigationBarBackButtonHidden(true)
+        .task {
+            await viewModel.loadRecapData()
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
@@ -137,21 +138,30 @@ struct PostEventRecapView: View {
                 .foregroundColor(AppColors.secondaryGray)
             
             HStack(alignment: .bottom, spacing: AppSpacing.sm) {
-                Text("$6,840")
+                Text(CurrencyFormatter.format(viewModel.totalGifted))
                     .font(.system(size: 40, weight: .regular, design: .serif))
                     .foregroundColor(AppColors.white)
                 
                 HStack(spacing: 2) {
-                    Image(systemName: "arrow.up.right")
-                        .font(.system(size: 10, weight: .bold))
-                    Text("+24% vs goal")
-                        .font(AppTypography.footnote)
+                    let diff = viewModel.totalGifted - viewModel.goalAmount
+                    let percent = viewModel.goalAmount > 0 ? (diff / viewModel.goalAmount) * 100 : 0
+                    if percent >= 0 {
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 10, weight: .bold))
+                        Text(String(format: "+%.0f%% vs goal", percent))
+                            .font(AppTypography.footnote)
+                    } else {
+                        Image(systemName: "arrow.down.right")
+                            .font(.system(size: 10, weight: .bold))
+                        Text(String(format: "%.0f%% vs goal", percent))
+                            .font(AppTypography.footnote)
+                    }
                 }
                 .foregroundColor(AppColors.secondaryGray)
                 .padding(.bottom, 6)
             }
             
-            Text("From 24 contributors • 58 gifts")
+            Text("From \(viewModel.contributors.count) contributors • \(viewModel.totalGifts) gifts")
                 .font(AppTypography.bodyMedium)
                 .foregroundColor(AppColors.secondaryGray)
         }
@@ -169,7 +179,8 @@ struct PostEventRecapView: View {
                 .tracking(1.2)
                 .foregroundColor(AppColors.secondaryGray)
             
-            Text("94%")
+            let completionPercent = viewModel.goalAmount > 0 ? (viewModel.totalGifted / viewModel.goalAmount) * 100 : 0
+            Text(String(format: "%.0f%%", min(completionPercent, 100)))
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(AppColors.primaryText)
             
@@ -180,7 +191,7 @@ struct PostEventRecapView: View {
                         .frame(height: 4)
                     Capsule()
                         .fill(AppColors.accentRed)
-                        .frame(width: proxy.size.width * 0.94, height: 4)
+                        .frame(width: proxy.size.width * CGFloat(min(completionPercent / 100.0, 1.0)), height: 4)
                 }
             }
             .frame(height: 4)
@@ -201,7 +212,7 @@ struct PostEventRecapView: View {
                 .foregroundColor(AppColors.secondaryGray)
                 .lineLimit(1)
             
-            Text("$248")
+            Text(CurrencyFormatter.format(viewModel.walletCredits))
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(AppColors.primaryText)
             
@@ -223,88 +234,92 @@ struct PostEventRecapView: View {
     
     private var categoriesList: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
-            Text("MOST LOVED CATEGORIES")
-                .font(AppTypography.caption1Medium)
-                .tracking(1.2)
-                .foregroundColor(AppColors.primaryText)
-                .padding(.horizontal, AppSpacing.screenHorizontal)
-            
-            VStack(spacing: AppSpacing.lg) {
-                ForEach(categories) { category in
-                    VStack(spacing: 8) {
-                        HStack {
-                            Text(category.name)
-                                .font(AppTypography.bodyMedium)
-                                .fontWeight(.bold)
-                                .foregroundColor(AppColors.primaryText)
-                            Spacer()
-                            Text(category.amount)
-                                .font(AppTypography.footnote)
-                                .foregroundColor(AppColors.secondaryGray)
-                        }
-                        
-                        GeometryReader { proxy in
-                            ZStack(alignment: .leading) {
-                                Capsule()
-                                    .fill(AppColors.backgroundGray)
-                                    .frame(height: 8)
-                                Capsule()
-                                    .fill(AppColors.primaryDark)
-                                    .frame(width: proxy.size.width * category.progress, height: 8)
+            if !viewModel.categories.isEmpty {
+                Text("MOST LOVED CATEGORIES")
+                    .font(AppTypography.caption1Medium)
+                    .tracking(1.2)
+                    .foregroundColor(AppColors.primaryText)
+                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                
+                VStack(spacing: AppSpacing.lg) {
+                    ForEach(viewModel.categories) { category in
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text(category.name)
+                                    .font(AppTypography.bodyMedium)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(AppColors.primaryText)
+                                Spacer()
+                                Text(category.amount)
+                                    .font(AppTypography.footnote)
+                                    .foregroundColor(AppColors.secondaryGray)
                             }
+                            
+                            GeometryReader { proxy in
+                                ZStack(alignment: .leading) {
+                                    Capsule()
+                                        .fill(AppColors.backgroundGray)
+                                        .frame(height: 8)
+                                    Capsule()
+                                        .fill(AppColors.primaryDark)
+                                        .frame(width: proxy.size.width * category.progress, height: 8)
+                                }
+                            }
+                            .frame(height: 8)
                         }
-                        .frame(height: 8)
                     }
                 }
+                .padding(AppSpacing.lg)
+                .background(AppColors.white)
+                .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
+                .softShadow()
+                .padding(.horizontal, AppSpacing.screenHorizontal)
             }
-            .padding(AppSpacing.lg)
-            .background(AppColors.white)
-            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
-            .softShadow()
-            .padding(.horizontal, AppSpacing.screenHorizontal)
         }
         .padding(.top, AppSpacing.md)
     }
     
     private var contributorsList: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
-            Text("TOP CONTRIBUTORS")
-                .font(AppTypography.caption1Medium)
-                .tracking(1.2)
-                .foregroundColor(AppColors.primaryText)
-                .padding(.horizontal, AppSpacing.screenHorizontal)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppSpacing.md) {
-                    ForEach(contributors) { contributor in
-                        VStack(spacing: AppSpacing.sm) {
-                            AsyncImage(url: URL(string: contributor.avatarUrl)) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
-                                Color.gray.opacity(0.3)
+            if !viewModel.contributors.isEmpty {
+                Text("TOP CONTRIBUTORS")
+                    .font(AppTypography.caption1Medium)
+                    .tracking(1.2)
+                    .foregroundColor(AppColors.primaryText)
+                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: AppSpacing.md) {
+                        ForEach(viewModel.contributors) { contributor in
+                            VStack(spacing: AppSpacing.sm) {
+                                AsyncImage(url: URL(string: contributor.avatarUrl)) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    Color.gray.opacity(0.3)
+                                }
+                                .frame(width: 56, height: 56)
+                                .clipShape(Circle())
+                                
+                                VStack(spacing: 2) {
+                                    Text(contributor.name)
+                                        .font(AppTypography.bodyMedium)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(AppColors.primaryText)
+                                    Text(contributor.amount)
+                                        .font(AppTypography.footnote)
+                                        .foregroundColor(AppColors.secondaryGray)
+                                }
                             }
-                            .frame(width: 56, height: 56)
-                            .clipShape(Circle())
-                            
-                            VStack(spacing: 2) {
-                                Text(contributor.name)
-                                    .font(AppTypography.bodyMedium)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(AppColors.primaryText)
-                                Text(contributor.amount)
-                                    .font(AppTypography.footnote)
-                                    .foregroundColor(AppColors.secondaryGray)
-                            }
+                            .padding(.vertical, AppSpacing.lg)
+                            .padding(.horizontal, AppSpacing.xl)
+                            .background(AppColors.white)
+                            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
+                            .softShadow()
                         }
-                        .padding(.vertical, AppSpacing.lg)
-                        .padding(.horizontal, AppSpacing.xl)
-                        .background(AppColors.white)
-                        .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.xl, style: .continuous))
-                        .softShadow()
                     }
+                    .padding(.horizontal, AppSpacing.screenHorizontal)
+                    .padding(.bottom, AppSpacing.md)
                 }
-                .padding(.horizontal, AppSpacing.screenHorizontal)
-                .padding(.bottom, AppSpacing.md)
             }
         }
         .padding(.top, AppSpacing.sm)

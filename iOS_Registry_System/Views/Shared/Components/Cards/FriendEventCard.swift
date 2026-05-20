@@ -21,7 +21,7 @@ struct FriendEventCard: View {
                 ZStack(alignment: .bottomLeading) {
                     Color.gray.opacity(0.3)
                         .overlay {
-                            AsyncImage(url: URL(string: imageUrl(for: event.title))) { image in
+                            AsyncImage(url: URL(string: EventCoverImage.url(for: event))) { image in
                                 image
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
@@ -129,12 +129,7 @@ struct FriendEventCard: View {
         .buttonStyle(.plain)
     }
 
-    private func imageUrl(for title: String) -> String {
-        if title.contains("Emma") { return "https://images.unsplash.com/photo-1555244162-803834f70033?w=800" }
-        if title.contains("Maya") { return "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800" }
-        if title.contains("Liam") { return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800" }
-        return "https://images.unsplash.com/photo-1556911220-e15024029581?w=800"
-    }
+
 
     private func badgeImage(for title: String, index: Int) -> String {
         let seeds = ["cookware", "plates", "crockery", "kitchen"]

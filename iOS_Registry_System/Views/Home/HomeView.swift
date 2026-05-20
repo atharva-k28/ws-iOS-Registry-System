@@ -17,8 +17,7 @@ struct HomeView: View {
     @State private var searchTask: Task<Void, Never>?
 
     var body: some View {
-        NavigationStack {
-            GeometryReader { proxy in
+        GeometryReader { proxy in
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
 
@@ -166,7 +165,6 @@ struct HomeView: View {
             .onDisappear {
                 searchTask?.cancel()
             }
-        }
     }
 
     private var isSearchActive: Bool {

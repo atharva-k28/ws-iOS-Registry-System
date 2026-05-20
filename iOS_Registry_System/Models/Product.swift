@@ -32,6 +32,9 @@ struct Product: Codable, Identifiable, Hashable {
     var isActive: Bool? = nil
     var isRegistryEligible: Bool? = nil
     var isGiftEligible: Bool? = nil
+    var width: Double? = nil
+    var height: Double? = nil
+    var depth: Double? = nil
     var createdAt: Date? = nil
 
     enum CodingKeys: String, CodingKey {
@@ -57,6 +60,9 @@ struct Product: Codable, Identifiable, Hashable {
         case isActive = "is_active"
         case isRegistryEligible = "is_registry_eligible"
         case isGiftEligible = "is_gift_eligible"
+        case width
+        case height
+        case depth
         case createdAt = "created_at"
     }
 }

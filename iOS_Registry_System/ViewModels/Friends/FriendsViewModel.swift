@@ -66,7 +66,8 @@ final class FriendsViewModel {
 
         do {
             let events = try await EventService.shared.fetchFriendEvents()
-            let invites = try await EventService.shared.fetchPendingInvites()
+            let guestInvites = try await EventService.shared.fetchPendingInvites()
+            let collaboratorInvites = try await EventService.shared.fetchPendingCollaboratorInvites()
             
             // Calculate progress for each event in parallel
             var progresses: [UUID: Double] = [:]
@@ -100,7 +101,7 @@ final class FriendsViewModel {
             }
             
             self.friendEvents = events
-            self.pendingInvites = invites
+            self.pendingInvites = guestInvites + collaboratorInvites
             self.eventProgresses = progresses
         } catch {
             errorMessage = error.localizedDescription
@@ -112,22 +113,11 @@ final class FriendsViewModel {
             try await EventService.shared.acceptInvite(eventId: event.id)
             // Move from pending to accepted
             pendingInvites.removeAll { $0.id == event.id }
-            friendEvents.append(event)
             
-            // Calculate progress for this new active event
-            let items = try await EventService.shared.fetchRegistryItems(eventID: event.id)
-            var totalTarget = 0.0
-            var totalRaised = 0.0
-            for item in items {
-                totalTarget += item.price * Double(item.quantityNeeded ?? 1)
-                if let funded = item.fundedAmount, funded > 0 {
-                    totalRaised += funded
-                } else {
-                    totalRaised += item.price * Double(item.quantityPurchased ?? 0)
-                }
-            }
-            let progress = totalTarget > 0 ? min(totalRaised / totalTarget, 1.0) : 0.0
-            eventProgresses[event.id] = progress
+            // It could be a guest invite or a collaborator invite
+            // We should reload to make sure we show it correctly
+            await loadFriendEvents()
+            
         } catch {
             print("Failed to accept invite: \(error)")
         }

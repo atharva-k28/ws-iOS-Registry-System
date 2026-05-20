@@ -13,6 +13,7 @@ import SwiftUI
 
 private struct ContributorNote: Identifiable, Equatable {
     let id = UUID()
+    let guestId: UUID?
     let name: String
     let avatar: String
     let giftName: String
@@ -30,12 +31,18 @@ struct ThankYouNoteSheet: View {
     @State private var notes: [ContributorNote]
     @State private var selectedIndex = 0
     @State private var allSent = false
+    @State private var isDraftingNote = false
+    let eventTitle: String
+    let organizerName: String
 
-    init(thankYouNotes: [EventCommandCenterView.ThankYouNoteItem] = [], initialSelectedIndex: Int = 0) {
+    init(eventTitle: String = "our event", organizerName: String = "Olivia & James", thankYouNotes: [EventCommandCenterView.ThankYouNoteItem] = [], initialSelectedIndex: Int = 0) {
+        self.eventTitle = eventTitle
+        self.organizerName = organizerName
         let mapped = thankYouNotes.map { note in
             let firstName = note.guestName.split(separator: " ").first ?? "Friend"
-            let defaultText = "\(firstName) — your contribution to our \(note.itemName.lowercased()) means the world. With so much love, Olivia & James ☕️"
+            let defaultText = "\(firstName) — your contribution to our \(note.itemName.lowercased()) means the world. With so much love, \(organizerName) ☕️"
             return ContributorNote(
+                guestId: note.guestId,
                 name: note.guestName,
                 avatar: note.guestAvatar ?? "https://i.pravatar.cc/150?img=5",
                 giftName: note.itemName,
@@ -46,8 +53,8 @@ struct ThankYouNoteSheet: View {
             )
         }
         self._notes = State(initialValue: mapped.isEmpty ? [
-            ContributorNote(name: "Maya Chen",    avatar: "https://i.pravatar.cc/150?img=5",  giftName: "Espresso Machine",   giftImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300", amount: 50,  noteText: "Maya — your contribution to our espresso machine means the world. With so much love, Olivia & James ☕️", isSent: false),
-            ContributorNote(name: "Liam Carter",  avatar: "https://i.pravatar.cc/150?img=8",  giftName: "Dinner Set",         giftImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300", amount: 80,  noteText: "Liam — your contribution to our dinner set means the world. With so much love, Olivia & James ☕️", isSent: false)
+            ContributorNote(guestId: nil, name: "Maya Chen",    avatar: "https://i.pravatar.cc/150?img=5",  giftName: "Espresso Machine",   giftImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300", amount: 50,  noteText: "Maya — your contribution to our espresso machine means the world. With so much love, \(organizerName) ☕️", isSent: false),
+            ContributorNote(guestId: nil, name: "Liam Carter",  avatar: "https://i.pravatar.cc/150?img=8",  giftName: "Dinner Set",         giftImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300", amount: 80,  noteText: "Liam — your contribution to our dinner set means the world. With so much love, \(organizerName) ☕️", isSent: false)
         ] : mapped)
         self._selectedIndex = State(initialValue: initialSelectedIndex)
     }
@@ -129,6 +136,29 @@ struct ThankYouNoteSheet: View {
                             .font(AppTypography.caption1Medium)
                             .tracking(1.5)
                             .foregroundStyle(AppColors.secondaryGray)
+                            
+                        Spacer()
+                        
+                        if isDraftingNote {
+                            ProgressView()
+                                .scaleEffect(0.6)
+                        } else {
+                            Button {
+                                draftNoteWithAI()
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "wand.and.stars")
+                                    Text("AI Draft")
+                                }
+                                .font(AppTypography.caption1Medium)
+                                .foregroundStyle(AppColors.accentRed)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(AppColors.accentRed.opacity(0.1))
+                                .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
 
                     // Editable note text
@@ -178,6 +208,19 @@ struct ThankYouNoteSheet: View {
                 withAnimation(.spring(response: 0.3)) {
                     notes[selectedIndex].isSent = true
                 }
+                
+                // Send notification
+                if let guestId = notes[selectedIndex].guestId {
+                    Task {
+                        try? await NotificationService.shared.createNotification(
+                            userId: guestId,
+                            type: "thank_you",
+                            title: "New Thank-You Note",
+                            body: "You received a thank-you note from \(organizerName)."
+                        )
+                    }
+                }
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                     advanceOrFinish()
                 }
@@ -208,6 +251,34 @@ struct ThankYouNoteSheet: View {
             withAnimation { allSent = true }
         } else {
             dismiss()
+        }
+    }
+    
+    private func draftNoteWithAI() {
+        let noteIndex = selectedIndex
+        isDraftingNote = true
+        
+        Task {
+            do {
+                let note = notes[noteIndex]
+                let aiDraft = try await AIService.shared.draftThankYouNote(
+                    guestName: note.name,
+                    productName: note.giftName,
+                    occasion: "\(eventTitle) hosted by \(organizerName)",
+                    tone: "warm, grateful, and elegant, correctly signed from the organizer \(organizerName)"
+                )
+                await MainActor.run {
+                    withAnimation {
+                        notes[noteIndex].noteText = aiDraft
+                    }
+                    isDraftingNote = false
+                }
+            } catch {
+                print("❌ Failed to draft note with AI: \(error)")
+                await MainActor.run {
+                    isDraftingNote = false
+                }
+            }
         }
     }
 

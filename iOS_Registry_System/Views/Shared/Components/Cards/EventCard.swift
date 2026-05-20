@@ -24,7 +24,7 @@ struct EventCard: View {
                 // Background Image
                 Color.gray.opacity(0.3)
                     .overlay {
-                        AsyncImage(url: URL(string: imageUrl(for: event.eventType))) { image in
+                        AsyncImage(url: URL(string: EventCoverImage.url(for: event))) { image in
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -68,33 +68,7 @@ struct EventCard: View {
                             .lineLimit(1)
                     }
 
-                    HStack(spacing: AppSpacing.sm) {
-                        Button {
-                            onManageRegistry?()
-                        } label: {
-                            Text("Manage Registry")
-                                .font(AppTypography.buttonMedium)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, AppSpacing.md)
-                                .padding(.vertical, AppSpacing.xs)
-                                .background(AppColors.accentRed)
-                                .clipShape(Capsule())
-                        }
-                        .buttonStyle(.plain)
 
-                        Button {
-                            onInvite?()
-                        } label: {
-                            Text("Invite Guest")
-                                .font(AppTypography.buttonMedium)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, AppSpacing.md)
-                                .padding(.vertical, AppSpacing.xs)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Capsule())
-                        }
-                        .buttonStyle(.plain)
-                    }
                 }
                 .padding(AppSpacing.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -118,12 +92,5 @@ struct EventCard: View {
         EventType(rawValue: event.eventType)?.icon ?? "sparkles"
     }
 
-    private func imageUrl(for type: String) -> String {
-        let typeLower = type.lowercased()
-        if typeLower.contains("wedding") { return "https://images.unsplash.com/photo-1555244162-803834f70033?w=800" }
-        if typeLower.contains("baby") { return "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800" }
-        if typeLower.contains("house") { return "https://images.unsplash.com/photo-1556911220-e15024029581?w=800" }
-        if typeLower.contains("birth") { return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800" }
-        return "https://loremflickr.com/400/300/tableware,kitchen?lock=\(abs(event.id.hashValue % 100))"
-    }
+
 }

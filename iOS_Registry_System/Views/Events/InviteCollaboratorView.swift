@@ -17,21 +17,7 @@ private enum InviteMethod: String, CaseIterable {
     case contacts = "Contacts"
 }
 
-// MARK: - Mock Contact
-
-private struct MockContact: Identifiable {
-    let id = UUID()
-    let name: String
-    let meta: String
-    let avatar: String
-}
-
-private let suggestedContacts: [MockContact] = [
-    .init(name: "James Carter",  meta: "Recently contacted", avatar: "https://i.pravatar.cc/150?img=11"),
-    .init(name: "Priya Patel",   meta: "In your family group", avatar: "https://i.pravatar.cc/150?img=20"),
-    .init(name: "Marcus Reed",   meta: "Saved contact",       avatar: "https://i.pravatar.cc/150?img=33"),
-    .init(name: "Zoey Nguyen",   meta: "From event guests",   avatar: "https://i.pravatar.cc/150?img=23"),
-]
+// Removed mock contacts
 
 // MARK: - Invite Collaborator View
 
@@ -43,7 +29,6 @@ struct InviteCollaboratorView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var inviteMethod: InviteMethod = .contacts
     @State private var searchText = ""
-    @State private var selectedContact: MockContact? = nil
     @State private var phoneInput = ""
     @State private var emailInput = ""
     @State private var showCustomiseAccess = false
@@ -51,6 +36,7 @@ struct InviteCollaboratorView: View {
     
     // Real user search state
     @State private var searchResults: [User] = []
+    @State private var suggestedUsers: [User] = []
     @State private var isSearching = false
     @State private var selectedUser: User? = nil
 
@@ -123,6 +109,13 @@ struct InviteCollaboratorView: View {
             .onChange(of: searchText) { _ in
                 Task {
                     await performSearch(query: searchText)
+                }
+            }
+            .task {
+                do {
+                    suggestedUsers = try await AuthService.shared.fetchSuggestedUsers(limit: 4)
+                } catch {
+                    print("Error fetching suggestions: \(error)")
                 }
             }
         }
@@ -287,8 +280,8 @@ struct InviteCollaboratorView: View {
                             .tracking(1.5)
                             .foregroundStyle(AppColors.secondaryGray)
 
-                        ForEach(suggestedContacts) { contact in
-                            mockContactRow(contact: contact)
+                        ForEach(suggestedUsers) { user in
+                            userRow(user: user)
                         }
                     } else {
                         Text("SEARCH RESULTS")
@@ -312,53 +305,7 @@ struct InviteCollaboratorView: View {
         }
     }
 
-    private func mockContactRow(contact: MockContact) -> some View {
-        let isSelected = selectedContact?.id == contact.id
-
-        return Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                if isSelected {
-                    selectedContact = nil
-                } else {
-                    selectedContact = contact
-                    selectedUser = nil
-                }
-            }
-        } label: {
-            HStack(spacing: AppSpacing.md) {
-                AsyncImage(url: URL(string: contact.avatar)) { img in
-                    img.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Circle().fill(AppColors.backgroundGray)
-                }
-                .frame(width: 44, height: 44)
-                .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(contact.name)
-                        .font(AppTypography.bodyMedium)
-                        .foregroundStyle(AppColors.primaryText)
-                    Text(contact.meta)
-                        .font(AppTypography.caption1)
-                        .foregroundStyle(AppColors.secondaryGray)
-                }
-                Spacer()
-
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "plus.circle")
-                    .font(.system(size: 22))
-                    .foregroundStyle(isSelected ? Color(hex: "34C759") : AppColors.secondaryGray)
-            }
-            .padding(AppSpacing.sm)
-            .background(AppColors.white)
-            .clipShape(RoundedRectangle(cornerRadius: AppCornerRadius.md))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppCornerRadius.md)
-                    .stroke(isSelected ? Color(hex: "34C759").opacity(0.4) : Color.clear, lineWidth: 1.5)
-            )
-            .softShadow()
-        }
-        .buttonStyle(.plain)
-    }
+    // Removed mockContactRow
 
     private func userRow(user: User) -> some View {
         let isSelected = selectedUser?.id == user.id
@@ -369,7 +316,6 @@ struct InviteCollaboratorView: View {
                     selectedUser = nil
                 } else {
                     selectedUser = user
-                    selectedContact = nil
                 }
             }
         } label: {
@@ -485,10 +431,6 @@ struct InviteCollaboratorView: View {
                 name = user.fullName
                 avatar = user.avatarUrl
                 userId = user.id
-            } else if let contact = selectedContact {
-                name = contact.name
-                avatar = contact.avatar
-                userId = nil
             } else {
                 name = emailInput.isEmpty ? phoneInput : emailInput
                 avatar = nil

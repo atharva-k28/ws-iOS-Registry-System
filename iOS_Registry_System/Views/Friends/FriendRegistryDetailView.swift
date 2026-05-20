@@ -197,6 +197,9 @@ struct FriendRegistryDetailView: View {
                         }
                     }
                 )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
             }
         }
         .sheet(item: $contributingItem) { item in

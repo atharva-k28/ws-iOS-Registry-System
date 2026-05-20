@@ -25,6 +25,7 @@ struct EventCommandCenterView: View {
 
     struct ThankYouNoteItem: Identifiable, Hashable {
         let id: UUID
+        let guestId: UUID?
         let guestName: String
         let guestAvatar: String?
         let amount: Double
@@ -54,6 +55,7 @@ struct EventCommandCenterView: View {
     @State private var selectedNoteIndex = 0
     @State private var isLoadingNotes = false
     @State private var guests: [GuestDisplayItem] = []
+    @State private var showInviteGuestSheet = false
     @State private var isLoadingGuests = false
     
     // Co-hosts and owner state
@@ -158,7 +160,8 @@ struct EventCommandCenterView: View {
                 .presentationCornerRadius(32)
         }
         .sheet(isPresented: $showThankYouNotes) {
-            ThankYouNoteSheet(thankYouNotes: thankYouNotes, initialSelectedIndex: selectedNoteIndex)
+            let organizer = ownerUser?.firstName ?? ownerUser?.fullName ?? "the Organizer"
+            ThankYouNoteSheet(eventTitle: event.title, organizerName: organizer, thankYouNotes: thankYouNotes, initialSelectedIndex: selectedNoteIndex)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(32)
@@ -190,7 +193,7 @@ struct EventCommandCenterView: View {
 
     private var heroHeader: some View {
         ZStack(alignment: .bottomLeading) {
-            AsyncImage(url: URL(string: imageUrl(for: event.eventType))) { img in
+            AsyncImage(url: URL(string: EventCoverImage.url(for: event))) { img in
                 img.resizable().aspectRatio(contentMode: .fill)
             } placeholder: {
                 Color(hex: "E8E2DC")
@@ -635,6 +638,7 @@ struct EventCommandCenterView: View {
                 let amount = item.price * Double(purchase.quantity ?? 1)
                 notes.append(ThankYouNoteItem(
                     id: purchase.id,
+                    guestId: userId,
                     guestName: user.fullName,
                     guestAvatar: user.avatarUrl,
                     amount: amount,
@@ -658,6 +662,7 @@ struct EventCommandCenterView: View {
                 }
                 notes.append(ThankYouNoteItem(
                     id: contribution.id,
+                    guestId: userId,
                     guestName: user.fullName,
                     guestAvatar: user.avatarUrl,
                     amount: contribution.amount,
@@ -777,6 +782,9 @@ struct EventCommandCenterView: View {
                     isGroupGifting: registryViewModel.isGroupGifting(for: item),
                     isHostView: true
                 )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
             }
         }
     }
@@ -952,10 +960,24 @@ struct EventCommandCenterView: View {
                             .font(AppTypography.caption1Medium)
                             .tracking(1.5)
                             .foregroundStyle(AppColors.secondaryGray)
+                        
                         Spacer()
-                        Text("\(filteredGuests.count) guests")
-                            .font(AppTypography.caption1)
-                            .foregroundStyle(AppColors.secondaryGray)
+                        
+                        Button {
+                            showInviteGuestSheet = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text("Add Guest")
+                                    .font(AppTypography.caption1Medium)
+                            }
+                            .foregroundStyle(AppColors.accentRed)
+                            .padding(.horizontal, AppSpacing.sm)
+                            .padding(.vertical, 6)
+                            .background(AppColors.accentRed.opacity(0.1))
+                            .clipShape(Capsule())
+                        }
                     }
 
                     if isLoadingGuests {
@@ -982,6 +1004,15 @@ struct EventCommandCenterView: View {
             }
             .padding(.horizontal, AppSpacing.screenHorizontal)
             .padding(.top, AppSpacing.lg)
+        }
+        .sheet(isPresented: $showInviteGuestSheet) {
+            InviteCollaboratorsSheet(eventId: event.id, giftTitle: event.title)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+                .onDisappear {
+                    Task { await fetchInvitations() }
+                }
         }
     }
 
@@ -1337,13 +1368,7 @@ struct EventCommandCenterView: View {
 
     // MARK: - Helpers
 
-    private func imageUrl(for type: String) -> String {
-        let t = type.lowercased()
-        if t.contains("wedding") { return "https://images.unsplash.com/photo-1555244162-803834f70033?w=800" }
-        if t.contains("baby")    { return "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800" }
-        if t.contains("house")   { return "https://images.unsplash.com/photo-1556911220-e15024029581?w=800" }
-        return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800"
-    }
+
 
     private func fetchInvitations() async {
         isLoadingGuests = true

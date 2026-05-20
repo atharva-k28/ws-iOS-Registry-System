@@ -392,6 +392,14 @@ final class EventService {
             .from("event_members")
             .insert(insert)
             .execute()
+            
+        // Trigger notification to the collaborator
+        try? await NotificationService.shared.createNotification(
+            userId: userId,
+            type: "new_event",
+            title: "Co-host Invitation",
+            body: "You've been invited to co-host an event."
+        )
     }
 
     /// Add a guest (user) to an event
@@ -415,6 +423,14 @@ final class EventService {
             .from("event_members")
             .insert(insert)
             .execute()
+            
+        // Trigger notification to the guest
+        try? await NotificationService.shared.createNotification(
+            userId: userId,
+            type: "new_event",
+            title: "Registry Invitation",
+            body: "You've been invited to a new registry."
+        )
     }
 
     /// Fetch active collaborators (co-hosts) with user details for an event
@@ -688,6 +704,18 @@ final class EventService {
                 .insert(reservationInsert)
                 .execute()
         }
+        
+        // Notify host about the purchase
+        if let hostId = try? await fetchHostIdForRegistryItem(itemId: id) {
+            if let currentUserId = AuthService.shared.currentUser?.id, hostId != currentUserId {
+                try? await NotificationService.shared.createNotification(
+                    userId: hostId,
+                    type: "purchase",
+                    title: "New Gift Purchased!",
+                    body: isCashFund ? "Someone contributed $\(Int(totalAmount)) to your cash fund." : "Someone purchased an item from your registry."
+                )
+            }
+        }
     }
 
     /// Contribute an amount to a group-gifting registry item and mark as purchased if fully funded
@@ -777,5 +805,91 @@ final class EventService {
             .from("contributions")
             .insert(contributionInsert)
             .execute()
+            
+        // Notify host about the contribution
+        if let hostId = try? await fetchHostIdForRegistryItem(itemId: id) {
+            if hostId != currentUserId {
+                try? await NotificationService.shared.createNotification(
+                    userId: hostId,
+                    type: "contribution",
+                    title: "New Group Contribution!",
+                    body: "Someone contributed $\(Int(amount)) towards a group gift."
+                )
+            }
+        }
+    }
+    
+    /// Fetch group gifting stats for a product if it is in any of the user's registries and has collaborators
+    func fetchGroupGiftingStats(for productId: UUID) async throws -> (currentAmount: Double, targetAmount: Double, contributorsCount: Int)? {
+        let events = try await fetchMyEvents()
+        for event in events {
+            do {
+                let registryId = try await getOrCreateRegistryID(for: event.id)
+                
+                // Fetch the registry item for this product
+                let response = try await SupabaseManager.shared.client
+                    .from("registry_items")
+                    .select("id, price, funded_amount, quantity_needed")
+                    .eq("product_id", value: productId.uuidString)
+                    .eq("registry_id", value: registryId.uuidString)
+                    .execute()
+                
+                struct MinimalRegistryItem: Codable {
+                    let id: UUID
+                    let price: Double
+                    let funded_amount: Double?
+                    let quantity_needed: Int?
+                }
+                
+                let data = response.data
+                if let items = try? JSONDecoder().decode([MinimalRegistryItem].self, from: data),
+                   let item = items.first {
+                    
+                    // Fetch reservations to find contributors
+                    let reservationsResponse = try await SupabaseManager.shared.client
+                        .from("gift_reservations")
+                        .select("id")
+                        .eq("registry_item_id", value: item.id.uuidString)
+                        .execute()
+                    
+                    struct MinimalReservation: Codable {
+                        let id: UUID
+                    }
+                    
+                    var contributorsCount = 0
+                    let resData = reservationsResponse.data
+                    if let reservations = try? JSONDecoder().decode([MinimalReservation].self, from: resData) {
+                        
+                        let reservationIds = reservations.map { $0.id.uuidString }
+                        if !reservationIds.isEmpty {
+                            let contribResponse = try await SupabaseManager.shared.client
+                                .from("contributions")
+                                .select("contributor_by")
+                                .in("reservation_id", values: reservationIds)
+                                .execute()
+                            
+                            struct MinimalContrib: Codable {
+                                let contributor_by: UUID?
+                            }
+                            let cData = contribResponse.data
+                            if let contribs = try? JSONDecoder().decode([MinimalContrib].self, from: cData) {
+                                // Count unique contributors
+                                contributorsCount = Set(contribs.compactMap { $0.contributor_by }).count
+                            }
+                        }
+                    }
+                    
+                    let target = item.price * Double(item.quantity_needed ?? 1)
+                    let current = item.funded_amount ?? 0
+                    
+                    if contributorsCount > 0 {
+                        return (currentAmount: current, targetAmount: target, contributorsCount: contributorsCount)
+                    }
+                }
+            } catch {
+                continue
+            }
+        }
+        return nil
     }
 }

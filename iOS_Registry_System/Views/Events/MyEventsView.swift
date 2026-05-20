@@ -18,18 +18,18 @@ struct MyEventsView: View {
 
     // Navigation state
     @State private var showAIRecommendations = false
-    @State private var showCommandCenter     = false
+    @State private var eventForCommandCenter: Event?
     @State private var showCreateEvent       = false
     @State private var showInviteSheet       = false
+    @State private var createEventSessionId = UUID()
 
     var body: some View {
-        NavigationStack {
+        Group {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: AppSpacing.sectionGap) {
 
-                    // MARK: Header
-
-                    HStack(alignment: .bottom) {
+                    // MARK: Header Section
+                    HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Hosting")
                                 .font(AppTypography.subheadline)
@@ -39,28 +39,25 @@ struct MyEventsView: View {
                                 .font(AppTypography.largeTitleSerif)
                                 .foregroundStyle(AppColors.primaryText)
                         }
-
+                        
                         Spacer()
-
+                        
                         Button {
                             showCreateEvent = true
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 20, weight: .semibold))
                                 .foregroundColor(AppColors.accentRed)
-                                .frame(width: 50, height: 50)
+                                .frame(width: 44, height: 44)
                                 .background(
                                     Circle()
-                                        .fill(.ultraThinMaterial)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color.white.opacity(0.5), lineWidth: 0.5)
-                                        )
+                                        .fill(AppColors.white)
                                 )
                                 .softShadow()
                         }
                     }
                     .padding(.horizontal, AppSpacing.screenHorizontal)
+                    .padding(.top, 8)
 
                     // MARK: Pending Collaborator Invites
                     if !viewModel.pendingCollaboratorInvites.isEmpty {
@@ -131,11 +128,13 @@ struct MyEventsView: View {
                     if let activeEvent = selectedEvent ?? viewModel.filteredEvents.first {
                         EventCard(
                             event: activeEvent,
-                            onTap: { showCommandCenter = true },
-                            onManageRegistry: { showCommandCenter = true },
+                            onTap: { eventForCommandCenter = activeEvent },
+                            onManageRegistry: { eventForCommandCenter = activeEvent },
                             onInvite: { showInviteSheet = true }
                         )
+                        .id(activeEvent.id)
                         .padding(.horizontal, AppSpacing.screenHorizontal)
+                        .transition(.opacity.combined(with: .scale(scale: 0.98)))
 
                         // MARK: Event Stats
                         HStack(spacing: AppSpacing.sm) {
@@ -144,7 +143,9 @@ struct MyEventsView: View {
                             statCard(value: "$\(Int(stats.raisedAmount))", label: "Raised", icon: "wallet.pass")
                             statCard(value: "\(stats.guestsCount)", label: "Guests", icon: "person.2")
                         }
+                        .id("stats-\(activeEvent.id)")
                         .padding(.horizontal, AppSpacing.screenHorizontal)
+                        .transition(.opacity)
 
                         // MARK: Quiet Suggestions
                         SuggestionCard(
@@ -177,6 +178,8 @@ struct MyEventsView: View {
                             }
                             .padding(.horizontal, AppSpacing.screenHorizontal)
                         }
+                        .id("activity-\(activeEvent.id)")
+                        .transition(.opacity)
                     } else if !viewModel.isLoading {
                         EmptyStateView(
                             systemImageName: "calendar.badge.plus",
@@ -198,13 +201,13 @@ struct MyEventsView: View {
             .navigationDestination(isPresented: $showAIRecommendations) {
                 AIRecommendationsView()
             }
-            .navigationDestination(isPresented: $showCommandCenter) {
-                if let activeEvent = selectedEvent ?? viewModel.filteredEvents.first {
-                    EventCommandCenterView(event: activeEvent)
-                }
+            .navigationDestination(item: $eventForCommandCenter) { event in
+                EventCommandCenterView(event: event)
+                    .id(event.id)
             }
             .navigationDestination(isPresented: $showCreateEvent) {
                 CreateEventView()
+                    .id(createEventSessionId)
             }
             .sheet(isPresented: $showInviteSheet) {
                 let event = selectedEvent ?? viewModel.filteredEvents.first

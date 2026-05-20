@@ -26,8 +26,8 @@ private struct CreateEventType: Identifiable {
         .init(type: .housewarming, icon: "house",         label: "Housewarming"),
         .init(type: .anniversary,  icon: "gift",          label: "Anniversary"),
         .init(type: .babyShower,   icon: "stroller",      label: "Baby"),
-        .init(type: .birthday,     icon: "graduationcap", label: "Graduation"),
-        .init(type: .other,        icon: "sparkles",      label: "Other"),
+        .init(type: .birthday,     icon: "birthday.cake", label: "Birthday"),
+        .init(type: .other,        icon: "graduationcap", label: "Graduation"),
     ]
 }
 
@@ -63,6 +63,7 @@ struct CreateEventView: View {
     @State private var isLoading                  = false
     @State private var errorMessage: String?      = nil
     @State private var createdEvent: Event?        = nil
+    @State private var eventMood: String?          = nil
     @State private var showAddRegistryItems        = false
 
     // Collaborator flow
@@ -128,7 +129,7 @@ struct CreateEventView: View {
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppColors.secondaryGray)
                             Spacer()
-                            DatePicker("", selection: $eventDate, displayedComponents: .date)
+                            DatePicker("", selection: $eventDate, in: Date()..., displayedComponents: .date)
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
                                 .tint(AppColors.accentRed)
@@ -160,7 +161,7 @@ struct CreateEventView: View {
             // Back / close button (left)
             ToolbarItem(placement: .navigationBarLeading) {
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark")
+                    Image(systemName: "arrow.left")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(AppColors.primaryText)
                         .frame(width: 36, height: 36)
@@ -174,7 +175,7 @@ struct CreateEventView: View {
             }
             // Step label (center)
             ToolbarItem(placement: .principal) {
-                Text("CREATE EVENT")
+                Text("STEP 1 OF 3")
                     .font(AppTypography.caption1Medium)
                     .tracking(1.5)
                     .foregroundStyle(AppColors.secondaryGray)
@@ -209,7 +210,7 @@ struct CreateEventView: View {
         }
         .navigationDestination(isPresented: $showAddRegistryItems) {
             if let event = createdEvent {
-                AddRegistryItemsView(event: event, isNewEvent: true, collaborators: collaborators) {
+                AddRegistryItemsView(event: event, isNewEvent: true, collaborators: collaborators, mood: eventMood) {
                     showAddRegistryItems = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         dismiss()
@@ -414,6 +415,8 @@ struct CreateEventView: View {
             eventDate: eventDate
         )
         
+        let mood = themeOptions.first { $0.id == selectedTheme }?.title
+        self.eventMood = mood
         createdEvent = newEvent
         showAddRegistryItems = true
     }

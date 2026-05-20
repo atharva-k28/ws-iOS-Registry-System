@@ -109,6 +109,20 @@ final class HomeViewModel {
 
         do {
             aiBundleProducts = try await fetchAICuratedBundle()
+            
+            // Check if we should send a suggestion notification
+            if !aiBundleProducts.isEmpty, !notifications.contains(where: { $0.type == "suggestion" }) {
+                if let userId = AuthService.shared.currentUser?.id {
+                    try? await NotificationService.shared.createNotification(
+                        userId: userId,
+                        type: "suggestion",
+                        title: "New Registry Suggestions",
+                        body: "AI Smart Planner has curated a new bundle based on your preferences."
+                    )
+                    // Reload notifications to show it
+                    try? await loadNotifications()
+                }
+            }
         } catch {
             errorMessage = error.localizedDescription
             aiBundleProducts = []

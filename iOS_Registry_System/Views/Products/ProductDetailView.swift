@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Supabase
 
 struct ProductDetailView: View {
     @Environment(\.dismiss) private var dismiss
@@ -19,6 +20,15 @@ struct ProductDetailView: View {
     @State private var relatedProducts: [Product] = []
     @State private var isLoadingRelatedProducts = false
     @State private var selectedRelatedProduct: Product?
+    
+    // Group Gifting Stats
+    @State private var groupGiftingStats: (currentAmount: Double, targetAmount: Double, contributorsCount: Int)? = nil
+    
+    // Wishlist Logic
+    @State private var wishlistErrorMessage: String? = nil
+    
+    // Registry Selection
+    @State private var showRegistrySelection = false
     
     var body: some View {
         NavigationStack {
@@ -47,12 +57,14 @@ struct ProductDetailView: View {
                         priceRow
                         
                         // MARK: Group Gifting
-                        GroupGiftingCard(
-                            currentAmount: 210,
-                            targetAmount: 320,
-                            contributorsCount: 6
-                        ) {
-                            showContributeSheet = true
+                        if let stats = groupGiftingStats {
+                            GroupGiftingCard(
+                                currentAmount: stats.currentAmount,
+                                targetAmount: stats.targetAmount,
+                                contributorsCount: stats.contributorsCount
+                            ) {
+                                showContributeSheet = true
+                            }
                         }
                         
                         // MARK: Pairs With
@@ -72,7 +84,7 @@ struct ProductDetailView: View {
             // MARK: Toast Notification
             if showToast {
                 VStack {
-                    Text("Added to registry")
+                    Text(toastMessage)
                         .font(AppTypography.caption1Medium)
                         .foregroundColor(AppColors.white)
                         .padding(.horizontal, AppSpacing.md)
@@ -99,6 +111,27 @@ struct ProductDetailView: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showRegistrySelection) {
+            SelectRegistrySheet(product: product) { event in
+                Task {
+                    do {
+                        try await EventService.shared.addProductToRegistry(eventId: event.id, product: product)
+                        await MainActor.run {
+                            toastMessage = "Added to \(event.title)"
+                            withAnimation { showToast = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                withAnimation { showToast = false }
+                            }
+                        }
+                    } catch {
+                        print("Failed to add to registry: \(error)")
+                    }
+                }
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
+        }
         .sheet(item: $selectedRelatedProduct) { relatedProduct in
             ProductDetailView(product: relatedProduct)
                 .presentationDetents([.large])
@@ -121,6 +154,72 @@ struct ProductDetailView: View {
                 relatedProducts = similarProducts
             }
             isLoadingRelatedProducts = false
+            
+            // Fetch group gifting stats if applicable
+            groupGiftingStats = try? await EventService.shared.fetchGroupGiftingStats(for: product.id)
+            
+            // Check wishlist status
+            await checkIfFavorited()
+        }
+    }
+    
+    @State private var toastMessage = "Added to cart"
+    
+    private func checkIfFavorited() async {
+        guard let userId = AuthService.shared.currentUser?.id else { return }
+        do {
+            let response = try await SupabaseManager.shared.client
+                .from("product_wishlists")
+                .select("product_id")
+                .eq("user_id", value: userId.uuidString)
+                .eq("product_id", value: product.id.uuidString)
+                .execute()
+            
+            struct Row: Decodable { let product_id: UUID }
+            let rows = try JSONDecoder().decode([Row].self, from: response.data)
+            isFavorite = !rows.isEmpty
+        } catch {
+            print("Failed to check wishlist status: \(error)")
+        }
+    }
+    
+    private func toggleWishlist() {
+        guard let userId = AuthService.shared.currentUser?.id else { return }
+        let newState = !isFavorite
+        withAnimation { isFavorite = newState }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        
+        Task {
+            do {
+                if newState {
+                    struct InsertPayload: Encodable {
+                        let user_id: UUID
+                        let product_id: UUID
+                    }
+                    try await SupabaseManager.shared.client
+                        .from("product_wishlists")
+                        .insert(InsertPayload(user_id: userId, product_id: product.id))
+                        .execute()
+                    
+                    await MainActor.run {
+                        toastMessage = "Added to wishlist"
+                        withAnimation { showToast = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation { showToast = false }
+                        }
+                    }
+                } else {
+                    try await SupabaseManager.shared.client
+                        .from("product_wishlists")
+                        .delete()
+                        .eq("user_id", value: userId.uuidString)
+                        .eq("product_id", value: product.id.uuidString)
+                        .execute()
+                }
+            } catch {
+                print("Failed to toggle wishlist: \(error)")
+                withAnimation { isFavorite = !newState }
+            }
         }
     }
     
@@ -184,8 +283,7 @@ struct ProductDetailView: View {
 
                     VStack(spacing: AppSpacing.xs) {
                         Button {
-                            isFavorite.toggle()
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            toggleWishlist()
                         } label: {
                             Image(systemName: isFavorite ? "heart.fill" : "heart")
                                 .font(.system(size: 16))
@@ -278,10 +376,7 @@ struct ProductDetailView: View {
         HStack(spacing: AppSpacing.sm) {
             Button {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                withAnimation { showToast = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    withAnimation { showToast = false }
-                }
+                showRegistrySelection = true
             } label: {
                 Text("Add to registry")
                     .font(AppTypography.buttonMedium)
@@ -293,9 +388,9 @@ struct ProductDetailView: View {
             }
             
             Button {
-                showContributeSheet = true
+                if !isFavorite { toggleWishlist() }
             } label: {
-                Text("Contribute $50")
+                Text("Add to wishlist")
                     .font(AppTypography.buttonMedium)
                     .foregroundColor(AppColors.white)
                     .frame(maxWidth: .infinity)

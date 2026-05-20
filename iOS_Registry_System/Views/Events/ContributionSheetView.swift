@@ -397,6 +397,7 @@ struct InviteCollaboratorsSheet: View {
     @State private var invitedUserIds: Set<UUID> = []
     @State private var showErrorAlert = false
     @State private var errorMessage = ""
+    @State private var toastMessage = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -476,9 +477,60 @@ struct InviteCollaboratorsSheet: View {
                         }
 
                         VStack(spacing: AppSpacing.sm) {
-                            shareButton(icon: "message", label: "Send via Messages", color: Color(hex: "34C759"))
-                            shareButton(icon: "envelope", label: "Send via Email", color: Color(hex: "007AFF"))
-                            shareButton(icon: "link", label: "Copy Link", color: AppColors.primaryDark)
+                            let link = "https://registry.williamssonoma.com/event/\(eventId?.uuidString ?? "")"
+                            
+                            shareButton(icon: "message", label: "Send via Messages", color: Color(hex: "34C759")) {
+                                let message = "Join my event \"\(giftTitle)\" on Williams Sonoma! \(link)"
+                                let customAllowed = CharacterSet.urlQueryAllowed.subtracting(CharacterSet(charactersIn: "&+="))
+                                
+                                if let encoded = message.addingPercentEncoding(withAllowedCharacters: customAllowed),
+                                   let url = URL(string: "sms:&body=\(encoded)") {
+                                    if UIApplication.shared.canOpenURL(url) {
+                                        UIApplication.shared.open(url)
+                                    } else {
+                                        UIPasteboard.general.string = message
+                                        toastMessage = "Messages unavailable. Copied to clipboard!"
+                                        withAnimation(.spring()) { showSuccessToast = true }
+                                        Task {
+                                            try? await Task.sleep(nanoseconds: 2_000_000_000)
+                                            withAnimation { showSuccessToast = false }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            shareButton(icon: "envelope", label: "Send via Email", color: Color(hex: "007AFF")) {
+                                let customAllowed = CharacterSet.urlQueryAllowed.subtracting(CharacterSet(charactersIn: "&+="))
+                                let subject = "Join my event: \(giftTitle)".addingPercentEncoding(withAllowedCharacters: customAllowed) ?? ""
+                                let body = "Join my event \"\(giftTitle)\" on Williams Sonoma! \(link)".addingPercentEncoding(withAllowedCharacters: customAllowed) ?? ""
+                                
+                                if let url = URL(string: "mailto:?subject=\(subject)&body=\(body)") {
+                                    if UIApplication.shared.canOpenURL(url) {
+                                        UIApplication.shared.open(url)
+                                    } else {
+                                        let message = "Join my event \"\(giftTitle)\" on Williams Sonoma! \(link)"
+                                        UIPasteboard.general.string = message
+                                        toastMessage = "Email unavailable. Copied to clipboard!"
+                                        withAnimation(.spring()) { showSuccessToast = true }
+                                        Task {
+                                            try? await Task.sleep(nanoseconds: 2_000_000_000)
+                                            withAnimation { showSuccessToast = false }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            shareButton(icon: "link", label: "Copy Link", color: AppColors.primaryDark) {
+                                UIPasteboard.general.string = link
+                                toastMessage = "Link copied to clipboard!"
+                                withAnimation(.spring()) {
+                                    showSuccessToast = true
+                                }
+                                Task {
+                                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                                    withAnimation { showSuccessToast = false }
+                                }
+                            }
                         }
                         .padding(.horizontal, AppSpacing.screenHorizontal)
                     }
@@ -489,7 +541,7 @@ struct InviteCollaboratorsSheet: View {
         .appBackground()
         .overlay(alignment: .bottom) {
             if showSuccessToast {
-                Text("Successfully invited \(invitedUserName)!")
+                Text(toastMessage)
                     .font(AppTypography.footnoteSemibold)
                     .foregroundStyle(.white)
                     .padding(.horizontal, AppSpacing.lg)
@@ -539,7 +591,7 @@ struct InviteCollaboratorsSheet: View {
             do {
                 try await EventService.shared.addGuest(eventId: eventId, userId: user.id)
                 invitedUserIds.insert(user.id)
-                invitedUserName = user.firstName ?? user.fullName
+                toastMessage = "Successfully invited \(user.firstName ?? user.fullName)!"
                 withAnimation(.spring()) {
                     showSuccessToast = true
                 }
@@ -611,8 +663,9 @@ struct InviteCollaboratorsSheet: View {
         .disabled(alreadyInvited)
     }
 
-    private func shareButton(icon: String, label: String, color: Color) -> some View {
+    private func shareButton(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
         Button {
+            action()
         } label: {
             HStack(spacing: AppSpacing.sm) {
                 Image(systemName: icon)

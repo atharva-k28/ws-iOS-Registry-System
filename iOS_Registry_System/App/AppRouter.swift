@@ -20,13 +20,21 @@ struct AppRouter: View {
             Group {
                 switch appState.selectedTab {
                 case .home:
-                    HomeView()
+                    NavigationStack {
+                        HomeView()
+                    }
                 case .events:
-                    MyEventsView()
+                    NavigationStack {
+                        MyEventsView()
+                    }
                 case .friends:
-                    FriendsView()
+                    NavigationStack {
+                        FriendsView()
+                    }
                 case .profile:
-                    ProfileView()
+                    NavigationStack {
+                        ProfileView()
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
